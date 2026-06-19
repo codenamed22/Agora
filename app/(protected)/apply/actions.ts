@@ -12,7 +12,7 @@ const applicationSchema = z.object({
   displayName: z.string().trim().min(2).max(80),
   batch: z.string().trim().min(2).max(40),
   branch: z.string().trim().min(2).max(80),
-  goals: z.string().trim().min(20).max(1000),
+  goals: z.string().trim().min(2).max(1000),
   experience: z.string().trim().max(1000).optional(),
 });
 
