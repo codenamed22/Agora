@@ -42,8 +42,7 @@ export default async function JoinPage() {
           ) : !isLocalDevAuthEnabled ? (
             <div className="form-message error">
               Google sign-in is not configured yet. Add <code>AUTH_GOOGLE_ID</code> and{" "}
-              <code>AUTH_GOOGLE_SECRET</code> to <code>.env.local</code>, then restart
-              the dev server.
+              <code>AUTH_GOOGLE_SECRET</code> to this environment, then redeploy.
             </div>
           ) : null}
 

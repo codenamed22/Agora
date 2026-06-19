@@ -164,6 +164,7 @@ This is a Next.js app that deploys directly to Vercel.
 
    - `DATABASE_URL` — PostgreSQL connection string (e.g., from Supabase, Neon, or Railway)
    - `AUTH_SECRET` — generate with `openssl rand -base64 32`
+   - `AUTH_TRUST_HOST` — `true` for Vercel deployments
    - `AUTH_GOOGLE_ID` — Google OAuth client ID
    - `AUTH_GOOGLE_SECRET` — Google OAuth client secret
    - `AUTH_URL` — `https://YOUR_DOMAIN` (no trailing slash)
