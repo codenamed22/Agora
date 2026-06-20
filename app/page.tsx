@@ -1,4 +1,5 @@
-import SiteHeader from "./site-header";
+import { auth } from "../auth";
+import AccountBar from "./account-bar";
 
 const communityPillars = [
   "Build with peers",
@@ -6,10 +7,15 @@ const communityPillars = [
   "Share real work",
 ];
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+  const primaryAction = session?.user
+    ? { href: "/dashboard", label: "Go to dashboard" }
+    : { href: "/join", label: "Join the community" };
+
   return (
     <>
-      <SiteHeader />
+      <AccountBar session={session} />
       <main className="site-shell">
         <section id="top" className="hero">
           <h1>A technical community built on mentorship and real work.</h1>
@@ -18,8 +24,8 @@ export default function Home() {
             through hands-on collaboration and steady feedback.
           </p>
           <div className="hero-actions" aria-label="Primary actions">
-            <a className="button" href="/join">
-              Join the community
+            <a className="button" href={primaryAction.href}>
+              {primaryAction.label}
             </a>
             <a className="text-link" href="#about">
               Learn more

@@ -1,8 +1,13 @@
+import type { Session } from "next-auth";
 import { auth, signOut } from "../auth";
 import SiteHeader from "./site-header";
 
-export default async function AccountBar() {
-  const session = await auth();
+export default async function AccountBar({
+  session: providedSession,
+}: Readonly<{
+  session?: Session | null;
+}> = {}) {
+  const session = providedSession ?? (await auth());
 
   if (!session?.user) {
     return <SiteHeader />;
