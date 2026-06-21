@@ -5,6 +5,7 @@ vi.mock("../../../lib/prisma", () => ({
     user: { findUnique: vi.fn(), update: vi.fn() },
     profile: { upsert: vi.fn() },
     application: { findUnique: vi.fn(), create: vi.fn() },
+    cohort: { findFirst: vi.fn() },
   },
 }));
 
@@ -86,13 +87,14 @@ describe("ensureRegistrationRecords", () => {
     mockedPrisma.user.findUnique.mockResolvedValue({ role: "MEMBER", status: "PENDING" } as never);
     mockedPrisma.profile.upsert.mockResolvedValue({} as never);
     mockedPrisma.application.findUnique.mockResolvedValue(null);
+    mockedPrisma.cohort.findFirst.mockResolvedValue({ id: "c1" } as never);
     mockedPrisma.application.create.mockResolvedValue({} as never);
 
     await ensureRegistrationRecords("u4", "member@example.com");
 
     expect(mockedPrisma.profile.upsert).toHaveBeenCalled();
     expect(mockedPrisma.application.create).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { userId: "u4", status: "DRAFT" } }),
+      expect.objectContaining({ data: { userId: "u4", status: "DRAFT", cohortId: "c1" } }),
     );
   });
 
