@@ -16,7 +16,12 @@ export default async function AccountBar({
   return (
     <SiteHeader>
       <a href="/dashboard">Dashboard</a>
-      {session.user.role === "ADMIN" ? <a href="/admin/applications">Admin</a> : null}
+      {session.user.role === "ADMIN" ? (
+        <>
+          <a href="/admin/cohort">Cohort</a>
+          <a href="/admin/applications">Applications</a>
+        </>
+      ) : null}
       <form
         action={async () => {
           "use server";
