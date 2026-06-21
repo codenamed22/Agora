@@ -214,20 +214,20 @@ End-to-end runs in CI against a Postgres service container. Visual-regression an
 
 Every pull request runs the `verify` job (prettier, lint, typecheck, unit tests, build) and the `e2e` job (Playwright against a Postgres service). Superseded runs on the same branch are auto-cancelled via a workflow `concurrency` group.
 
-To make a green suite required before merging, enable branch protection on `main` (repo admin, after the workflow has run once so the check names are registered):
+To make a green suite required before merging, branch protection on `main` is enabled (required status checks for both CI jobs, enforced for admins). It was applied with:
 
 ```bash
-gh api -X PUT repos/Gotnochill/shardup_site/branches/main/protection \
-  -H "Accept: application/vnd.github+json" \
-  -f "required_status_checks[strict]=true" \
-  -f "required_status_checks[contexts][]=Static checks & unit tests" \
-  -f "required_status_checks[contexts][]=End-to-end tests" \
-  -F "enforce_admins=true" \
-  -f "required_pull_request_reviews[required_approving_review_count]=1" \
-  -F "restrictions=null"
+gh api -X PUT repos/codenamed22/Agora/branches/main/protection --input - <<'JSON'
+{
+  "required_status_checks": { "strict": true, "contexts": ["Static checks & unit tests", "End-to-end tests"] },
+  "enforce_admins": true,
+  "required_pull_request_reviews": null,
+  "restrictions": null
+}
+JSON
 ```
 
-After this, PRs cannot merge unless both CI jobs pass.
+With this, `main` cannot be pushed to or merged into unless both CI jobs pass.
 
 ## Deployment to Vercel
 
