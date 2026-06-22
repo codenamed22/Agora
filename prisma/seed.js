@@ -31,6 +31,45 @@ async function main() {
       await prisma.event.create({ data: event });
     }
   }
+
+  const problems = [
+    {
+      slug: "sum-two-numbers",
+      title: "Sum Two Numbers",
+      statement:
+        "Read two integers from standard input and print their sum.\n\nThis warm-up problem verifies that your program can read input and write output in the ShardUp judge.",
+      constraints: "-10^9 <= a, b <= 10^9",
+      tags: ["Math", "Warm-up"],
+      difficulty: "EASY",
+      timeLimitMs: 2000,
+      published: true,
+      testCases: [
+        { input: "2 3\n", expectedOutput: "5\n", isSample: true, order: 1 },
+        { input: "-4 10\n", expectedOutput: "6\n", isSample: true, order: 2 },
+        {
+          input: "1000000000 1000000000\n",
+          expectedOutput: "2000000000\n",
+          isSample: false,
+          order: 3,
+        },
+      ],
+    },
+  ];
+
+  for (const problem of problems) {
+    const { testCases, ...problemData } = problem;
+    const savedProblem = await prisma.problem.upsert({
+      where: { slug: problem.slug },
+      update: problemData,
+      create: problemData,
+      select: { id: true },
+    });
+
+    await prisma.testCase.deleteMany({ where: { problemId: savedProblem.id } });
+    await prisma.testCase.createMany({
+      data: testCases.map((testCase) => ({ ...testCase, problemId: savedProblem.id })),
+    });
+  }
 }
 
 main()

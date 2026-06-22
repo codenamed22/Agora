@@ -176,6 +176,32 @@ For local development, Google credentials are optional. Set `LOCAL_DEV_AUTH_ENAB
 
 Events are published manually for now. Seed sample events with `npm run prisma:seed`, or manage rows directly in Prisma Studio. Add an optional `imageUrl` to show an event image on the list and detail pages. RSVP is available only to active members; signed-out users can view events but must sign in before RSVPing.
 
+Practice problems are also seed-managed for now. `npm run prisma:seed` publishes the sample `Sum Two Numbers` problem with sample and hidden test cases. Anyone can view problems; only active members can submit solutions.
+
+### Self-hosted Piston judge
+
+ShardUp does not use the public Piston API. Host your own Piston API and point the app at it with `JUDGE_BASE_URL`.
+
+For local development, either:
+
+- Set `JUDGE_PROVIDER=fake` to use the deterministic fake judge used by E2E tests.
+- Or run a self-hosted Piston instance and set `JUDGE_BASE_URL=http://localhost:2000/api/v2` (replace the host with your deployment).
+
+Production should set:
+
+- `JUDGE_BASE_URL` — base URL for the self-hosted Piston API, ending at `/api/v2`.
+- `JUDGE_API_KEY` — shared secret enforced by your reverse proxy before requests reach Piston.
+- `PISTON_PYTHON_VERSION` — optional override, defaults to `3.10.0`.
+- `PISTON_CPP_VERSION` — optional override, defaults to `10.2.0`.
+
+Do not set `JUDGE_PROVIDER=fake` in production.
+
+Recommended hosting options:
+
+- Oracle Cloud Always Free VM — best $0 option. Run Docker + Piston on Ubuntu, put Caddy/nginx in front, and require `Authorization: Bearer <JUDGE_API_KEY>`. See `docs/oracle-piston.md` and `infra/oracle-piston-cloud-init.yaml`.
+- Tiny paid VM — Hetzner, DigitalOcean, Fly.io, Railway, or Render. Expect roughly $4-7/month, lower setup risk than free tiers.
+- Avoid serverless-only hosts for Piston. The judge needs a persistent Linux/container environment, installed runtimes, and strict resource limits.
+
 ## Testing
 
 Regression tests guard the design language, page features, and code health. If these pass, your change is safe to merge. The same checks run in CI on every pull request (`.github/workflows/ci.yml`).
@@ -196,7 +222,7 @@ npm run build          # production build
 
 ### End-to-end tests
 
-Playwright drives the real app in `tests/e2e/` (auth-aware navigation, events + RSVP gating, route redirects, the health endpoint). It uses the development-only sign-in, so it requires a Postgres database and runs the dev server automatically.
+Playwright drives the real app in `tests/e2e/` (auth-aware navigation, events + RSVP gating, practice submissions, route redirects, the health endpoint). It uses the development-only sign-in and `JUDGE_PROVIDER=fake`, so it requires a Postgres database and runs the dev server automatically.
 
 ```bash
 # One-time: install the browser
@@ -247,6 +273,8 @@ This is a Next.js app that deploys directly to Vercel.
    - `AUTH_GOOGLE_SECRET` — Google OAuth client secret
    - `AUTH_URL` — `https://YOUR_DOMAIN` (no trailing slash)
    - `ADMIN_EMAILS` — comma-separated admin emails
+   - `JUDGE_BASE_URL` — self-hosted Piston base URL, e.g. `https://judge.YOUR_DOMAIN/api/v2`
+   - `JUDGE_API_KEY` — bearer token your judge reverse proxy requires
    - `AUTH_DEBUG` — optional temporary value `true` for Auth.js debugging in Vercel logs
    - `NEXT_PUBLIC_` prefix is not needed for any current variable
 
@@ -273,5 +301,6 @@ DATABASE_URL="postgresql://..." npm run prisma:seed
 - The local development-only auth path is disabled in production (`NODE_ENV=production`).
 - Make sure your production Postgres provider allows connections from Vercel serverless functions.
 - Some providers require a connection pooler URL for serverless environments.
+- Make sure the self-hosted Piston API is reachable from Vercel serverless functions and is not the deprecated/public Piston endpoint.
 - Do not commit `.env.local` or any real credentials to the repo.
 - Visit `/api/health` after deployment to verify required environment variables and database connectivity without exposing secret values.

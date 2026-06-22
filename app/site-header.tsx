@@ -12,6 +12,7 @@ export default function SiteHeader({
         <a href="/#about">About</a>
         <a href="/#community">Community</a>
         <a href="/events">Events</a>
+        <a href="/problems">Practice</a>
         {children ?? <a href="/join">Join</a>}
       </nav>
     </header>

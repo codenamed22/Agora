@@ -29,6 +29,7 @@ export default defineConfig({
       ADMIN_EMAILS: "admin@shardup.local",
       AUTH_SECRET: "e2e-playwright-secret",
       AUTH_TRUST_HOST: "true",
+      JUDGE_PROVIDER: "fake",
     },
   },
 });

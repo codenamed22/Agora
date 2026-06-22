@@ -5,3 +5,5 @@ export const DATABASE_URL =
 
 // Deterministic fixture seeded by global-setup and asserted by the specs.
 export const TEST_EVENT_TITLE = "E2E Automated Test Event";
+export const TEST_PROBLEM_SLUG = "e2e-sum-two-numbers";
+export const TEST_PROBLEM_TITLE = "E2E Sum Two Numbers";

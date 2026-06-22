@@ -26,6 +26,21 @@ enum ApplicationStatus {
   REJECTED
 }
 
+enum ProblemDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum SubmissionVerdict {
+  PENDING
+  ACCEPTED
+  WRONG_ANSWER
+  TLE
+  RUNTIME_ERROR
+  COMPILE_ERROR
+}
+
 model User {
   id            String       @id @default(cuid())
   name          String?
@@ -42,6 +57,8 @@ model User {
   application   Application?
   rsvps         EventRsvp[]
   createdEvents Event[]      @relation("EventCreator")
+  createdProblems Problem[]   @relation("ProblemCreator")
+  submissions   Submission[]
 
   reviewedApplications Application[] @relation("ApplicationReviewer")
 }
@@ -152,4 +169,61 @@ model EventRsvp {
 
   @@unique([eventId, userId])
   @@index([userId])
+}
+
+model Problem {
+  id          String            @id @default(cuid())
+  slug        String            @unique
+  title       String
+  statement   String
+  constraints String?
+  tags        String[]          @default([])
+  difficulty  ProblemDifficulty @default(EASY)
+  timeLimitMs Int               @default(2000)
+  published   Boolean           @default(true)
+  createdById String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  creator     User?        @relation("ProblemCreator", fields: [createdById], references: [id])
+  testCases   TestCase[]
+  submissions Submission[]
+
+  @@index([published, difficulty])
+  @@index([createdById])
+}
+
+model TestCase {
+  id             String   @id @default(cuid())
+  problemId      String
+  input          String
+  expectedOutput String
+  isSample       Boolean  @default(false)
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@index([problemId, isSample, order])
+}
+
+model Submission {
+  id          String            @id @default(cuid())
+  userId      String
+  problemId   String
+  language    String
+  code        String
+  verdict     SubmissionVerdict @default(PENDING)
+  runtimeMs   Int?
+  passedCount Int               @default(0)
+  totalCount  Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([problemId, verdict])
 }

@@ -15,6 +15,8 @@ export async function GET() {
     databaseUrl: isConfigured(process.env.DATABASE_URL),
     googleClientId: isConfigured(process.env.AUTH_GOOGLE_ID),
     googleClientSecret: isConfigured(process.env.AUTH_GOOGLE_SECRET),
+    judgeBaseUrl: process.env.JUDGE_PROVIDER === "fake" || isConfigured(process.env.JUDGE_BASE_URL),
+    judgeApiKey: process.env.JUDGE_PROVIDER === "fake" || isConfigured(process.env.JUDGE_API_KEY),
   };
 
   let database = false;
@@ -37,6 +39,9 @@ export async function GET() {
           prisma.account.count(),
           prisma.profile.count(),
           prisma.application.count(),
+          prisma.problem.count(),
+          prisma.testCase.count(),
+          prisma.submission.count(),
         ]);
         schema = true;
       } catch (error) {

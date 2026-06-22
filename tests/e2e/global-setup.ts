@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
 import { PrismaClient } from "@prisma/client";
-import { DATABASE_URL, TEST_EVENT_TITLE } from "./env";
+import { DATABASE_URL, TEST_EVENT_TITLE, TEST_PROBLEM_SLUG, TEST_PROBLEM_TITLE } from "./env";
 
 // Applies migrations and seeds a deterministic, always-future event so the
 // events suite has stable data regardless of the current date or DB contents.
@@ -25,6 +25,26 @@ export default async function globalSetup() {
         startsAt: new Date("2999-01-01T17:30:00.000Z"),
         endsAt: new Date("2999-01-01T18:30:00.000Z"),
         published: true,
+      },
+    });
+
+    await prisma.problem.deleteMany({ where: { slug: TEST_PROBLEM_SLUG } });
+    await prisma.problem.create({
+      data: {
+        slug: TEST_PROBLEM_SLUG,
+        title: TEST_PROBLEM_TITLE,
+        statement: "Read two integers and print their sum.",
+        constraints: "-100 <= a, b <= 100",
+        tags: ["Math", "Warm-up"],
+        difficulty: "EASY",
+        timeLimitMs: 2000,
+        published: true,
+        testCases: {
+          create: [
+            { input: "2 3\n", expectedOutput: "5\n", isSample: true, order: 1 },
+            { input: "-4 10\n", expectedOutput: "6\n", isSample: false, order: 2 },
+          ],
+        },
       },
     });
   } finally {
