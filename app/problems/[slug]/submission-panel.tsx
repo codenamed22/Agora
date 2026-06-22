@@ -41,8 +41,8 @@ const verdictTone: Record<string, "success" | "warning" | "error"> = {
 };
 
 const starterCode: Record<string, string> = {
-  python: "a, b = map(int, input().split())\nprint(a + b)\n",
-  cpp: '#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    long long a, b;\n    cin >> a >> b;\n    cout << a + b << "\\n";\n    return 0;\n}\n',
+  python: "# Write your solution here\n",
+  cpp: "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    // Write your solution here\n    return 0;\n}\n",
 };
 
 function languageExtensions(language: string) {

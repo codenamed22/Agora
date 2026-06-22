@@ -13,7 +13,6 @@ export default async function ProblemsPage() {
     where: { published: true },
     orderBy: [{ difficulty: "asc" }, { title: "asc" }],
     select: {
-      id: true,
       slug: true,
       title: true,
       tags: true,
@@ -31,7 +30,7 @@ export default async function ProblemsPage() {
         <div className="problem-list">
           {problems.length > 0 ? (
             problems.map((problem) => (
-              <a className="problem-row" href={`/problems/${problem.slug}`} key={problem.id}>
+              <a className="problem-row" href={`/problems/${problem.slug}`} key={problem.slug}>
                 <span className="problem-row-title">{problem.title}</span>
                 <div className="problem-row-meta">
                   <span className={`difficulty-pill ${problem.difficulty.toLowerCase()}`}>

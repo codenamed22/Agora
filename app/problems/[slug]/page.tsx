@@ -45,7 +45,6 @@ export default async function ProblemDetailPage({
   const problem = await prisma.problem.findFirst({
     where: { slug: params.slug, published: true },
     select: {
-      id: true,
       slug: true,
       title: true,
       statement: true,
@@ -70,7 +69,6 @@ export default async function ProblemDetailPage({
               passedCount: true,
               totalCount: true,
               runtimeMs: true,
-              createdAt: true,
             },
           }
         : false,
