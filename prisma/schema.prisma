@@ -65,6 +65,7 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
@@ -75,6 +76,7 @@ model Session {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  @@index([userId])
 }
 
 model VerificationToken {
@@ -118,6 +120,7 @@ model Application {
   reviewer User? @relation("ApplicationReviewer", fields: [reviewedBy], references: [id])
 
   @@index([status])
+  @@index([reviewedBy])
 }
 
 model Event {
@@ -176,20 +179,25 @@ model Resource {
   id                   String       @id @default(cuid())
   title                String
   author               String?
+  description          String?      // optional future-proofing
   type                 ResourceType
   recommendationReason String?
   resourceLink         String?
   buyLink              String?
-  imageUrl             String
+  imageUrl             String?      // changed
+
   categoryId           String
   recommendedById      String?
 
-  createdAt            DateTime     @default(now())
-  updatedAt            DateTime     @updatedAt
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
-  category             Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  recommendedBy        User?        @relation("ResourceRecommender", fields: [recommendedById], references: [id], onDelete: SetNull)
+  category      Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  recommendedBy User?    @relation("ResourceRecommender", fields: [recommendedById], references: [id], onDelete: SetNull)
 
   @@index([categoryId])
   @@index([recommendedById])
+  @@index([categoryId, type])
+
+  @@unique([categoryId, title])
 }

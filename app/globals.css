@@ -987,3 +987,10 @@ img {
   }
 }
 
+@media (max-width: 720px) {
+  .categories-layout-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+}
+
