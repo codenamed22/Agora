@@ -677,20 +677,79 @@ img {
   color: var(--muted);
 }
 
-.submission-row strong {
+.submission-row .verdict-label {
   color: var(--ink);
 }
 
-.running-submission {
-  border-color: var(--accent);
+.submission-row.verdict-success {
+  border-color: rgba(23, 208, 89, 0.45);
   background: #f4fff7;
+}
+
+.submission-row.verdict-success .verdict-label {
+  color: var(--accent-strong);
+}
+
+.submission-row.verdict-warning {
+  border-color: rgba(214, 153, 0, 0.45);
+  background: #fff8e6;
+}
+
+.submission-row.verdict-warning .verdict-label {
+  color: #9a6700;
+}
+
+.submission-row.verdict-error {
+  border-color: rgba(180, 35, 24, 0.38);
+  background: #fff5f3;
+}
+
+.submission-row.verdict-error .verdict-label {
+  color: #b42318;
+}
+
+.code-editor-shell {
+  overflow: hidden;
+  border: 1px solid var(--ink);
+  background: #1f232a;
+}
+
+.code-editor-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: #14181f;
+  color: #d8dee9;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.code-editor-shell .cm-editor {
+  font-size: 0.95rem;
+}
+
+.code-editor-shell .cm-content {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.code-editor-shell .cm-scroller {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.running-submission {
+  border-color: rgba(214, 153, 0, 0.45);
+  background: #fff8e6;
 }
 
 .submission-spinner {
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(23, 208, 89, 0.25);
-  border-top-color: var(--accent);
+  border: 2px solid rgba(214, 153, 0, 0.25);
+  border-top-color: #d69900;
   border-radius: 999px;
   animation: spin 800ms linear infinite;
 }

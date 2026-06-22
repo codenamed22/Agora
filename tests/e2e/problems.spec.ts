@@ -13,6 +13,8 @@ test.describe("problems", () => {
 
     await expect(page).toHaveURL(`/problems/${TEST_PROBLEM_SLUG}`);
     await expect(page.getByRole("heading", { name: TEST_PROBLEM_TITLE })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Events" })).toHaveAttribute("href", "/events");
+    await expect(page.getByRole("link", { name: "Practice" })).toHaveAttribute("href", "/problems");
     await expect(page.locator(".problem-tag-list")).toContainText("Math");
     await expect(page.locator(".problem-tag-list")).toContainText("Warm-up");
     await expect(page.locator(".problem-tag-list")).not.toContainText("2000ms");
@@ -38,7 +40,7 @@ test.describe("problems", () => {
     await page.goto(`/problems/${TEST_PROBLEM_SLUG}`);
 
     await page.getByLabel("Language").selectOption("python");
-    await page.getByLabel("Code").fill("print('fake judge accepts by summing stdin')");
+    await page.locator(".cm-content").fill("print('fake judge accepts by summing stdin')");
     await page.getByRole("button", { name: "Submit solution" }).click();
 
     await expect(page.getByRole("button", { name: "Running tests..." })).toBeVisible();
