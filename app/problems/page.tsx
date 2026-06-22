@@ -9,6 +9,8 @@ const difficultyLabels = {
   HARD: "Hard",
 };
 
+const WARMUP_PROBLEM_SLUG = "sum-two-numbers";
+
 export default async function ProblemsPage() {
   const problems = await prisma.problem.findMany({
     where: { published: true },
@@ -63,6 +65,11 @@ export default async function ProblemsPage() {
       (left, right) => right.solvedCount - left.solvedCount || left.name.localeCompare(right.name),
     )
     .slice(0, 10);
+  const warmupProblem = problems.find((problem) => problem.slug === WARMUP_PROBLEM_SLUG);
+  const sheetProblems = [
+    ...(warmupProblem ? [warmupProblem] : []),
+    ...problems.filter((problem) => problem.slug !== WARMUP_PROBLEM_SLUG),
+  ];
 
   return (
     <main className="app-shell wide-card">
@@ -91,10 +98,23 @@ export default async function ProblemsPage() {
         </section>
 
         <div className="problem-list">
-          {problems.length > 0 ? (
-            problems.map((problem) => (
-              <a className="problem-row" href={`/problems/${problem.slug}`} key={problem.slug}>
-                <span className="problem-row-title">{problem.title}</span>
+          {sheetProblems.length > 0 ? (
+            sheetProblems.map((problem) => (
+              <a
+                className={
+                  problem.slug === WARMUP_PROBLEM_SLUG
+                    ? "problem-row pinned-problem"
+                    : "problem-row"
+                }
+                href={`/problems/${problem.slug}`}
+                key={problem.slug}
+              >
+                <span className="problem-row-title">
+                  {problem.slug === WARMUP_PROBLEM_SLUG ? (
+                    <span aria-label="Pinned">📌</span>
+                  ) : null}
+                  {problem.title}
+                </span>
                 <div className="problem-row-meta">
                   <span className={`difficulty-pill ${problem.difficulty.toLowerCase()}`}>
                     {difficultyLabels[problem.difficulty]}

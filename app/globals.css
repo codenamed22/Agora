@@ -612,6 +612,16 @@ img {
   font-weight: 800;
 }
 
+.pinned-problem {
+  background: #ecfff2;
+}
+
+.pinned-problem .problem-row-title {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .practice-leaderboard {
   margin-top: 28px;
   border: 1px solid var(--line);
