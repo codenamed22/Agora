@@ -166,59 +166,162 @@ function buildResourcesQuery(params: { q?: string; type?: string; sort?: string 
   return { where, orderBy };
 }
 
-export async function getFilteredResources(params: {
+export async function getPaginatedResources(params: {
   q?: string;
   type?: string;
   sort?: string;
-}): Promise<ResourceWithRelations[]> {
+  page?: string | number;
+  limit?: number;
+}): Promise<{ resources: ResourceWithRelations[]; total: number; totalPages: number; currentPage: number }> {
   const { where, orderBy } = buildResourcesQuery(params);
 
-  return prisma.resource.findMany({
-    where,
-    orderBy,
-    select: {
-      id: true,
-      title: true,
-      author: true,
-      type: true,
-      recommendationReason: true,
-      resourceLink: true,
-      buyLink: true,
-      imageUrl: true,
-      createdAt: true,
-      updatedAt: true,
-      category: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
+  let currentPage = 1;
+  if (params.page) {
+    const parsedPage = typeof params.page === "string" ? parseInt(params.page, 10) : params.page;
+    if (!isNaN(parsedPage) && parsedPage > 0) {
+      currentPage = parsedPage;
+    }
+  }
+
+  const limit = params.limit ?? 6;
+  const skip = (currentPage - 1) * limit;
+
+  const [resources, total] = await prisma.$transaction([
+    prisma.resource.findMany({
+      where,
+      orderBy,
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        author: true,
+        type: true,
+        recommendationReason: true,
+        resourceLink: true,
+        buyLink: true,
+        imageUrl: true,
+        createdAt: true,
+        updatedAt: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        recommendedBy: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
         },
       },
-      recommendedBy: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-        },
-      },
-    },
-  });
+    }),
+    prisma.resource.count({ where }),
+  ]);
+
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    resources,
+    total,
+    totalPages,
+    currentPage,
+  };
 }
 
-export async function getFilteredCategoryResources(
+export async function getPaginatedCategoryResources(
   categorySlug: string,
-  params: { q?: string; type?: string; sort?: string },
-): Promise<ResourceWithRelations[]> {
+  params: { q?: string; type?: string; sort?: string; page?: string | number; limit?: number },
+): Promise<{ resources: ResourceWithRelations[]; total: number; totalPages: number; currentPage: number }> {
   const { where, orderBy } = buildResourcesQuery(params);
+
+  let currentPage = 1;
+  if (params.page) {
+    const parsedPage = typeof params.page === "string" ? parseInt(params.page, 10) : params.page;
+    if (!isNaN(parsedPage) && parsedPage > 0) {
+      currentPage = parsedPage;
+    }
+  }
+
+  const limit = params.limit ?? 6;
+  const skip = (currentPage - 1) * limit;
 
   const finalWhere: Prisma.ResourceWhereInput = {
     ...where,
     category: { slug: categorySlug },
   };
 
-  return prisma.resource.findMany({
-    where: finalWhere,
-    orderBy,
+  const [resources, total] = await prisma.$transaction([
+    prisma.resource.findMany({
+      where: finalWhere,
+      orderBy,
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        author: true,
+        type: true,
+        recommendationReason: true,
+        resourceLink: true,
+        buyLink: true,
+        imageUrl: true,
+        createdAt: true,
+        updatedAt: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        recommendedBy: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
+    }),
+    prisma.resource.count({ where: finalWhere }),
+  ]);
+
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    resources,
+    total,
+    totalPages,
+    currentPage,
+  };
+}
+
+export async function getRelatedResources(
+  resourceId: string,
+  limit = 3,
+): Promise<ResourceWithRelations[]> {
+  const resource = await prisma.resource.findUnique({
+    where: { id: resourceId },
+    select: { categoryId: true, type: true },
+  });
+
+  if (!resource) {
+    return [];
+  }
+
+  // 1. Fetch same category and same type first (excluding current)
+  const sameTypeResources = await prisma.resource.findMany({
+    where: {
+      categoryId: resource.categoryId,
+      type: resource.type,
+      NOT: { id: resourceId },
+    },
+    take: limit,
+    orderBy: { createdAt: "desc" },
     select: {
       id: true,
       title: true,
@@ -246,9 +349,55 @@ export async function getFilteredCategoryResources(
       },
     },
   });
+
+  if (sameTypeResources.length >= limit) {
+    return sameTypeResources;
+  }
+
+  // 2. Fetch other types in same category to fill remaining slots
+  const remainingLimit = limit - sameTypeResources.length;
+  const otherTypeResources = await prisma.resource.findMany({
+    where: {
+      categoryId: resource.categoryId,
+      NOT: {
+        id: { in: [resourceId, ...sameTypeResources.map((r) => r.id)] },
+      },
+    },
+    take: remainingLimit,
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      author: true,
+      type: true,
+      recommendationReason: true,
+      resourceLink: true,
+      buyLink: true,
+      imageUrl: true,
+      createdAt: true,
+      updatedAt: true,
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+      recommendedBy: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+        },
+      },
+    },
+  });
+
+  return [...sameTypeResources, ...otherTypeResources];
 }
 
 export async function searchResources(query: string): Promise<ResourceWithRelations[]> {
-  return getFilteredResources({ q: query });
+  const result = await getPaginatedResources({ q: query, limit: 100 });
+  return result.resources;
 }
 
