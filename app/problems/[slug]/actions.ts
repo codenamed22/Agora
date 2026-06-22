@@ -1,10 +1,10 @@
 "use server";
 
-import { SubmissionVerdict, UserStatus } from "@prisma/client";
+import { SubmissionVerdict } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { auth } from "../../../auth";
+import { requireActiveUser } from "../../../lib/guards";
 import { isSupportedLanguage, runJudge } from "../../../lib/judge";
 import { prisma } from "../../../lib/prisma";
 
@@ -16,20 +16,6 @@ const submissionSchema = z.object({
   language: z.string().trim().min(1),
   code: z.string().max(MAX_CODE_LENGTH),
 });
-
-async function requireActiveUser() {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect("/join");
-  }
-
-  if (session.user.status !== UserStatus.ACTIVE) {
-    redirect("/apply");
-  }
-
-  return session.user;
-}
 
 export async function submitSolution(formData: FormData) {
   const user = await requireActiveUser();

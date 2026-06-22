@@ -1,29 +1,14 @@
 "use server";
 
-import { UserStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { auth } from "../../auth";
+import { requireActiveUser } from "../../lib/guards";
 import { prisma } from "../../lib/prisma";
 
 const rsvpSchema = z.object({
   eventId: z.string().trim().min(1),
 });
-
-async function requireActiveUser() {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect("/join");
-  }
-
-  if (session.user.status !== UserStatus.ACTIVE) {
-    redirect("/apply");
-  }
-
-  return session.user;
-}
 
 async function getUpcomingEvent(eventId: string) {
   return prisma.event.findFirst({

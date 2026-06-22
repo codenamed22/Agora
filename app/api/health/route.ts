@@ -39,6 +39,8 @@ export async function GET() {
           prisma.account.count(),
           prisma.profile.count(),
           prisma.application.count(),
+          prisma.event.count(),
+          prisma.eventRsvp.count(),
           prisma.problem.count(),
           prisma.testCase.count(),
           prisma.submission.count(),
