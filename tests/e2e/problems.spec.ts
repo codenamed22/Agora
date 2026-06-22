@@ -47,5 +47,12 @@ test.describe("problems", () => {
     await expect(page.locator(".running-submission")).toContainText("Pending");
     await expect(page.getByText("Accepted").first()).toBeVisible();
     await expect(page.getByText("2/2 tests").first()).toBeVisible();
+
+    await page.goto("/problems");
+    await expect(page.locator(".problem-row", { hasText: TEST_PROBLEM_TITLE })).toContainText(
+      "1 accepted",
+    );
+    await expect(page.getByRole("heading", { name: "Leaderboard" })).toBeVisible();
+    await expect(page.locator(".leaderboard-row", { hasText: "Local Admin" })).toContainText("1");
   });
 });

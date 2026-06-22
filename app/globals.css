@@ -612,6 +612,63 @@ img {
   font-weight: 800;
 }
 
+.practice-leaderboard {
+  margin-top: 28px;
+  border: 1px solid var(--line);
+  background: #fffef8;
+}
+
+.practice-leaderboard-header,
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: center;
+}
+
+.practice-leaderboard-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.practice-leaderboard-header h2 {
+  grid-column: span 2;
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.practice-leaderboard-header span {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.leaderboard-list {
+  display: grid;
+}
+
+.leaderboard-row {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.leaderboard-row:last-child {
+  border-bottom: 0;
+}
+
+.leaderboard-rank,
+.leaderboard-score {
+  color: var(--accent-strong);
+  font-weight: 900;
+}
+
+.leaderboard-name {
+  color: var(--ink);
+  font-weight: 800;
+}
+
 .problem-statement,
 .problem-section {
   margin-top: 28px;
