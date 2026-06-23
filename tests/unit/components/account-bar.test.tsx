@@ -30,17 +30,25 @@ describe("AccountBar", () => {
     render(ui);
 
     expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("href", "/dashboard");
+    expect(screen.getByRole("link", { name: "Masterclass" })).toHaveAttribute(
+      "href",
+      "/masterclass",
+    );
     expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Admin" })).not.toBeInTheDocument();
   });
 
-  it("shows the Admin link for admins", async () => {
+  it("shows admin links for admins", async () => {
     const ui = await AccountBar({ session: makeSession("ADMIN") });
     render(ui);
 
     expect(screen.getByRole("link", { name: "Admin" })).toHaveAttribute(
       "href",
       "/admin/applications",
+    );
+    expect(screen.getByRole("link", { name: "Masterclass" })).toHaveAttribute(
+      "href",
+      "/masterclass",
     );
   });
 });

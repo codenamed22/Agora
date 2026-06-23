@@ -14,18 +14,39 @@ test.describe("route gating", () => {
     await expect(page).toHaveURL(/\/join$/);
   });
 
-  test("keeps a pending member out of the admin area", async ({ page }) => {
+  for (const path of ["/admin/teaching", "/masterclass", "/boards/missing-board"]) {
+    test(`redirects anonymous users from ${path} to /join`, async ({ page }) => {
+      await page.goto(path);
+      await page.waitForURL("**/join");
+      await expect(page).toHaveURL(/\/join$/);
+    });
+  }
+
+  test("keeps a pending member out of active member routes", async ({ page }) => {
     await devLogin(page, "member");
-    // Admin page redirects non-admins to /dashboard, which redirects a pending
-    // member on to /apply.
-    await page.goto("/admin/applications");
-    await page.waitForURL("**/apply");
-    await expect(page).toHaveURL(/\/apply$/);
+
+    for (const path of [
+      "/admin/applications",
+      "/admin/teaching",
+      "/masterclass",
+      "/boards/missing-board",
+    ]) {
+      await page.goto(path);
+      await page.waitForURL("**/apply");
+      await expect(page).toHaveURL(/\/apply$/);
+    }
   });
 
   test("lets an admin reach the application review page", async ({ page }) => {
     await devLogin(page, "admin");
     await page.goto("/admin/applications");
     await expect(page.getByRole("heading", { name: "Application review" })).toBeVisible();
+  });
+
+  test("redirects old admin teaching page to masterclass for admins", async ({ page }) => {
+    await devLogin(page, "admin");
+    await page.goto("/admin/teaching");
+    await page.waitForURL("**/masterclass");
+    await expect(page.getByRole("heading", { name: "Masterclass sessions" })).toBeVisible();
   });
 });

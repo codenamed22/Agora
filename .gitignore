@@ -14,3 +14,4 @@ blob-report/
 playwright/.cache/
 .vercel
 infra/*.generated.*
+public/excalidraw-assets/

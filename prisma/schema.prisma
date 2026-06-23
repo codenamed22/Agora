@@ -41,6 +41,13 @@ enum SubmissionVerdict {
   COMPILE_ERROR
 }
 
+enum TeachingArtifactType {
+  MEET
+  SLIDES
+  RECORDING
+  EXCALIDRAW
+}
+
 model User {
   id            String       @id @default(cuid())
   name          String?
@@ -59,6 +66,7 @@ model User {
   createdEvents Event[]      @relation("EventCreator")
   createdProblems Problem[]   @relation("ProblemCreator")
   submissions   Submission[]
+  teachingSessions TeachingSession[] @relation("TeachingCreator")
 
   reviewedApplications Application[] @relation("ApplicationReviewer")
 }
@@ -226,4 +234,48 @@ model Submission {
 
   @@index([userId, createdAt])
   @@index([problemId, verdict])
+}
+
+model TeachingSession {
+  id          String   @id @default(cuid())
+  title       String
+  topic       String?
+  sessionDate DateTime?
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creator   User?              @relation("TeachingCreator", fields: [createdById], references: [id])
+  artifacts TeachingArtifact[]
+  boards    TeachingBoard[]
+
+  @@index([createdAt])
+  @@index([createdById])
+}
+
+model TeachingBoard {
+  id          String   @id @default(cuid())
+  sessionId   String
+  title       String
+  scene       Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  session TeachingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
+
+model TeachingArtifact {
+  id        String               @id @default(cuid())
+  sessionId String
+  type      TeachingArtifactType
+  url       String
+  label     String?
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  session TeachingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
 }
