@@ -2,6 +2,7 @@ import { SUPPORTED_LANGUAGES } from "./languages";
 import type { CodeExecutor, ExecutionResult } from "./types";
 
 const OUTPUT_LIMIT = 20_000;
+const COMPILE_TIMEOUT_MS = 10_000;
 
 type PistonProcess = {
   stdout?: string;
@@ -9,6 +10,8 @@ type PistonProcess = {
   output?: string;
   code?: number | null;
   signal?: string | null;
+  status?: string | null;
+  message?: string | null;
 };
 
 type PistonResponse = {
@@ -26,7 +29,7 @@ export const executeWithPiston: CodeExecutor = async ({ code, language, stdin, t
 
   const startedAt = Date.now();
   const controller = new AbortController();
-  const abortTimer = setTimeout(() => controller.abort(), timeLimitMs + 2_000);
+  const abortTimer = setTimeout(() => controller.abort(), COMPILE_TIMEOUT_MS + timeLimitMs + 2_000);
 
   try {
     const headers: Record<string, string> = { "content-type": "application/json" };
@@ -44,7 +47,7 @@ export const executeWithPiston: CodeExecutor = async ({ code, language, stdin, t
         version: process.env[`PISTON_${language.toUpperCase()}_VERSION`] ?? runtime.version,
         files: [{ content: code }],
         stdin,
-        compile_timeout: timeLimitMs,
+        compile_timeout: COMPILE_TIMEOUT_MS,
         run_timeout: timeLimitMs,
       }),
     });
@@ -58,11 +61,14 @@ export const executeWithPiston: CodeExecutor = async ({ code, language, stdin, t
     const run = data.run;
     const compileOutput = `${compile?.stdout ?? ""}${compile?.stderr ?? ""}${compile?.output ?? ""}`;
 
-    if (compile && compile.code && compile.code !== 0) {
+    const compileTimedOut =
+      compile?.status === "TO" || compile?.message === "Time limit exceeded (wall clock)";
+
+    if (compile && !compileTimedOut && compile.code !== 0) {
       return {
         stdout: "",
         stderr: compileOutput.slice(0, OUTPUT_LIMIT),
-        exitCode: compile.code,
+        exitCode: compile.code ?? null,
         signal: compile.signal ?? null,
         runtimeMs: Date.now() - startedAt,
         compileError: compileOutput.slice(0, OUTPUT_LIMIT) || "Compilation failed.",
