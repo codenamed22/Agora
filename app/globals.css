@@ -696,6 +696,18 @@ img {
   font-weight: 800;
 }
 
+.teaching-board-row form,
+.teaching-artifact-row form {
+  margin-top: 0;
+}
+
+.teaching-board-row form,
+.teaching-board-row button,
+.teaching-artifact-row form,
+.teaching-artifact-row button {
+  align-self: center;
+}
+
 .excalidraw-page-shell {
   width: min(calc(100% - 32px), 1280px);
 }
