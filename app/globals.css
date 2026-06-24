@@ -1303,7 +1303,9 @@ img {
   padding: 0;
   overflow: hidden;
   height: 100%;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .resource-card:hover {
@@ -1394,4 +1396,3 @@ img {
 .resource-card-actions .secondary-button {
   width: 100%;
 }
-
