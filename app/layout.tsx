@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import FeedbackWidget from "./feedback-widget";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,9 +12,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const feedbackEmail = process.env.FEEDBACK_EMAIL ?? "";
+
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+        <FeedbackWidget email={feedbackEmail.trim()} />
+      </body>
     </html>
   );
 }

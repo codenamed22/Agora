@@ -958,6 +958,111 @@ img {
   margin: 0;
 }
 
+.feedback-button {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 30;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 4px 4px 0 var(--ink);
+  color: var(--ink);
+  font: 800 0.95rem/1 var(--font-main);
+  cursor: pointer;
+}
+
+.feedback-button:hover {
+  transform: translate(1px, 1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.feedback-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: end;
+  padding: 20px;
+  background: rgb(23 26 23 / 18%);
+}
+
+.feedback-panel {
+  width: min(100%, 460px);
+  padding: 22px;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  box-shadow: 8px 8px 0 var(--ink);
+}
+
+.feedback-panel-header,
+.feedback-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.feedback-panel h2 {
+  margin: 0;
+  font-size: 2rem;
+  letter-spacing: -0.04em;
+}
+
+.feedback-close {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.feedback-meta,
+.feedback-message {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.feedback-meta span {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.feedback-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 800;
+}
+
+.feedback-panel textarea {
+  width: 100%;
+  min-height: 128px;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: #fffef8;
+  color: var(--ink);
+  font: inherit;
+}
+
+.feedback-screenshot {
+  margin-top: 14px;
+}
+
+.feedback-screenshot img {
+  max-height: 140px;
+  border: 1px solid var(--line);
+  object-fit: contain;
+}
+
+.feedback-actions {
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
 @media (max-width: 720px) {
   .site-header,
   .hero-actions,
@@ -1144,6 +1249,20 @@ img {
   }
 
   .event-summary-meta span {
+    width: 100%;
+  }
+
+  .feedback-backdrop {
+    place-items: end center;
+    padding: 12px;
+  }
+
+  .feedback-panel {
+    padding: 18px;
+  }
+
+  .feedback-actions .button,
+  .feedback-actions .secondary-button {
     width: 100%;
   }
 }
