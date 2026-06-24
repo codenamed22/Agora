@@ -236,6 +236,46 @@ model Submission {
   @@index([problemId, verdict])
 }
 
+enum ResourceType {
+  BOOK
+  ARTICLE
+  COURSE
+  VIDEO
+  RESEARCH_PAPER
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  resources Resource[]
+}
+
+model Resource {
+  id                   String       @id @default(cuid())
+  title                String
+  author               String?
+  type                 ResourceType
+  recommendationReason String?
+  resourceLink         String
+  buyLink              String?
+  imageUrl             String?
+
+  categoryId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, title])
+  @@index([categoryId])
+  @@index([categoryId, type])
+}
+
 model TeachingSession {
   id          String   @id @default(cuid())
   title       String

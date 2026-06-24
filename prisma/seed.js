@@ -519,6 +519,47 @@ async function main() {
       data: testCases.map((testCase) => ({ ...testCase, problemId: savedProblem.id })),
     });
   }
+
+  // Seed a minimal Bookshelf smoke seed
+  const category = await prisma.category.upsert({
+    where: { slug: "system-design" },
+    update: { name: "System Design" },
+    create: {
+      name: "System Design",
+      slug: "system-design",
+    },
+  });
+
+  await prisma.resource.upsert({
+    where: {
+      categoryId_title: {
+        categoryId: category.id,
+        title: "Designing Data-Intensive Applications",
+      },
+    },
+    update: {
+      author: "Martin Kleppmann",
+      type: "BOOK",
+      recommendationReason:
+        "The bible of system design. It teaches you the fundamental principles behind distributed systems, data storage, and processing.",
+      resourceLink: "https://dataintensive.net/",
+      buyLink:
+        "https://www.amazon.com/Designing-Data-Intensive-Applications-Reliable-Maintainable/dp/1449373321",
+      imageUrl: "https://images-na.ssl-images-amazon.com/images/I/91tA4t2yA9L.jpg",
+    },
+    create: {
+      title: "Designing Data-Intensive Applications",
+      author: "Martin Kleppmann",
+      type: "BOOK",
+      recommendationReason:
+        "The bible of system design. It teaches you the fundamental principles behind distributed systems, data storage, and processing.",
+      resourceLink: "https://dataintensive.net/",
+      buyLink:
+        "https://www.amazon.com/Designing-Data-Intensive-Applications-Reliable-Maintainable/dp/1449373321",
+      imageUrl: "https://images-na.ssl-images-amazon.com/images/I/91tA4t2yA9L.jpg",
+      categoryId: category.id,
+    },
+  });
 }
 
 main()
