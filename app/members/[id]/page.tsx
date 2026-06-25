@@ -6,7 +6,7 @@ import { auth } from "../../../auth";
 import CreateBadgeModal from "../../create-badge-modal";
 import { memberDisplayName, memberInitials } from "../../../lib/members";
 import { prisma } from "../../../lib/prisma";
-import { assignBadge, removeMemberBadge } from "../../(protected)/admin/badges/actions";
+import { assignBadge } from "../../(protected)/admin/badges/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +41,7 @@ export default async function MemberProfilePage({
   const availableBadges = badges.filter((badge) => !assignedBadgeIds.has(badge.id));
 
   return (
-    <main className="app-shell wide-card workspace-shell">
+    <main className="app-shell member-profile-page workspace-shell">
       <section className="member-profile-shell">
         <aside className="member-profile-card">
           {member.profile?.photoUrl ? (
@@ -119,8 +119,7 @@ export default async function MemberProfilePage({
 
         <aside className="member-profile-side">
           <section className="member-panel">
-            <p className="section-label">Badges</p>
-            <h2>Recognition</h2>
+            <h2>Badges</h2>
             {isAdmin ? (
               <div className="member-badge-admin-actions">
                 <a className="text-link" href="/admin/badges">
@@ -135,33 +134,19 @@ export default async function MemberProfilePage({
             {member.memberBadges.length ? (
               <div className="member-badge-list">
                 {member.memberBadges.map((memberBadge) => (
-                  <article className="member-badge" key={memberBadge.id}>
-                    <a className="member-badge-link" href={`/badges/${memberBadge.badgeId}`}>
-                      {memberBadge.badge.imageUrl ? (
-                        <img
-                          className="member-badge-image"
-                          src={memberBadge.badge.imageUrl}
-                          alt=""
-                        />
-                      ) : (
-                        <span className="member-badge-image badge-image-fallback">Badge</span>
-                      )}
-                      <strong>{memberBadge.badge.name}</strong>
-                    </a>
-                    {memberBadge.badge.description ? (
-                      <small>{memberBadge.badge.description}</small>
-                    ) : null}
-                    {isAdmin ? (
-                      <form action={removeMemberBadge}>
-                        <input type="hidden" name="memberBadgeId" value={memberBadge.id} />
-                        <input type="hidden" name="userId" value={member.id} />
-                        <input type="hidden" name="badgeId" value={memberBadge.badgeId} />
-                        <button className="text-link" type="submit">
-                          Remove
-                        </button>
-                      </form>
-                    ) : null}
-                  </article>
+                  <a
+                    aria-label={memberBadge.badge.name}
+                    className="profile-badge-chip"
+                    href={`/badges/${memberBadge.badgeId}`}
+                    key={memberBadge.id}
+                    title={memberBadge.badge.name}
+                  >
+                    {memberBadge.badge.imageUrl ? (
+                      <img className="member-badge-image" src={memberBadge.badge.imageUrl} alt="" />
+                    ) : (
+                      <span className="member-badge-image badge-image-fallback">Badge</span>
+                    )}
+                  </a>
                 ))}
               </div>
             ) : (

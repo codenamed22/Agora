@@ -1171,6 +1171,11 @@ img {
   font-size: 4rem;
 }
 
+.member-profile-page {
+  width: calc(100vw - var(--page-gutter));
+  max-width: none;
+}
+
 .member-card-badges,
 .member-chip-list,
 .member-link-list {
@@ -1192,10 +1197,53 @@ img {
 }
 
 .member-card-badges a {
+  position: relative;
   min-width: 34px;
   height: 34px;
   padding: 0;
   border-radius: 999px;
+  box-shadow:
+    0 3px 0 var(--ink),
+    0 10px 18px rgb(23 26 23 / 16%);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.member-card-badges a:hover,
+.member-card-badges a:focus-visible {
+  transform: translateY(-2px);
+  box-shadow:
+    0 5px 0 var(--ink),
+    0 14px 24px rgb(23 26 23 / 20%);
+}
+
+.member-card-badges a::after,
+.profile-badge-chip::after {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  z-index: 5;
+  display: none;
+  width: max-content;
+  max-width: 220px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: white;
+  content: attr(aria-label);
+  font-size: 0.8rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.member-card-badges a:hover::after,
+.member-card-badges a:focus-visible::after,
+.profile-badge-chip:hover::after,
+.profile-badge-chip:focus-visible::after {
+  display: block;
 }
 
 .member-card-badges img {
@@ -1250,33 +1298,41 @@ img {
 
 .member-profile-main,
 .member-profile-side,
-.member-badge-list,
 .member-badge-admin-list {
   display: grid;
   gap: 16px;
 }
 
-.member-badge {
-  display: grid;
-  gap: 6px;
-  padding: 14px;
-  border: 1px solid var(--line);
-  background: var(--paper);
+.member-badge-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 14px;
 }
 
-.member-badge-link {
-  display: grid;
-  gap: 8px;
-  color: var(--ink);
-}
-
-.member-badge-link:hover strong {
-  color: var(--accent-strong);
-}
-
-.member-badge-link > span,
 .member-badge-admin-row > span {
   font-size: 2rem;
+}
+
+.profile-badge-chip {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  box-shadow:
+    0 5px 0 var(--ink),
+    0 16px 26px rgb(23 26 23 / 20%);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.profile-badge-chip:hover,
+.profile-badge-chip:focus-visible {
+  transform: translateY(-3px) rotate(-2deg);
+  box-shadow:
+    0 8px 0 var(--ink),
+    0 22px 32px rgb(23 26 23 / 24%);
 }
 
 .member-badge-image,
@@ -1293,6 +1349,11 @@ img {
   font-weight: 900;
   text-transform: uppercase;
   object-fit: cover;
+}
+
+.profile-badge-chip .member-badge-image {
+  width: 58px;
+  height: 58px;
 }
 
 .member-badge-admin-actions {

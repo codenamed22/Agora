@@ -51,14 +51,21 @@ export default async function MembersPage() {
                   <span className="member-card-badges" aria-label="Badges">
                     {member.memberBadges.map((memberBadge) =>
                       memberBadge.badge.imageUrl ? (
-                        <a href={`/badges/${memberBadge.badgeId}`} key={memberBadge.id}>
+                        <a
+                          aria-label={memberBadge.badge.name}
+                          href={`/badges/${memberBadge.badgeId}`}
+                          key={memberBadge.id}
+                          title={memberBadge.badge.name}
+                        >
                           <img src={memberBadge.badge.imageUrl} alt={memberBadge.badge.name} />
                         </a>
                       ) : (
                         <a
+                          aria-label={memberBadge.badge.name}
                           className="badge-image-fallback"
                           href={`/badges/${memberBadge.badgeId}`}
                           key={memberBadge.id}
+                          title={memberBadge.badge.name}
                         >
                           Badge
                         </a>
