@@ -67,6 +67,8 @@ model User {
   createdProblems Problem[]   @relation("ProblemCreator")
   submissions   Submission[]
   teachingSessions TeachingSession[] @relation("TeachingCreator")
+  memberBadges  MemberBadge[] @relation("MemberBadgeUser")
+  awardedBadges MemberBadge[] @relation("MemberBadgeAwarder")
 
   reviewedApplications Application[] @relation("ApplicationReviewer")
 }
@@ -114,6 +116,7 @@ model Profile {
   id             String   @id @default(cuid())
   userId         String   @unique
   displayName    String?
+  college        String?
   batch          String?
   branch         String?
   bio            String?
@@ -121,10 +124,39 @@ model Profile {
   githubUrl      String?
   linkedinUrl    String?
   leetcodeHandle String?
+  resumeUrl      String?
+  photoUrl       String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  emoji       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members MemberBadge[]
+}
+
+model MemberBadge {
+  id          String   @id @default(cuid())
+  userId      String
+  badgeId     String
+  awardedById String?
+  awardedAt   DateTime @default(now())
+
+  user      User  @relation("MemberBadgeUser", fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  awardedBy User? @relation("MemberBadgeAwarder", fields: [awardedById], references: [id])
+
+  @@unique([userId, badgeId])
+  @@index([badgeId])
+  @@index([awardedById])
 }
 
 model Application {

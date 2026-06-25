@@ -1102,6 +1102,186 @@ img {
   margin-top: 18px;
 }
 
+.member-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.member-card,
+.member-profile-card,
+.member-panel,
+.member-profile-side {
+  border: 1px solid var(--line);
+  background: #fffef8;
+}
+
+.member-card {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.member-card:hover {
+  background: #f4fff7;
+}
+
+.member-card strong,
+.member-card small {
+  display: block;
+}
+
+.member-card small,
+.member-facts dt,
+.member-badge small,
+.member-badge-admin-row small {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.member-avatar,
+.member-profile-photo {
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  background: var(--accent);
+  color: var(--ink);
+  font-weight: 900;
+  object-fit: cover;
+}
+
+.member-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 24px;
+  font-size: 1.35rem;
+}
+
+.member-profile-photo {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 28px;
+  font-size: 4rem;
+}
+
+.member-card-badges,
+.member-chip-list,
+.member-link-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.member-card-badges span,
+.member-chip-list span,
+.member-link-list a,
+.member-link-list span {
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  font-weight: 800;
+}
+
+.member-profile-shell {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr) 300px;
+  gap: 18px;
+}
+
+.member-profile-card,
+.member-panel,
+.member-profile-side {
+  padding: 22px;
+}
+
+.member-profile-card {
+  align-self: start;
+  display: grid;
+  gap: 16px;
+}
+
+.member-profile-card h1,
+.member-panel h2 {
+  margin: 0;
+  letter-spacing: -0.04em;
+}
+
+.member-profile-card p,
+.member-panel p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.member-facts {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.member-facts dt,
+.member-facts dd {
+  margin: 0;
+}
+
+.member-profile-main,
+.member-profile-side,
+.member-badge-list,
+.member-badge-admin-list {
+  display: grid;
+  gap: 16px;
+}
+
+.member-badge {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.member-badge > span,
+.member-badge-admin-row > span {
+  font-size: 2rem;
+}
+
+.member-badge form,
+.member-badge-form,
+.member-badge-admin-row form {
+  margin-top: 0;
+}
+
+.member-badge-admin-list {
+  margin-top: 28px;
+}
+
+.member-badge-admin-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: #fffef8;
+}
+
+.member-badge-admin-row strong,
+.member-badge-admin-row small {
+  display: block;
+}
+
+.member-edit-preview {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin: 24px 0;
+  color: var(--muted);
+  font-weight: 800;
+}
+
 @media (max-width: 720px) {
   .site-header,
   .hero-actions,
@@ -1134,6 +1314,8 @@ img {
   .about-section,
   .pillar-list,
   .application-row,
+  .member-profile-shell,
+  .member-badge-admin-row,
   .problem-row,
   .teaching-session-row,
   .teaching-board-row,
@@ -1146,6 +1328,10 @@ img {
 
   .event-card {
     gap: 18px;
+  }
+
+  .member-profile-photo {
+    max-width: 220px;
   }
 
   .problem-row {
