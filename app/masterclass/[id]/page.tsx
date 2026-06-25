@@ -40,8 +40,8 @@ export default async function MasterclassSessionPage({
   }
 
   return (
-    <main className="app-shell wide-card">
-      <section className="app-card">
+    <main className="app-shell wide-card workspace-shell">
+      <section className="app-card workspace-card">
         <p className="section-label">Masterclass session</p>
         <h1>{session.title}</h1>
         <p>{session.topic || "No topic added yet."}</p>

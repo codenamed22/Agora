@@ -82,8 +82,8 @@ export default async function ProblemDetailPage({
   const canSubmit = session?.user?.status === "ACTIVE";
 
   return (
-    <main className="app-shell wide-card">
-      <section className="app-card">
+    <main className="app-shell wide-card workspace-shell">
+      <section className="app-card workspace-card">
         <p className="section-label">Practice problem</p>
         <h1>{problem.title}</h1>
         <div className="problem-tag-list">

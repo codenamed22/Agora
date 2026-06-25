@@ -118,4 +118,18 @@ describe("teaching scene validation", () => {
       }).appState,
     ).toEqual({ viewBackgroundColor: "#fffef8" });
   });
+
+  it("strips saved viewport so boards reopen centered", () => {
+    expect(
+      sanitizeTeachingScene({
+        elements: [],
+        appState: {
+          scrollX: 120,
+          scrollY: -40,
+          zoom: { value: 0.5 },
+          viewBackgroundColor: "#fffef8",
+        },
+      }).appState,
+    ).toEqual({ viewBackgroundColor: "#fffef8" });
+  });
 });
