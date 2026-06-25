@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "@excalidraw/excalidraw/index.css";
 import type {
   AppState,
@@ -58,8 +58,10 @@ export default function ExcalidrawBoard({
     [initialScene],
   );
   const sceneRef = useRef<TeachingScene>(sanitizedInitialScene);
+  const fullscreenRef = useRef<HTMLDivElement>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const initialData = useMemo(
     () =>
       ({
@@ -73,6 +75,15 @@ export default function ExcalidrawBoard({
       }) as ExcalidrawInitialDataState,
     [sanitizedInitialScene],
   );
+
+  useEffect(() => {
+    function handleFullscreenChange() {
+      setIsFullscreen(document.fullscreenElement === fullscreenRef.current);
+    }
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
 
   async function handleSave() {
     setSaveState("saving");
@@ -99,23 +110,42 @@ export default function ExcalidrawBoard({
     setSaveState("saved");
   }
 
+  async function toggleFullscreen() {
+    setError(null);
+
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await fullscreenRef.current?.requestFullscreen();
+      }
+    } catch {
+      setError("Fullscreen is not available in this browser.");
+    }
+  }
+
   return (
-    <div className="excalidraw-board-shell">
-      {editable ? (
-        <div className="excalidraw-toolbar">
-          <button
-            className="button"
-            type="button"
-            onClick={handleSave}
-            disabled={saveState === "saving"}
-          >
-            {saveState === "saving" ? "Saving..." : "Save board"}
-          </button>
-          <span aria-live="polite">
-            {saveState === "saved" ? "Saved" : saveState === "error" ? "Not saved" : ""}
-          </span>
-        </div>
-      ) : null}
+    <div className="excalidraw-board-shell" ref={fullscreenRef}>
+      <div className="excalidraw-toolbar">
+        {editable ? (
+          <>
+            <button
+              className="button"
+              type="button"
+              onClick={handleSave}
+              disabled={saveState === "saving"}
+            >
+              {saveState === "saving" ? "Saving..." : "Save board"}
+            </button>
+            <span aria-live="polite">
+              {saveState === "saved" ? "Saved" : saveState === "error" ? "Not saved" : ""}
+            </span>
+          </>
+        ) : null}
+        <button className="secondary-button" type="button" onClick={toggleFullscreen}>
+          {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+        </button>
+      </div>
       {error ? <div className="form-message error">{error}</div> : null}
       <div className="excalidraw-canvas-shell" data-testid="excalidraw-board">
         <Excalidraw

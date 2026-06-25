@@ -735,6 +735,12 @@ img {
   display: grid;
   gap: 14px;
   margin-top: 24px;
+  background: var(--paper);
+}
+
+.excalidraw-board-shell:fullscreen {
+  padding: 12px;
+  background: var(--paper);
 }
 
 .excalidraw-toolbar {
@@ -755,6 +761,11 @@ img {
   overflow: hidden;
   border: 1px solid var(--line);
   background: #fffef8;
+}
+
+.excalidraw-board-shell:fullscreen .excalidraw-canvas-shell {
+  height: calc(100vh - 82px);
+  min-height: 0;
 }
 
 .pinned-problem {
