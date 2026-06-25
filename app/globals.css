@@ -6,6 +6,8 @@
   --line: #d9ded6;
   --accent-strong: #0f9f43;
   --font-main: Arial, Helvetica, sans-serif;
+  --page-gutter: 24px;
+  --page-max: 1440px;
 }
 
 * {
@@ -53,7 +55,7 @@ img {
 }
 
 .site-shell {
-  width: min(1080px, calc(100% - 32px));
+  width: min(var(--page-max), calc(100% - var(--page-gutter)));
   margin: 0 auto;
 }
 
@@ -256,17 +258,17 @@ img {
 
 .auth-card,
 .app-card {
-  padding: clamp(28px, 5vw, 56px);
+  padding: clamp(24px, 3vw, 40px);
   background: var(--paper);
   border: 1px solid var(--line);
 }
 
 .wide-card {
-  width: min(1080px, calc(100vw - 32px));
+  width: min(var(--page-max), calc(100vw - var(--page-gutter)));
 }
 
 .workspace-shell {
-  padding: 32px 0;
+  padding: 24px 0;
 }
 
 .workspace-card {
@@ -717,12 +719,12 @@ img {
 }
 
 .excalidraw-page-shell {
-  width: min(calc(100% - 24px), 1440px);
-  padding: 24px 0;
+  width: min(var(--page-max), calc(100% - var(--page-gutter)));
+  padding: 16px 0;
 }
 
 .excalidraw-page-shell .app-card {
-  padding: clamp(18px, 2.5vw, 32px);
+  padding: clamp(14px, 2vw, 24px);
 }
 
 .excalidraw-page-shell .wide-card {
@@ -748,7 +750,7 @@ img {
 }
 
 .excalidraw-canvas-shell {
-  height: min(78vh, 860px);
+  height: min(82vh, 920px);
   min-height: 520px;
   overflow: hidden;
   border: 1px solid var(--line);
