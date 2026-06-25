@@ -1,4 +1,5 @@
 import { createBadge } from "./(protected)/admin/badges/actions";
+import CompressingImageInput from "./compressing-image-input";
 
 const errors: Record<string, string> = {
   invalid: "Check the badge name and description.",
@@ -32,10 +33,6 @@ export default function CreateBadgeModal({
             rows={4}
           />
 
-          <label htmlFor="badge-slug">Slug</label>
-          <input id="badge-slug" placeholder="URL extension is generated automatically" disabled />
-          <small>Leave this blank. We use the badge ID for now.</small>
-
           <label htmlFor="badge-image">Badge photo*</label>
           <div className="badge-upload-row">
             <span className="badge-upload-icon">▣</span>
@@ -43,15 +40,9 @@ export default function CreateBadgeModal({
               <strong>Badge photo</strong>
               <small>Maximum 2MB</small>
             </div>
-            <input
-              id="badge-image"
-              name="image"
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              required
-            />
+            <CompressingImageInput id="badge-image" name="image" />
           </div>
-          <small>The photo should be square. PNG, JPG, and WebP are supported.</small>
+          <small>The photo should be square. Large images are compressed automatically.</small>
 
           <div className="modal-actions">
             <a className="text-link" href={returnTo}>

@@ -1528,6 +1528,51 @@ img {
   margin-top: 28px;
 }
 
+.form-label {
+  font-weight: 800;
+}
+
+.badge-member-picker {
+  display: grid;
+  max-height: 360px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  background: #fffef8;
+}
+
+.badge-member-picker label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.badge-member-picker label:last-child {
+  border-bottom: 0;
+}
+
+.badge-member-picker label:hover {
+  background: #f4fff7;
+}
+
+.badge-member-picker input {
+  width: 18px;
+  height: 18px;
+}
+
+.badge-member-picker strong,
+.badge-member-picker small {
+  display: block;
+}
+
+.badge-member-picker small {
+  color: var(--muted);
+  font-weight: 800;
+}
+
 @media (max-width: 720px) {
   .site-header,
   .hero-actions,

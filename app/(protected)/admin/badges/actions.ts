@@ -175,7 +175,7 @@ export async function updateBadge(formData: FormData) {
   revalidatePath(`/badges/${badgeId}`);
   revalidatePath(`/admin/badges/${badgeId}`);
   revalidatePath("/admin/badges");
-  redirect(`/admin/badges/${badgeId}`);
+  redirect("/members");
 }
 
 export async function bulkAssignBadge(formData: FormData) {

@@ -88,20 +88,18 @@ export default async function AdminBadgeGroupPage({
             {availableMembers.length ? (
               <form action={bulkAssignBadge} className="stacked-form member-badge-form">
                 <input type="hidden" name="badgeId" value={badge.id} />
-                <label htmlFor="userIds">Add members</label>
-                <select
-                  id="userIds"
-                  name="userIds"
-                  multiple
-                  required
-                  size={Math.min(8, availableMembers.length)}
-                >
+                <span className="form-label">Add members</span>
+                <div className="badge-member-picker">
                   {availableMembers.map((member) => (
-                    <option key={member.id} value={member.id}>
-                      {memberDisplayName(member)} · {member.email}
-                    </option>
+                    <label key={member.id}>
+                      <input name="userIds" type="checkbox" value={member.id} />
+                      <span>
+                        <strong>{memberDisplayName(member)}</strong>
+                        <small>{member.email}</small>
+                      </span>
+                    </label>
                   ))}
-                </select>
+                </div>
                 <button className="secondary-button" type="submit">
                   Add selected members
                 </button>
