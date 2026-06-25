@@ -33,8 +33,8 @@ export default async function EventsPage() {
   });
 
   return (
-    <main className="app-shell wide-card">
-      <section className="app-card">
+    <main className="app-shell wide-card workspace-shell">
+      <section className="app-card workspace-card">
         <p className="section-label">Events</p>
         <h1>Upcoming ShardUp sessions.</h1>
         <p>

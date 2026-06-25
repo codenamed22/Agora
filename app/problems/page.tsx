@@ -82,8 +82,8 @@ export default async function ProblemsPage() {
   ];
 
   return (
-    <main className="app-shell wide-card">
-      <section className="app-card">
+    <main className="app-shell wide-card workspace-shell">
+      <section className="app-card workspace-card">
         <p className="section-label">Practice</p>
         <h1>ShardUp DSA Practice Sheet</h1>
 

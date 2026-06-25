@@ -22,8 +22,8 @@ export default async function ApplicationsAdminPage() {
   });
 
   return (
-    <main className="app-shell">
-      <section className="app-card wide-card">
+    <main className="app-shell workspace-shell">
+      <section className="app-card wide-card workspace-card">
         <p className="section-label">Admin</p>
         <h1>Application review</h1>
         {applications.length === 0 ? (
