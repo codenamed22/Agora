@@ -10,7 +10,6 @@ export default function SiteHeader({
       </a>
       <nav className="nav-links">
         <a href="/#about">About</a>
-        <a href="/#community">Community</a>
         <a href="/members">Members</a>
         <a href="/events">Events</a>
         <a href="/problems">Practice</a>
