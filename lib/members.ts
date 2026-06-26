@@ -59,6 +59,25 @@ export function assignMedals(
   return new Map(ranked.slice(0, 3).map((member, index) => [member.id, medals[index]]));
 }
 
+type MedalCandidate = {
+  id: string;
+  name: string | null;
+  email: string;
+  profile?: { displayName: string | null } | null;
+  memberBadges: { badge: { xp: number } }[];
+};
+
+// Build the medal map straight from member records (display name + summed badge XP).
+export function medalsForMembers(members: MedalCandidate[]) {
+  return assignMedals(
+    members.map((member) => ({
+      id: member.id,
+      name: memberDisplayName(member),
+      xp: memberTotalXp(member.memberBadges),
+    })),
+  );
+}
+
 export function parseSkills(value: string | undefined) {
   return (value ?? "")
     .split(",")

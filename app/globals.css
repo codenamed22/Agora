@@ -1180,17 +1180,20 @@ img {
   font-size: 1.35rem;
 }
 
-.member-avatar.medal-gold {
+.member-avatar.medal-gold,
+.member-profile-photo.medal-gold {
   border-color: #d4af37;
   box-shadow: 0 0 0 4px #ffd700;
 }
 
-.member-avatar.medal-silver {
+.member-avatar.medal-silver,
+.member-profile-photo.medal-silver {
   border-color: #9ca3af;
   box-shadow: 0 0 0 4px #c0c0c0;
 }
 
-.member-avatar.medal-bronze {
+.member-avatar.medal-bronze,
+.member-profile-photo.medal-bronze {
   border-color: #a05a2c;
   box-shadow: 0 0 0 4px #cd7f32;
 }

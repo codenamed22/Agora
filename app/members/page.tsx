@@ -1,7 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { UserStatus } from "@prisma/client";
-import { assignMedals, memberDisplayName, memberInitials, memberTotalXp } from "../../lib/members";
+import {
+  medalsForMembers,
+  memberDisplayName,
+  memberInitials,
+  memberTotalXp,
+} from "../../lib/members";
 import { prisma } from "../../lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -19,13 +24,7 @@ export default async function MembersPage() {
   const xpByMember = new Map(
     members.map((member) => [member.id, memberTotalXp(member.memberBadges)]),
   );
-  const medals = assignMedals(
-    members.map((member) => ({
-      id: member.id,
-      name: memberDisplayName(member),
-      xp: xpByMember.get(member.id) ?? 0,
-    })),
-  );
+  const medals = medalsForMembers(members);
 
   const NO_BATCH = "Batch details pending";
   const groups = new Map<string, typeof members>();

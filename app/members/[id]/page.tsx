@@ -4,7 +4,7 @@ import { Role, UserStatus } from "@prisma/client";
 import { notFound } from "next/navigation";
 import { auth } from "../../../auth";
 import CreateBadgeModal from "../../create-badge-modal";
-import { memberDisplayName, memberInitials } from "../../../lib/members";
+import { memberDisplayName, memberInitials, medalsForMembers } from "../../../lib/members";
 import { prisma } from "../../../lib/prisma";
 import { assignBadge, removeMemberBadge } from "../../(protected)/admin/badges/actions";
 
@@ -32,6 +32,18 @@ export default async function MemberProfilePage({
   }
 
   const name = memberDisplayName(member);
+  const ranking = await prisma.user.findMany({
+    where: { status: UserStatus.ACTIVE },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      profile: { select: { displayName: true } },
+      memberBadges: { select: { badge: { select: { xp: true } } } },
+    },
+  });
+  const medal = medalsForMembers(ranking).get(member.id);
+  const photoClass = medal ? `member-profile-photo medal-${medal}` : "member-profile-photo";
   const canEdit =
     session?.user?.id === member.id ||
     (session?.user?.role === Role.ADMIN && session.user.status === UserStatus.ACTIVE);
@@ -45,11 +57,9 @@ export default async function MemberProfilePage({
       <section className="member-profile-shell">
         <aside className="member-profile-card">
           {member.profile?.photoUrl ? (
-            <img className="member-profile-photo" src={member.profile.photoUrl} alt="" />
+            <img className={photoClass} src={member.profile.photoUrl} alt="" />
           ) : (
-            <span className="member-profile-photo member-avatar-fallback">
-              {memberInitials(name)}
-            </span>
+            <span className={`${photoClass} member-avatar-fallback`}>{memberInitials(name)}</span>
           )}
           <h1>{name}</h1>
           <p>{member.email}</p>

@@ -1,13 +1,16 @@
 /* eslint-disable @next/next/no-img-element */
 
-import { UserStatus } from "@prisma/client";
+import { Role, UserStatus } from "@prisma/client";
 import { notFound } from "next/navigation";
+import { auth } from "../../../auth";
 import { memberDisplayName, memberInitials } from "../../../lib/members";
 import { prisma } from "../../../lib/prisma";
 
 export const dynamic = "force-dynamic";
 
 export default async function BadgeGroupPage({ params }: Readonly<{ params: { id: string } }>) {
+  const session = await auth();
+  const isAdmin = session?.user?.role === Role.ADMIN && session.user.status === UserStatus.ACTIVE;
   const badge = await prisma.badge.findUnique({
     where: { id: params.id },
     include: {
@@ -35,6 +38,11 @@ export default async function BadgeGroupPage({ params }: Readonly<{ params: { id
           <p className="section-label">Recognition</p>
           <h1>{badge.name}</h1>
           <p>{badge.description || "This badge recognizes members for their contribution."}</p>
+          {isAdmin ? (
+            <a className="button" href={`/admin/badges/${badge.id}`}>
+              Edit badge
+            </a>
+          ) : null}
         </div>
       </section>
 
