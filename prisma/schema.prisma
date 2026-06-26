@@ -223,6 +223,8 @@ model Problem {
   difficulty  ProblemDifficulty @default(EASY)
   timeLimitMs Int               @default(2000)
   published   Boolean           @default(true)
+  solutionCode     String?
+  solutionLanguage String?
   createdById String?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt

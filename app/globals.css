@@ -895,6 +895,18 @@ img {
   letter-spacing: -0.04em;
 }
 
+.reference-solution {
+  max-height: 420px;
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #1d1f1d;
+  color: #f3f3ec;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
 .sample-list,
 .submission-list {
   display: grid;
