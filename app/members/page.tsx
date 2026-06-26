@@ -65,7 +65,10 @@ export default async function MembersPage() {
                   const avatarClass = medal ? `member-avatar medal-${medal}` : "member-avatar";
 
                   return (
-                    <article className="member-card" key={member.id}>
+                    <article
+                      className={medal ? `member-card medal-${medal}` : "member-card"}
+                      key={member.id}
+                    >
                       <a className="member-card-profile" href={`/members/${member.id}`}>
                         {member.profile?.photoUrl ? (
                           <img className={avatarClass} src={member.profile.photoUrl} alt="" />

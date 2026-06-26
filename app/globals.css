@@ -1147,6 +1147,21 @@ img {
   background: #f4fff7;
 }
 
+.member-card.medal-gold {
+  border-color: #d4af37;
+  background: #fff3b0;
+}
+
+.member-card.medal-silver {
+  border-color: #9ca3af;
+  background: #f1f5f9;
+}
+
+.member-card.medal-bronze {
+  border-color: #a05a2c;
+  background: #ffe0c2;
+}
+
 .member-card strong,
 .member-card small {
   display: block;
