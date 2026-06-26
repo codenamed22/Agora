@@ -325,6 +325,16 @@ img {
   font-weight: 800;
 }
 
+.stacked-form .checkbox-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stacked-form .checkbox-row input {
+  width: auto;
+}
+
 .stacked-form input,
 .stacked-form select,
 .stacked-form textarea {
@@ -340,6 +350,21 @@ img {
 .stacked-form textarea {
   min-height: 120px;
   resize: vertical;
+}
+
+.event-delete-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.event-delete-form small {
+  color: var(--muted);
+  font-weight: 800;
 }
 
 .form-message {

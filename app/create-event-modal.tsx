@@ -43,7 +43,7 @@ export default function CreateEventModal({
           <label htmlFor="event-ends-at">Ends at (IST)</label>
           <input id="event-ends-at" name="endsAt" type="datetime-local" />
 
-          <label htmlFor="event-published">
+          <label className="checkbox-row" htmlFor="event-published">
             <input id="event-published" name="published" type="checkbox" defaultChecked />
             Publish immediately
           </label>

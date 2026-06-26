@@ -39,81 +39,77 @@ export default async function AdminEventPage({
           <div className="form-message error">{errors[searchParams.error] ?? errors.invalid}</div>
         ) : null}
 
-        <div className="badge-admin-layout">
-          <form action={updateEvent} className="stacked-form compact-form">
-            <input type="hidden" name="eventId" value={event.id} />
+        <form action={updateEvent} className="stacked-form compact-form">
+          <input type="hidden" name="eventId" value={event.id} />
 
-            {event.imageUrl ? (
-              <img className="badge-group-image" src={event.imageUrl} alt="" />
-            ) : (
-              <span className="badge-group-image badge-image-fallback">Event</span>
-            )}
+          {event.imageUrl ? (
+            <img className="badge-group-image" src={event.imageUrl} alt="" />
+          ) : (
+            <span className="badge-group-image badge-image-fallback">Event</span>
+          )}
 
-            <label htmlFor="title">Title</label>
-            <input id="title" name="title" defaultValue={event.title} required />
+          <label htmlFor="title">Title</label>
+          <input id="title" name="title" defaultValue={event.title} required />
 
-            <label htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              name="description"
-              rows={6}
-              defaultValue={event.description}
-              required
-            />
+          <label htmlFor="description">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            rows={6}
+            defaultValue={event.description}
+            required
+          />
 
-            <label htmlFor="location">Location</label>
-            <input id="location" name="location" defaultValue={event.location} required />
+          <label htmlFor="location">Location</label>
+          <input id="location" name="location" defaultValue={event.location} required />
 
-            <label htmlFor="startsAt">Starts at (IST)</label>
+          <label htmlFor="startsAt">Starts at (IST)</label>
+          <input
+            id="startsAt"
+            name="startsAt"
+            type="datetime-local"
+            defaultValue={toISTInputValue(event.startsAt)}
+            required
+          />
+
+          <label htmlFor="endsAt">Ends at (IST)</label>
+          <input
+            id="endsAt"
+            name="endsAt"
+            type="datetime-local"
+            defaultValue={event.endsAt ? toISTInputValue(event.endsAt) : ""}
+          />
+
+          <label className="checkbox-row" htmlFor="published">
             <input
-              id="startsAt"
-              name="startsAt"
-              type="datetime-local"
-              defaultValue={toISTInputValue(event.startsAt)}
-              required
+              id="published"
+              name="published"
+              type="checkbox"
+              defaultChecked={event.published}
             />
+            Published
+          </label>
 
-            <label htmlFor="endsAt">Ends at (IST)</label>
-            <input
-              id="endsAt"
-              name="endsAt"
-              type="datetime-local"
-              defaultValue={event.endsAt ? toISTInputValue(event.endsAt) : ""}
-            />
+          <label htmlFor="image">Event image</label>
+          <CompressingImageInput id="image" name="image" />
 
-            <label htmlFor="published">
-              <input
-                id="published"
-                name="published"
-                type="checkbox"
-                defaultChecked={event.published}
-              />
-              Published
-            </label>
-
-            <label htmlFor="image">Event image</label>
-            <CompressingImageInput id="image" name="image" />
-
+          <div className="modal-actions">
             <button className="button" type="submit">
               Save event
             </button>
-          </form>
-
-          <section className="member-panel">
-            <p className="section-label">Danger zone</p>
-            <h2>Delete event</h2>
-            <p>Deletes this event and all RSVPs.</p>
-            <form action={deleteEvent}>
-              <input type="hidden" name="eventId" value={event.id} />
-              <button className="secondary-button" type="submit">
-                Delete event
-              </button>
-            </form>
             <a className="text-link" href="/admin/events">
               Back to events
             </a>
-          </section>
-        </div>
+          </div>
+        </form>
+
+        <form action={deleteEvent} className="event-delete-form">
+          <input type="hidden" name="eventId" value={event.id} />
+          <small>Deleting also removes RSVPs.</small>
+          <button className="secondary-button" type="submit">
+            Delete event
+          </button>
+        </form>
       </section>
     </main>
   );

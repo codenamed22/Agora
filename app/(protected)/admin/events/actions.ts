@@ -22,6 +22,10 @@ function safeReturnPath(value: FormDataEntryValue | null) {
   return path.startsWith("/") && !path.startsWith("//") ? path : "/admin/events";
 }
 
+function successPath(path: string) {
+  return `${path}${path.includes("?") ? "&" : "?"}created=event`;
+}
+
 function validateEventImage(file: File, imageErrorPath: string, storageErrorPath: string) {
   const imageError = validateProfilePhoto(file);
 
@@ -111,7 +115,7 @@ export async function createEvent(formData: FormData) {
 
   revalidatePath("/events");
   revalidatePath("/admin/events");
-  redirect(returnTo);
+  redirect(successPath(returnTo));
 }
 
 export async function updateEvent(formData: FormData) {
