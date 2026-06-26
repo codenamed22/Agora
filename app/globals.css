@@ -3,6 +3,7 @@
   --ink: #171a17;
   --muted: #5b665d;
   --paper: #fbfaf3;
+  --surface: #fffef8;
   --line: #d9ded6;
   --accent-strong: #0f9f43;
   --font-main: Arial, Helvetica, sans-serif;
@@ -10,10 +11,10 @@
   --page-max: 1440px;
 
   /* State Backgrounds */
-  --surface-hover: var(--surface-hover);
-  --surface-pinned: var(--surface-pinned);
-  --surface-warning: var(--surface-warning);
-  --surface-error: var(--surface-error);
+  --surface-hover: #f4fff7;
+  --surface-pinned: #ecfff2;
+  --surface-warning: #fff8e6;
+  --surface-error: #fff5f3;
 }
 
 [data-theme="dark"] {
