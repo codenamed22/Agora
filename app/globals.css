@@ -1311,6 +1311,11 @@ img {
   font-size: 2rem;
 }
 
+.profile-badge-shell {
+  position: relative;
+  display: inline-grid;
+}
+
 .profile-badge-chip {
   position: relative;
   display: inline-grid;
@@ -1351,6 +1356,55 @@ img {
 .profile-badge-chip .member-badge-image {
   width: 58px;
   height: 58px;
+}
+
+.profile-badge-edit-link {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgb(23 26 23 / 72%);
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 900;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.profile-badge-shell:hover .profile-badge-edit-link,
+.profile-badge-edit-link:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.profile-badge-remove-form {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  z-index: 4;
+  margin: 0;
+}
+
+.profile-badge-remove-form button {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 900 0.9rem/1 var(--font-main);
+  cursor: pointer;
+}
+
+.profile-badge-remove-form button:hover,
+.profile-badge-remove-form button:focus-visible {
+  background: var(--accent);
 }
 
 .member-badge-admin-actions {
