@@ -75,7 +75,10 @@ export default async function MembersPage() {
                                 key={memberBadge.id}
                                 title={memberBadge.badge.name}
                               >
-                                <img src={memberBadge.badge.imageUrl} alt={memberBadge.badge.name} />
+                                <img
+                                  src={memberBadge.badge.imageUrl}
+                                  alt={memberBadge.badge.name}
+                                />
                               </a>
                             ) : (
                               <a
