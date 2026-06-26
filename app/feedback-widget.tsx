@@ -4,35 +4,45 @@
 
 import { useState } from "react";
 
+const FEEDBACK_ISSUE_URL = "https://github.com/codenamed22/Agora/issues/new";
+
 export function buildFeedbackBody({
   details,
   pageUrl,
+  screenshotCaptured = false,
   timestamp,
 }: {
   details: string;
   pageUrl: string;
+  screenshotCaptured?: boolean;
   timestamp: string;
 }) {
-  return `Timestamp: ${timestamp}\nPage: ${pageUrl}\n\nProblem details:\n${details.trim() || "(not provided)"}`;
+  return `Timestamp: ${timestamp}\nPage: ${pageUrl}\nScreenshot captured: ${screenshotCaptured ? "yes, attach downloaded screenshot" : "no"}\n\nProblem details:\n${details.trim() || "(not provided)"}`;
 }
 
-export function buildFeedbackMailto({
+export function buildFeedbackIssueUrl({
   details,
-  email,
   pageUrl,
+  screenshotCaptured = false,
   timestamp,
 }: {
   details: string;
-  email: string;
   pageUrl: string;
+  screenshotCaptured?: boolean;
   timestamp: string;
 }) {
-  const body = buildFeedbackBody({ details, pageUrl, timestamp });
+  const title = details.trim().split("\n")[0]?.slice(0, 80) || "ShardUp feedback";
+  const body = buildFeedbackBody({ details, pageUrl, screenshotCaptured, timestamp });
+  const params = new URLSearchParams({
+    title: `Feedback: ${title}`,
+    body,
+    labels: "feedback",
+  });
 
-  return `mailto:${email}?subject=${encodeURIComponent("ShardUp feedback")}&body=${encodeURIComponent(body)}`;
+  return `${FEEDBACK_ISSUE_URL}?${params.toString()}`;
 }
 
-export default function FeedbackWidget({ email }: Readonly<{ email: string }>) {
+export default function FeedbackWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [details, setDetails] = useState("");
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
@@ -80,27 +90,20 @@ export default function FeedbackWidget({ email }: Readonly<{ email: string }>) {
 
       setScreenshotBlob(blob);
       setScreenshotUrl(URL.createObjectURL(blob));
-      setMessage("Screenshot captured. Download it and attach it if your email app needs it.");
+      setMessage("Screenshot captured. Download it and attach it to the GitHub issue.");
     }, "image/png");
   }
 
-  async function sendFeedback() {
+  function sendFeedback() {
     const pageUrl = window.location.href;
-    const body = buildFeedbackBody({ details, pageUrl, timestamp });
-    const mailto = buildFeedbackMailto({ details, email, pageUrl, timestamp });
+    const issueUrl = buildFeedbackIssueUrl({
+      details,
+      pageUrl,
+      screenshotCaptured: Boolean(screenshotBlob),
+      timestamp,
+    });
 
-    if (screenshotBlob && navigator.share && navigator.canShare) {
-      const file = new File([screenshotBlob], `shardup-feedback-${Date.now()}.png`, {
-        type: "image/png",
-      });
-
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({ title: "ShardUp feedback", text: body, files: [file] });
-        return;
-      }
-    }
-
-    window.location.href = mailto;
+    window.location.href = issueUrl;
   }
 
   return (
@@ -128,7 +131,7 @@ export default function FeedbackWidget({ email }: Readonly<{ email: string }>) {
             </div>
 
             <p className="feedback-meta">
-              We will include this page and timestamp: <span>{timestamp}</span>
+              We will open a GitHub issue with this page and timestamp: <span>{timestamp}</span>
             </p>
 
             <label className="feedback-label" htmlFor="feedback-details">
@@ -157,7 +160,7 @@ export default function FeedbackWidget({ email }: Readonly<{ email: string }>) {
                 Capture screenshot
               </button>
               <button className="button" type="button" onClick={sendFeedback}>
-                Send feedback
+                Open GitHub issue
               </button>
             </div>
           </section>

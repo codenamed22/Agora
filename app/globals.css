@@ -1030,6 +1030,8 @@ img {
 
 .feedback-panel {
   width: min(100%, 460px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
   padding: 22px;
   border: 2px solid var(--ink);
   background: var(--paper);
@@ -1099,7 +1101,12 @@ img {
 
 .feedback-actions {
   flex-wrap: wrap;
+  position: sticky;
+  bottom: -22px;
   margin-top: 18px;
+  padding-top: 14px;
+  padding-bottom: 2px;
+  background: var(--paper);
 }
 
 .member-grid {

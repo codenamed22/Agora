@@ -1,27 +1,34 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import FeedbackWidget, { buildFeedbackMailto } from "../../../app/feedback-widget";
+import FeedbackWidget, { buildFeedbackIssueUrl } from "../../../app/feedback-widget";
 
 describe("FeedbackWidget", () => {
   it("renders the floating feedback button", () => {
-    render(<FeedbackWidget email="team@example.com" />);
+    render(<FeedbackWidget />);
 
     expect(screen.getByRole("button", { name: "Send feedback" })).toBeInTheDocument();
   });
 
-  it("builds a mailto with timestamp, page, and details", () => {
-    const mailto = buildFeedbackMailto({
+  it("builds a GitHub issue with timestamp, page, and details", () => {
+    const issueUrl = buildFeedbackIssueUrl({
       details: "C++ result looked wrong",
-      email: "team@example.com",
       pageUrl: "https://shardup.vercel.app/problems/sum-two-numbers",
+      screenshotCaptured: true,
       timestamp: "2026-06-24T12:00:00.000Z",
     });
 
-    expect(mailto).toContain("mailto:team@example.com");
-    expect(decodeURIComponent(mailto)).toContain("Timestamp: 2026-06-24T12:00:00.000Z");
-    expect(decodeURIComponent(mailto)).toContain(
+    const url = new URL(issueUrl);
+
+    expect(`${url.origin}${url.pathname}`).toBe("https://github.com/codenamed22/Agora/issues/new");
+    expect(url.searchParams.get("title")).toBe("Feedback: C++ result looked wrong");
+    expect(url.searchParams.get("labels")).toBe("feedback");
+    expect(url.searchParams.get("body")).toContain("Timestamp: 2026-06-24T12:00:00.000Z");
+    expect(url.searchParams.get("body")).toContain(
       "Page: https://shardup.vercel.app/problems/sum-two-numbers",
     );
-    expect(decodeURIComponent(mailto)).toContain("C++ result looked wrong");
+    expect(url.searchParams.get("body")).toContain(
+      "Screenshot captured: yes, attach downloaded screenshot",
+    );
+    expect(url.searchParams.get("body")).toContain("C++ result looked wrong");
   });
 });

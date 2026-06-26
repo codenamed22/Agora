@@ -12,13 +12,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const feedbackEmail = process.env.FEEDBACK_EMAIL ?? "";
-
   return (
     <html lang="en">
       <body>
         {children}
-        <FeedbackWidget email={feedbackEmail.trim()} />
+        <FeedbackWidget />
       </body>
     </html>
   );
