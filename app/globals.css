@@ -1106,6 +1106,25 @@ img {
   margin-top: 32px;
 }
 
+.member-batch-groups {
+  margin-top: 32px;
+}
+
+.member-batch-group + .member-batch-group {
+  margin-top: 40px;
+}
+
+.member-batch-heading {
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  font-size: 1.1rem;
+}
+
+.member-batch-group .member-grid {
+  margin-top: 16px;
+}
+
 .member-card,
 .member-profile-card,
 .member-panel,

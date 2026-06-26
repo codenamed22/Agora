@@ -16,6 +16,20 @@ export default async function MembersPage() {
     },
   });
 
+  const NO_BATCH = "Batch details pending";
+  const groups = new Map<string, typeof members>();
+
+  for (const member of members) {
+    const batch = member.profile?.batch?.trim() || NO_BATCH;
+    (groups.get(batch) ?? groups.set(batch, []).get(batch)!).push(member);
+  }
+
+  const batchGroups = Array.from(groups.entries()).sort(([a], [b]) => {
+    if (a === NO_BATCH) return 1;
+    if (b === NO_BATCH) return -1;
+    return b.localeCompare(a, undefined, { numeric: true });
+  });
+
   return (
     <main className="app-shell wide-card workspace-shell">
       <section className="app-card workspace-card">
@@ -23,59 +37,69 @@ export default async function MembersPage() {
         <h1>ShardUp members</h1>
         <p>Meet the builders, mentors, and peers who are part of the ShardUp community.</p>
 
-        <div className="member-grid">
-          {members.map((member) => {
-            const name = memberDisplayName(member);
+        <div className="member-batch-groups">
+          {batchGroups.map(([batch, batchMembers]) => (
+            <section className="member-batch-group" key={batch}>
+              <h2 className="member-batch-heading">{batch}</h2>
+              <div className="member-grid">
+                {batchMembers.map((member) => {
+                  const name = memberDisplayName(member);
 
-            return (
-              <article className="member-card" key={member.id}>
-                <a className="member-card-profile" href={`/members/${member.id}`}>
-                  {member.profile?.photoUrl ? (
-                    <img className="member-avatar" src={member.profile.photoUrl} alt="" />
-                  ) : (
-                    <span className="member-avatar member-avatar-fallback">
-                      {memberInitials(name)}
-                    </span>
-                  )}
-                  <span>
-                    <strong>{name}</strong>
-                    <small>{member.profile?.college || "College not added"}</small>
-                    <small>
-                      {[member.profile?.batch, member.profile?.branch]
-                        .filter(Boolean)
-                        .join(" · ") || "Batch details pending"}
-                    </small>
-                  </span>
-                </a>
-                {member.memberBadges.length > 0 ? (
-                  <span className="member-card-badges" aria-label="Badges">
-                    {member.memberBadges.map((memberBadge) =>
-                      memberBadge.badge.imageUrl ? (
-                        <a
-                          aria-label={memberBadge.badge.name}
-                          href={`/badges/${memberBadge.badgeId}`}
-                          key={memberBadge.id}
-                          title={memberBadge.badge.name}
-                        >
-                          <img src={memberBadge.badge.imageUrl} alt={memberBadge.badge.name} />
-                        </a>
-                      ) : (
-                        <a
-                          aria-label={memberBadge.badge.name}
-                          className="badge-image-fallback"
-                          href={`/badges/${memberBadge.badgeId}`}
-                          key={memberBadge.id}
-                          title={memberBadge.badge.name}
-                        >
-                          Badge
-                        </a>
-                      ),
-                    )}
-                  </span>
-                ) : null}
-              </article>
-            );
-          })}
+                  return (
+                    <article className="member-card" key={member.id}>
+                      <a className="member-card-profile" href={`/members/${member.id}`}>
+                        {member.profile?.photoUrl ? (
+                          <img className="member-avatar" src={member.profile.photoUrl} alt="" />
+                        ) : (
+                          <span className="member-avatar member-avatar-fallback">
+                            {memberInitials(name)}
+                          </span>
+                        )}
+                        <span>
+                          <strong>{name}</strong>
+                          <small>{member.profile?.college || "College not added"}</small>
+                          <small>
+                            {[member.profile?.batch, member.profile?.branch]
+                              .filter(Boolean)
+                              .join(" · ") || "Batch details pending"}
+                          </small>
+                        </span>
+                      </a>
+                      {member.memberBadges.length > 0 ? (
+                        <span className="member-card-badges" aria-label="Badges">
+                          {member.memberBadges.map((memberBadge) =>
+                            memberBadge.badge.imageUrl ? (
+                              <a
+                                aria-label={memberBadge.badge.name}
+                                href={`/badges/${memberBadge.badgeId}`}
+                                key={memberBadge.id}
+                                title={memberBadge.badge.name}
+                              >
+                                <img
+                                  src={memberBadge.badge.imageUrl}
+                                  alt={memberBadge.badge.name}
+                                />
+                              </a>
+                            ) : (
+                              <a
+                                aria-label={memberBadge.badge.name}
+                                className="badge-image-fallback"
+                                href={`/badges/${memberBadge.badgeId}`}
+                                key={memberBadge.id}
+                                title={memberBadge.badge.name}
+                              >
+                                Badge
+                              </a>
+                            ),
+                          )}
+                        </span>
+                      ) : null}
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
         </div>
       </section>
     </main>
