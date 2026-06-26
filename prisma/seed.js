@@ -1,6 +1,15 @@
+const fs = require("node:fs");
+const path = require("node:path");
 const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
+
+const SOLUTIONS_DIR = path.join(__dirname, "..", "scripts", "reference-solutions");
+
+function readReferenceSolution(slug) {
+  const file = path.join(SOLUTIONS_DIR, `${slug}.py`);
+  return fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null;
+}
 const TOP_PRACTICE_BADGE_NAME = "Practice Champion";
 
 async function main() {
@@ -519,6 +528,15 @@ async function main() {
         order: startOrder + i + 1,
       });
     });
+  }
+
+  // Attach the reference solution (admins can view and run it).
+  for (const problem of problems) {
+    const solution = readReferenceSolution(problem.slug);
+    if (solution) {
+      problem.solutionCode = solution;
+      problem.solutionLanguage = "python";
+    }
   }
 
   for (const problem of problems) {

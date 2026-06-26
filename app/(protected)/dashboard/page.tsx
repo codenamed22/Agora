@@ -26,6 +26,7 @@ export default async function DashboardPage() {
           <div className="member-link-list">
             <a href="/admin/applications">Review applications</a>
             <a href="/admin/events">Manage events</a>
+            <a href="/admin/problems">Review problems</a>
           </div>
         ) : null}
       </section>
