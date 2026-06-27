@@ -1,13 +1,16 @@
 // Syncs problem test cases in the DB to match prisma/seed.js without running the
 // full seed (which would touch unrelated data). Fixes the gas-station expected
-// output and appends the shared extra hidden tests. Idempotent (matches by input).
+// output and appends the shared hidden edge-case and stress tests. Idempotent
+// (matches by input).
 //
 // Run: node --env-file=.env.local scripts/sync-problem-tests.mjs
 import { createRequire } from "node:module";
 import { PrismaClient } from "@prisma/client";
 
 const require = createRequire(import.meta.url);
-const extraTests = require("../prisma/extra-tests.json");
+const hiddenTests = require("../prisma/hidden-tests.json");
+const { buildStressTests } = require("../prisma/hidden-stress-tests.js");
+const stressTests = buildStressTests();
 
 const prisma = new PrismaClient();
 
@@ -18,9 +21,19 @@ const gasFix = await prisma.testCase.updateMany({
 });
 console.log(`gas-station fix: updated ${gasFix.count} test case(s)`);
 
-// 2. Append extra hidden tests, skipping any already present (by input).
+// 2. Append hidden tests, skipping any already present (by input).
 let added = 0;
-for (const [slug, tests] of Object.entries(extraTests)) {
+const hiddenSuiteTests = new Map();
+
+for (const [slug, tests] of Object.entries(hiddenTests)) {
+  hiddenSuiteTests.set(slug, [...tests]);
+}
+
+for (const [slug, tests] of Object.entries(stressTests)) {
+  hiddenSuiteTests.set(slug, [...(hiddenSuiteTests.get(slug) ?? []), ...tests]);
+}
+
+for (const [slug, tests] of hiddenSuiteTests) {
   const problem = await prisma.problem.findUnique({
     where: { slug },
     select: { id: true, testCases: { select: { input: true, order: true } } },

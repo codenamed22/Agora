@@ -1,6 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { PrismaClient } = require("@prisma/client");
+const { buildStressTests } = require("./hidden-stress-tests");
 
 const prisma = new PrismaClient();
 
@@ -515,12 +516,13 @@ async function main() {
     },
   ];
 
-  // Additional hidden edge-case tests, shared with scripts/sync-problem-tests.mjs.
-  const extraTests = require("./extra-tests.json");
+  // Hidden edge-case and stress tests, shared with scripts/sync-problem-tests.mjs.
+  const hiddenTests = require("./hidden-tests.json");
+  const stressTests = buildStressTests();
   for (const problem of problems) {
-    const extra = extraTests[problem.slug] ?? [];
+    const hidden = [...(hiddenTests[problem.slug] ?? []), ...(stressTests[problem.slug] ?? [])];
     const startOrder = problem.testCases.length;
-    extra.forEach((test, i) => {
+    hidden.forEach((test, i) => {
       problem.testCases.push({
         input: test.input,
         expectedOutput: test.expectedOutput,

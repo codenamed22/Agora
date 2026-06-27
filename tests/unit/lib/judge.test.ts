@@ -154,4 +154,52 @@ describe("executeWithPiston", () => {
     expect(result.compileError).toContain("cin");
     expect(result.signal).toBe("SIGKILL");
   });
+
+  it("marks Piston run timeouts as timed out results", async () => {
+    process.env.JUDGE_BASE_URL = "https://judge.example.test/api/v2";
+
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
+      return new Response(
+        JSON.stringify({
+          run: {
+            code: null,
+            status: "TO",
+            message: "Time limit exceeded (wall clock)",
+          },
+        }),
+        { status: 200 },
+      );
+    });
+
+    const result = await executeWithPiston({
+      code: "while True: pass",
+      language: "python",
+      stdin: "",
+      timeLimitMs: 2000,
+    });
+
+    expect(result).toMatchObject({
+      stderr: "Time limit exceeded.",
+      runtimeMs: 2000,
+      timedOut: true,
+    });
+  });
+
+  it("keeps large stress-test output for comparison", async () => {
+    process.env.JUDGE_BASE_URL = "https://judge.example.test/api/v2";
+    const stdout = `${"1 ".repeat(12_000)}\n`;
+
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
+      return new Response(JSON.stringify({ run: { stdout, code: 0 } }), { status: 200 });
+    });
+
+    const result = await executeWithPiston({
+      code: "",
+      language: "python",
+      stdin: "",
+      timeLimitMs: 2000,
+    });
+
+    expect(result.stdout).toBe(stdout);
+  });
 });

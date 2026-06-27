@@ -1,7 +1,7 @@
 import { SUPPORTED_LANGUAGES } from "./languages";
 import type { CodeExecutor, ExecutionResult } from "./types";
 
-const OUTPUT_LIMIT = 20_000;
+const OUTPUT_LIMIT = 2_000_000;
 const COMPILE_TIMEOUT_MS = 10_000;
 
 type PistonProcess = {
@@ -18,6 +18,10 @@ type PistonResponse = {
   run?: PistonProcess;
   compile?: PistonProcess;
 };
+
+function isPistonTimeout(process?: PistonProcess) {
+  return process?.status === "TO" || process?.message === "Time limit exceeded (wall clock)";
+}
 
 export const executeWithPiston: CodeExecutor = async ({ code, language, stdin, timeLimitMs }) => {
   const runtime = SUPPORTED_LANGUAGES[language];
@@ -61,8 +65,7 @@ export const executeWithPiston: CodeExecutor = async ({ code, language, stdin, t
     const run = data.run;
     const compileOutput = `${compile?.stdout ?? ""}${compile?.stderr ?? ""}${compile?.output ?? ""}`;
 
-    const compileTimedOut =
-      compile?.status === "TO" || compile?.message === "Time limit exceeded (wall clock)";
+    const compileTimedOut = isPistonTimeout(compile);
 
     if (compile && !compileTimedOut && compile.code !== 0) {
       return {
@@ -75,12 +78,17 @@ export const executeWithPiston: CodeExecutor = async ({ code, language, stdin, t
       } satisfies ExecutionResult;
     }
 
+    const runTimedOut = isPistonTimeout(run);
+
     return {
       stdout: (run?.stdout ?? "").slice(0, OUTPUT_LIMIT),
-      stderr: (run?.stderr ?? run?.output ?? "").slice(0, OUTPUT_LIMIT),
+      stderr: runTimedOut
+        ? "Time limit exceeded."
+        : (run?.stderr ?? run?.output ?? "").slice(0, OUTPUT_LIMIT),
       exitCode: typeof run?.code === "number" ? run.code : null,
       signal: run?.signal ?? null,
-      runtimeMs: Date.now() - startedAt,
+      runtimeMs: runTimedOut ? timeLimitMs : Date.now() - startedAt,
+      timedOut: runTimedOut,
     } satisfies ExecutionResult;
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
