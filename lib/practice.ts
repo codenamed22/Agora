@@ -1,11 +1,16 @@
-import { SubmissionVerdict } from "@prisma/client";
+import { ProblemDifficulty, SubmissionVerdict } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { memberDisplayName } from "./members";
 import { prisma } from "./prisma";
 
 export const TOP_PRACTICE_BADGE_NAME = "Practice Champion";
+export const PRACTICE_DIFFICULTY_SCORES: Record<ProblemDifficulty, number> = {
+  [ProblemDifficulty.EASY]: 1,
+  [ProblemDifficulty.MEDIUM]: 3,
+  [ProblemDifficulty.HARD]: 7,
+};
 
-type PracticeSubmission = { problemId: string; userId: string };
+type PracticeSubmission = { problemId: string; userId: string; difficulty: ProblemDifficulty };
 type PracticeUser = {
   id: string;
   name: string | null;
@@ -15,7 +20,7 @@ type PracticeUser = {
 
 export function rankPracticeUsers(submissions: PracticeSubmission[], users: PracticeUser[]) {
   const solvedPairs = new Set<string>();
-  const solvedCounts: Record<string, number> = {};
+  const solvedStats: Record<string, { solvedCount: number; score: number }> = {};
 
   submissions.forEach((submission) => {
     const key = `${submission.userId}:${submission.problemId}`;
@@ -25,31 +30,37 @@ export function rankPracticeUsers(submissions: PracticeSubmission[], users: Prac
     }
 
     solvedPairs.add(key);
-    solvedCounts[submission.userId] = (solvedCounts[submission.userId] ?? 0) + 1;
+    const stats = solvedStats[submission.userId] ?? { solvedCount: 0, score: 0 };
+
+    stats.solvedCount += 1;
+    stats.score += PRACTICE_DIFFICULTY_SCORES[submission.difficulty];
+    solvedStats[submission.userId] = stats;
   });
 
   const userById = new Map(users.map((user) => [user.id, user]));
 
-  return Object.entries(solvedCounts)
-    .map(([userId, solvedCount]) => {
+  return Object.entries(solvedStats)
+    .map(([userId, stats]) => {
       const user = userById.get(userId);
 
       return {
         userId,
-        solvedCount,
+        solvedCount: stats.solvedCount,
+        score: stats.score,
         name: user ? memberDisplayName(user) : "ShardUp member",
       };
     })
-    .sort(
-      (left, right) => right.solvedCount - left.solvedCount || left.name.localeCompare(right.name),
-    );
+    .sort((left, right) => right.score - left.score || left.name.localeCompare(right.name));
 }
 
 export async function practiceRanking() {
   const problems = await prisma.problem.findMany({
     where: { published: true },
-    select: { id: true },
+    select: { id: true, difficulty: true },
   });
+  const difficultyByProblemId = new Map(
+    problems.map((problem) => [problem.id, problem.difficulty]),
+  );
   const submissions = await prisma.submission.findMany({
     where: {
       verdict: SubmissionVerdict.ACCEPTED,
@@ -68,7 +79,13 @@ export async function practiceRanking() {
     },
   });
 
-  return rankPracticeUsers(submissions, users);
+  return rankPracticeUsers(
+    submissions.map((submission) => ({
+      ...submission,
+      difficulty: difficultyByProblemId.get(submission.problemId)!,
+    })),
+    users,
+  );
 }
 
 export async function syncTopPracticeBadge() {

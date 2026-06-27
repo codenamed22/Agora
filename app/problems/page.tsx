@@ -36,6 +36,13 @@ export default async function ProblemsPage() {
     distinct: ["problemId", "userId"],
     select: { problemId: true, userId: true },
   });
+  const difficultyByProblemId = new Map(
+    problems.map((problem) => [problem.id, problem.difficulty]),
+  );
+  const rankedSubmissions = acceptedSubmissions.map((submission) => ({
+    ...submission,
+    difficulty: difficultyByProblemId.get(submission.problemId)!,
+  }));
   const solvedProblemIds = new Set(
     currentUserId
       ? acceptedSubmissions.filter((s) => s.userId === currentUserId).map((s) => s.problemId)
@@ -62,7 +69,7 @@ export default async function ProblemsPage() {
       profile: { select: { displayName: true } },
     },
   });
-  const leaderboard = rankPracticeUsers(acceptedSubmissions, users).slice(0, 10);
+  const leaderboard = rankPracticeUsers(rankedSubmissions, users).slice(0, 10);
   const warmupProblem = problems.find((problem) => problem.slug === WARMUP_PROBLEM_SLUG);
   const sheetProblems = [
     ...(warmupProblem ? [warmupProblem] : []),
@@ -78,7 +85,7 @@ export default async function ProblemsPage() {
         <section className="practice-leaderboard" aria-labelledby="practice-leaderboard-title">
           <div className="practice-leaderboard-header">
             <h2 id="practice-leaderboard-title">Leaderboard</h2>
-            <span>Problems solved</span>
+            <span>Score</span>
           </div>
           {leaderboard.length > 0 ? (
             <div className="leaderboard-list">
@@ -86,7 +93,7 @@ export default async function ProblemsPage() {
                 <div className="leaderboard-row" key={entry.userId}>
                   <span className="leaderboard-rank">#{index + 1}</span>
                   <span className="leaderboard-name">{entry.name}</span>
-                  <span className="leaderboard-score">{entry.solvedCount}</span>
+                  <span className="leaderboard-score">{entry.score}</span>
                 </div>
               ))}
             </div>

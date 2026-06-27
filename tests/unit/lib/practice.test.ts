@@ -2,15 +2,15 @@ import { describe, expect, it } from "vitest";
 import { rankPracticeUsers } from "../../../lib/practice";
 
 describe("practice helpers", () => {
-  it("ranks users by unique accepted problems, then name", () => {
+  it("ranks users by weighted unique accepted problem score, then name", () => {
     const ranking = rankPracticeUsers(
       [
-        { userId: "a", problemId: "one" },
-        { userId: "a", problemId: "one" },
-        { userId: "b", problemId: "one" },
-        { userId: "b", problemId: "two" },
-        { userId: "c", problemId: "one" },
-        { userId: "c", problemId: "two" },
+        { userId: "a", problemId: "easy", difficulty: "EASY" },
+        { userId: "a", problemId: "easy", difficulty: "EASY" },
+        { userId: "a", problemId: "medium", difficulty: "MEDIUM" },
+        { userId: "b", problemId: "hard", difficulty: "HARD" },
+        { userId: "c", problemId: "easy", difficulty: "EASY" },
+        { userId: "c", problemId: "medium", difficulty: "MEDIUM" },
       ],
       [
         { id: "a", name: "Ava", email: "ava@example.com" },
@@ -20,9 +20,9 @@ describe("practice helpers", () => {
     );
 
     expect(ranking).toEqual([
-      { userId: "c", name: "Bea", solvedCount: 2 },
-      { userId: "b", name: "Zed", solvedCount: 2 },
-      { userId: "a", name: "Ava", solvedCount: 1 },
+      { userId: "b", name: "Zed", solvedCount: 1, score: 7 },
+      { userId: "a", name: "Ava", solvedCount: 2, score: 4 },
+      { userId: "c", name: "Bea", solvedCount: 2, score: 4 },
     ]);
   });
 });

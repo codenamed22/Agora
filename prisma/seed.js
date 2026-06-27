@@ -567,39 +567,47 @@ async function main() {
     },
     select: { id: true },
   });
-  const publishedProblemIds = await prisma.problem.findMany({
+  const practiceDifficultyScores = { EASY: 1, MEDIUM: 3, HARD: 7 };
+  const publishedProblems = await prisma.problem.findMany({
     where: { published: true },
-    select: { id: true },
+    select: { id: true, difficulty: true },
   });
+  const difficultyByProblemId = new Map(
+    publishedProblems.map((problem) => [problem.id, problem.difficulty]),
+  );
   const acceptedSubmissions = await prisma.submission.findMany({
     where: {
       verdict: "ACCEPTED",
-      problemId: { in: publishedProblemIds.map((problem) => problem.id) },
+      problemId: { in: publishedProblems.map((problem) => problem.id) },
     },
     distinct: ["problemId", "userId"],
     select: { problemId: true, userId: true },
   });
-  const solvedCounts = acceptedSubmissions.reduce((counts, submission) => {
-    counts[submission.userId] = (counts[submission.userId] || 0) + 1;
-    return counts;
+  const solvedStats = acceptedSubmissions.reduce((stats, submission) => {
+    const current = stats[submission.userId] || { solvedCount: 0, score: 0 };
+    const difficulty = difficultyByProblemId.get(submission.problemId);
+
+    current.solvedCount += 1;
+    current.score += practiceDifficultyScores[difficulty] || practiceDifficultyScores.EASY;
+    stats[submission.userId] = current;
+    return stats;
   }, {});
   const users = await prisma.user.findMany({
-    where: { id: { in: Object.keys(solvedCounts) } },
+    where: { id: { in: Object.keys(solvedStats) } },
     select: { id: true, name: true, email: true, profile: { select: { displayName: true } } },
   });
   const userById = new Map(users.map((user) => [user.id, user]));
-  const practiceLeader = Object.entries(solvedCounts)
-    .map(([userId, solvedCount]) => {
+  const practiceLeader = Object.entries(solvedStats)
+    .map(([userId, stats]) => {
       const user = userById.get(userId);
       return {
         userId,
-        solvedCount,
+        solvedCount: stats.solvedCount,
+        score: stats.score,
         name: (user && (user.profile?.displayName || user.name)) || "ShardUp member",
       };
     })
-    .sort(
-      (left, right) => right.solvedCount - left.solvedCount || left.name.localeCompare(right.name),
-    )[0];
+    .sort((left, right) => right.score - left.score || left.name.localeCompare(right.name))[0];
 
   await prisma.memberBadge.deleteMany({ where: { badgeId: practiceChampionBadge.id } });
 

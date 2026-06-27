@@ -53,6 +53,9 @@ test.describe("problems", () => {
       "1 accepted",
     );
     await expect(page.getByRole("heading", { name: "Leaderboard" })).toBeVisible();
-    await expect(page.locator(".leaderboard-row", { hasText: "Local Admin" })).toContainText("1");
+    await expect(page.locator(".practice-leaderboard-header")).toContainText("Score");
+    await expect(
+      page.locator(".leaderboard-row", { hasText: "Local Admin" }).locator(".leaderboard-score"),
+    ).toHaveText("1");
   });
 });
