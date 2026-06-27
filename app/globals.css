@@ -26,6 +26,9 @@
   /* Chunky offset shadow (kept dark in both themes) */
   --shadow: var(--ink);
 
+  /* Tooltip stays an inverted dark chip in both themes */
+  --tooltip-bg: #171a17;
+
   color-scheme: light;
 }
 
@@ -49,6 +52,8 @@
 
   --shadow: #05070b;
 
+  --tooltip-bg: #30363d;
+
   color-scheme: dark;
 }
 
@@ -64,7 +69,7 @@
 }
 
 [data-theme="dark"] .member-card.medal-silver {
-  background: #20262e;
+  background: #333d4d;
 }
 
 [data-theme="dark"] .member-card.medal-bronze {
@@ -1273,17 +1278,20 @@ img {
 }
 
 .member-card.medal-gold {
-  border-color: #d4af37;
+  outline: 2px solid #d4af37;
+  outline-offset: -2px;
   background: #fff3b0;
 }
 
 .member-card.medal-silver {
-  border-color: #9ca3af;
+  outline: 2px solid #c0c0c0;
+  outline-offset: -2px;
   background: #f1f5f9;
 }
 
 .member-card.medal-bronze {
-  border-color: #a05a2c;
+  outline: 2px solid #cd7f32;
+  outline-offset: -2px;
   background: #ffe0c2;
 }
 
@@ -1403,7 +1411,7 @@ img {
   max-width: 220px;
   padding: 8px 10px;
   border-radius: 8px;
-  background: var(--ink);
+  background: var(--tooltip-bg);
   color: white;
   content: attr(aria-label);
   font-size: 0.8rem;
