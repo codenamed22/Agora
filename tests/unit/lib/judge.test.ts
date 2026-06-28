@@ -86,7 +86,57 @@ describe("judgeSubmission", () => {
       timeLimitMs: 2000,
     });
 
-    expect(result).toMatchObject({ verdict: SubmissionVerdict.COMPILE_ERROR, passedCount: 0 });
+    expect(result).toMatchObject({
+      verdict: SubmissionVerdict.COMPILE_ERROR,
+      passedCount: 0,
+      failureMessage: "compile failed",
+    });
+  });
+
+  it("includes stderr for runtime errors on sample tests", async () => {
+    const executor: CodeExecutor = async () => ({
+      stdout: "",
+      stderr: "Traceback: missing colon",
+      exitCode: 1,
+      signal: null,
+      runtimeMs: 1,
+    });
+
+    const result = await judgeSubmission({
+      code: "",
+      executor,
+      language: "python",
+      testCases: [{ ...testCases[0], isSample: true }],
+      timeLimitMs: 2000,
+    });
+
+    expect(result).toMatchObject({
+      verdict: SubmissionVerdict.RUNTIME_ERROR,
+      failureMessage: "Traceback: missing colon",
+    });
+  });
+
+  it("hides stderr for runtime errors on hidden tests", async () => {
+    const executor: CodeExecutor = async () => ({
+      stdout: "",
+      stderr: "secret hidden input",
+      exitCode: 1,
+      signal: null,
+      runtimeMs: 1,
+    });
+
+    const result = await judgeSubmission({
+      code: "",
+      executor,
+      language: "python",
+      testCases: [{ ...testCases[0], isSample: false }],
+      timeLimitMs: 2000,
+    });
+
+    expect(result).toMatchObject({
+      verdict: SubmissionVerdict.RUNTIME_ERROR,
+      failureMessage: "Runtime error on a hidden test. Check edge cases and input handling.",
+    });
   });
 
   it("maps timeouts to TLE", async () => {

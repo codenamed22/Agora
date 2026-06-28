@@ -69,6 +69,7 @@ export default async function ProblemDetailPage({
               passedCount: true,
               totalCount: true,
               runtimeMs: true,
+              failureMessage: true,
             },
           }
         : false,

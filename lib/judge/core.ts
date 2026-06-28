@@ -2,6 +2,38 @@ import { SubmissionVerdict } from "@prisma/client";
 import type { CodeExecutor, JudgeResult, JudgeTestCase } from "./types";
 import type { SupportedLanguage } from "./languages";
 
+const FAILURE_MESSAGE_LIMIT = 4_000;
+const HIDDEN_RUNTIME_ERROR_MESSAGE =
+  "Runtime error on a hidden test. Check edge cases and input handling.";
+
+function truncateFailureMessage(message: string) {
+  const normalized = message.trim();
+  return normalized.length > FAILURE_MESSAGE_LIMIT
+    ? `${normalized.slice(0, FAILURE_MESSAGE_LIMIT)}...`
+    : normalized;
+}
+
+function runtimeFailureMessage(result: Awaited<ReturnType<CodeExecutor>>, isSample?: boolean) {
+  if (!isSample) {
+    return HIDDEN_RUNTIME_ERROR_MESSAGE;
+  }
+
+  const detail = result.stderr.trim();
+  if (detail) {
+    return truncateFailureMessage(detail);
+  }
+
+  if (typeof result.exitCode === "number") {
+    return `Program exited with code ${result.exitCode}.`;
+  }
+
+  if (result.signal) {
+    return `Program exited with signal ${result.signal}.`;
+  }
+
+  return "Program failed at runtime.";
+}
+
 export function normalizeOutput(output: string) {
   return output
     .replace(/[ \t]+$/gm, "")
@@ -38,6 +70,7 @@ export async function judgeSubmission({
         passedCount,
         totalCount: testCases.length,
         runtimeMs,
+        failureMessage: truncateFailureMessage(result.compileError),
       };
     }
 
@@ -56,6 +89,7 @@ export async function judgeSubmission({
         passedCount,
         totalCount: testCases.length,
         runtimeMs,
+        failureMessage: runtimeFailureMessage(result, testCase.isSample),
       };
     }
 

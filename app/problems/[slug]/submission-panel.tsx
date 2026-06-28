@@ -20,6 +20,7 @@ type Submission = {
   passedCount: number;
   totalCount: number;
   runtimeMs: number | null;
+  failureMessage: string | null;
 };
 
 const verdictLabels: Record<string, string> = {
@@ -44,6 +45,21 @@ const starterCode: Record<string, string> = {
   python: "# Write your solution here\n",
   cpp: "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your solution here\n    return 0;\n}\n",
 };
+
+function SubmissionMeta({ submission }: Readonly<{ submission: Submission }>) {
+  return (
+    <>
+      <strong className="verdict-label">
+        {verdictLabels[submission.verdict] ?? submission.verdict}
+      </strong>
+      <span>{submission.language}</span>
+      <span>
+        {submission.passedCount}/{submission.totalCount} tests
+      </span>
+      <span>{submission.runtimeMs ?? 0}ms</span>
+    </>
+  );
+}
 
 function languageExtensions(language: string) {
   return language === "cpp" ? [cpp()] : [python()];
@@ -172,26 +188,32 @@ export function SubmissionPanel({
         {isRunning || submissions.length > 0 ? (
           <div className="submission-list" aria-live="polite">
             {isRunning ? (
-              <article className="submission-row running-submission verdict-warning">
-                <strong className="verdict-label">Pending</strong>
-                <span>{runningLanguage}</span>
-                <span>Running tests...</span>
-                <span className="submission-spinner" aria-hidden="true" />
+              <article className="submission-entry running-submission verdict-warning">
+                <div className="submission-row">
+                  <strong className="verdict-label">Pending</strong>
+                  <span>{runningLanguage}</span>
+                  <span>Running tests...</span>
+                  <span className="submission-spinner" aria-hidden="true" />
+                </div>
               </article>
             ) : null}
             {submissions.map((submission) => (
               <article
-                className={`submission-row verdict-${verdictTone[submission.verdict] ?? "error"}`}
+                className={`submission-entry verdict-${verdictTone[submission.verdict] ?? "error"}`}
                 key={submission.id}
               >
-                <strong className="verdict-label">
-                  {verdictLabels[submission.verdict] ?? submission.verdict}
-                </strong>
-                <span>{submission.language}</span>
-                <span>
-                  {submission.passedCount}/{submission.totalCount} tests
-                </span>
-                <span>{submission.runtimeMs ?? 0}ms</span>
+                {submission.failureMessage ? (
+                  <details className="submission-details">
+                    <summary className="submission-row">
+                      <SubmissionMeta submission={submission} />
+                    </summary>
+                    <pre className="submission-failure-message">{submission.failureMessage}</pre>
+                  </details>
+                ) : (
+                  <div className="submission-row">
+                    <SubmissionMeta submission={submission} />
+                  </div>
+                )}
               </article>
             ))}
           </div>
