@@ -25,15 +25,15 @@ export default async function DashboardPage() {
 
         <div className="auth-actions-list">
           <a className="button" href={`/members/${session.user.id}/edit`}>
-            Edit Profile
+            Edit profile
           </a>
           <a className="secondary-button" href={`/members/${session.user.id}`}>
-            View Profile
+            View profile
           </a>
         </div>
 
         {session.user.role === Role.ADMIN ? (
-          <div className="member-link-list" style={{ marginTop: '28px' }}>
+          <div className="member-link-list dashboard-admin-links">
             <a href="/admin/applications">Review applications</a>
             <a href="/admin/events">Manage events</a>
             <a href="/admin/problems">Review problems</a>
