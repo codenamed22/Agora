@@ -42,7 +42,7 @@ const verdictTone: Record<string, "success" | "warning" | "error"> = {
 
 const starterCode: Record<string, string> = {
   python: "# Write your solution here\n",
-  cpp: "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    // Write your solution here\n    return 0;\n}\n",
+  cpp: "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your solution here\n    return 0;\n}\n",
 };
 
 function languageExtensions(language: string) {

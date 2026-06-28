@@ -87,6 +87,12 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
+      - name: Validate seeded reference solutions
+        run: |
+          npx prisma migrate deploy
+          npm run prisma:seed
+          npm run test:references
+
       - name: Run end-to-end tests
         run: npm run test:e2e
 

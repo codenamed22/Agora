@@ -2,6 +2,23 @@ import { execSync } from "node:child_process";
 import { PrismaClient } from "@prisma/client";
 import { DATABASE_URL, TEST_EVENT_TITLE, TEST_PROBLEM_SLUG, TEST_PROBLEM_TITLE } from "./env";
 
+const PYTHON_SUM_REFERENCE = `import sys
+
+a, b = map(int, sys.stdin.read().split())
+print(a + b)
+`;
+
+const CPP_SUM_REFERENCE = `#include <iostream>
+using namespace std;
+
+int main() {
+  long long a, b;
+  cin >> a >> b;
+  cout << a + b << '\\n';
+  return 0;
+}
+`;
+
 // Applies migrations and seeds a deterministic, always-future event so the
 // events suite has stable data regardless of the current date or DB contents.
 export default async function globalSetup() {
@@ -39,6 +56,14 @@ export default async function globalSetup() {
         difficulty: "EASY",
         timeLimitMs: 2000,
         published: true,
+        solutionCode: PYTHON_SUM_REFERENCE,
+        solutionLanguage: "python",
+        referenceSolutions: {
+          create: [
+            { language: "python", code: PYTHON_SUM_REFERENCE },
+            { language: "cpp", code: CPP_SUM_REFERENCE },
+          ],
+        },
         testCases: {
           create: [
             { input: "2 3\n", expectedOutput: "5\n", isSample: true, order: 1 },

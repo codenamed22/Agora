@@ -232,9 +232,24 @@ model Problem {
   creator     User?        @relation("ProblemCreator", fields: [createdById], references: [id])
   testCases   TestCase[]
   submissions Submission[]
+  referenceSolutions ProblemReferenceSolution[]
 
   @@index([published, difficulty])
   @@index([createdById])
+}
+
+model ProblemReferenceSolution {
+  id        String   @id @default(cuid())
+  problemId String
+  language  String
+  code      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([problemId, language])
+  @@index([language])
 }
 
 model TestCase {

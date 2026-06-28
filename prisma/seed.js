@@ -6,10 +6,18 @@ const { buildStressTests } = require("./hidden-stress-tests");
 const prisma = new PrismaClient();
 
 const SOLUTIONS_DIR = path.join(__dirname, "..", "scripts", "reference-solutions");
+const REFERENCE_SOLUTION_EXTENSIONS = {
+  python: "py",
+  cpp: "cpp",
+};
 
-function readReferenceSolution(slug) {
-  const file = path.join(SOLUTIONS_DIR, `${slug}.py`);
-  return fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null;
+function readReferenceSolutions(slug) {
+  return Object.entries(REFERENCE_SOLUTION_EXTENSIONS)
+    .map(([language, extension]) => {
+      const file = path.join(SOLUTIONS_DIR, `${slug}.${extension}`);
+      return fs.existsSync(file) ? { language, code: fs.readFileSync(file, "utf8") } : null;
+    })
+    .filter(Boolean);
 }
 const TOP_PRACTICE_BADGE_NAME = "Practice Champion";
 
@@ -532,17 +540,20 @@ async function main() {
     });
   }
 
-  // Attach the reference solution (admins can view and run it).
+  // Attach the reference solutions (admins can view and run them).
   for (const problem of problems) {
-    const solution = readReferenceSolution(problem.slug);
-    if (solution) {
-      problem.solutionCode = solution;
-      problem.solutionLanguage = "python";
+    const referenceSolutions = readReferenceSolutions(problem.slug);
+    problem.referenceSolutions = referenceSolutions;
+
+    const primarySolution = referenceSolutions.find((solution) => solution.language === "python");
+    if (primarySolution) {
+      problem.solutionCode = primarySolution.code;
+      problem.solutionLanguage = primarySolution.language;
     }
   }
 
   for (const problem of problems) {
-    const { testCases, ...problemData } = problem;
+    const { testCases, referenceSolutions, ...problemData } = problem;
     const savedProblem = await prisma.problem.upsert({
       where: { slug: problem.slug },
       update: problemData,
@@ -554,6 +565,16 @@ async function main() {
     await prisma.testCase.createMany({
       data: testCases.map((testCase) => ({ ...testCase, problemId: savedProblem.id })),
     });
+
+    await prisma.problemReferenceSolution.deleteMany({ where: { problemId: savedProblem.id } });
+    if (referenceSolutions.length > 0) {
+      await prisma.problemReferenceSolution.createMany({
+        data: referenceSolutions.map((solution) => ({
+          ...solution,
+          problemId: savedProblem.id,
+        })),
+      });
+    }
   }
 
   const practiceChampionBadge = await prisma.badge.upsert({
