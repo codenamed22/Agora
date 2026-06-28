@@ -79,14 +79,27 @@ write_files:
       ]);
 
       // Piston writes stdin and then immediately destroys the stream, which can
-      // discard buffered data for large stress-test inputs. Let Node flush and
-      // close stdin normally instead.
+      // discard buffered data for large stress-test inputs. It also does not
+      // handle stdin write errors when a child exits before reading all input.
+      // Let Node flush and close stdin normally, and ignore expected EPIPEs.
       patchFile("/piston_api/src/job.js", [
         [
           `            proc.stdin.write(this.stdin);
             proc.stdin.end();
             proc.stdin.destroy();`,
           "            proc.stdin.end(this.stdin);",
+        ],
+        [
+          `        if (event_bus === null) {
+            proc.stdin.end(this.stdin);`,
+          `        proc.stdin.on('error', error => {
+            if (error.code !== 'EPIPE') {
+                this.logger.info(\`stdin write failed: \${error.message}\`);
+            }
+        });
+
+        if (event_bus === null) {
+            proc.stdin.end(this.stdin);`,
         ],
       ]);
 
