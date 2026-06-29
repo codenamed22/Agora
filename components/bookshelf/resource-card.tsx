@@ -33,11 +33,7 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
           <span className="resource-type-badge">{resource.type.replace("_", " ")}</span>
         </div>
         <h2>
-          <a
-            href={resource.resourceLink}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href={resource.resourceLink} target="_blank" rel="noopener noreferrer">
             {resource.title}
           </a>
         </h2>

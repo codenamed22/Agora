@@ -2218,7 +2218,9 @@ img {
   background: var(--surface);
   border: 1px solid var(--line);
   border-top: 4px solid var(--accent);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .category-card-link:hover .pillar {
@@ -2248,7 +2250,9 @@ img {
   padding: 0;
   overflow: hidden;
   height: 100%;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .resource-card:hover {
@@ -2326,12 +2330,9 @@ img {
   margin: 0 0 16px;
 }
 
-
-
 @media (max-width: 720px) {
   .categories-layout-grid {
     grid-template-columns: 1fr !important;
     gap: 24px !important;
   }
 }
-

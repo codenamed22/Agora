@@ -14,19 +14,25 @@ export default async function BookshelfLandingPage() {
         <p className="section-label">Bookshelf</p>
         <h1>The ShardUp Bookshelf.</h1>
         <p style={{ margin: "0 0 32px", fontSize: "1.1rem" }}>
-          Discover curated books, articles, courses, and learning resources recommended by the ShardUp community.
+          Discover curated books, articles, courses, and learning resources recommended by the
+          ShardUp community.
         </p>
 
         {/* Browse by Category */}
         <div style={{ marginBottom: "48px" }}>
-          <h2 style={{ fontSize: "1.6rem", marginBottom: "18px", borderBottom: "1px solid var(--line)", paddingBottom: "8px" }}>
+          <h2
+            style={{
+              fontSize: "1.6rem",
+              marginBottom: "18px",
+              borderBottom: "1px solid var(--line)",
+              paddingBottom: "8px",
+            }}
+          >
             Browse by Category
           </h2>
           <div className="category-grid">
             {categories.length > 0 ? (
-              categories.map((category) => (
-                <CategoryCard key={category.id} category={category} />
-              ))
+              categories.map((category) => <CategoryCard key={category.id} category={category} />)
             ) : (
               <div className="form-message">No categories found.</div>
             )}
@@ -35,7 +41,16 @@ export default async function BookshelfLandingPage() {
 
         {/* Recently Added Resources List */}
         <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: "1px solid var(--line)", paddingBottom: "8px", marginBottom: "18px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              borderBottom: "1px solid var(--line)",
+              paddingBottom: "8px",
+              marginBottom: "18px",
+            }}
+          >
             <h2 style={{ fontSize: "1.6rem", margin: 0 }}>Recently Added</h2>
           </div>
 

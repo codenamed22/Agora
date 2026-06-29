@@ -15,9 +15,7 @@ export async function getCategories(): Promise<CategoryWithCount[]> {
   });
 }
 
-export async function getRecentResources(
-  limit: number = 6,
-) {
+export async function getRecentResources(limit: number = 6) {
   return prisma.resource.findMany({
     orderBy: { createdAt: "desc" },
     take: limit,
@@ -37,9 +35,7 @@ export async function getRecentResources(
   });
 }
 
-export async function getCategoryBySlug(
-  slug: string,
-) {
+export async function getCategoryBySlug(slug: string) {
   return prisma.category.findUnique({
     where: { slug },
     select: {
@@ -50,9 +46,7 @@ export async function getCategoryBySlug(
   });
 }
 
-export async function getResourcesByCategory(
-  slug: string,
-) {
+export async function getResourcesByCategory(slug: string) {
   return prisma.resource.findMany({
     where: {
       category: { slug },

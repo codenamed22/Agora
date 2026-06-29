@@ -50,7 +50,16 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               There are no resources in this category yet.
             </p>
             <div style={{ display: "flex", gap: "14px", justifyContent: "center" }}>
-              <Link href="/bookshelf" className="button" style={{ textDecoration: "none", fontSize: "0.9rem", minHeight: "38px", padding: "0 18px" }}>
+              <Link
+                href="/bookshelf"
+                className="button"
+                style={{
+                  textDecoration: "none",
+                  fontSize: "0.9rem",
+                  minHeight: "38px",
+                  padding: "0 18px",
+                }}
+              >
                 Back to Bookshelf Home
               </Link>
             </div>
