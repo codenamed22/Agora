@@ -10,6 +10,7 @@ describe("SiteHeader", () => {
     expect(screen.getByRole("link", { name: "About" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Events" })).toHaveAttribute("href", "/events");
     expect(screen.getByRole("link", { name: "Practice" })).toHaveAttribute("href", "/problems");
+    expect(screen.getByRole("link", { name: "Bookshelf" })).toHaveAttribute("href", "/bookshelf");
   });
 
   it("shows the Join link by default", () => {

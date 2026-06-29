@@ -37,6 +37,7 @@ export default async function DashboardPage() {
             <a href="/admin/applications">Review applications</a>
             <a href="/admin/events">Manage events</a>
             <a href="/admin/problems">Review problems</a>
+            <a href="/admin/bookshelf">Manage bookshelf</a>
           </div>
         ) : null}
       </section>

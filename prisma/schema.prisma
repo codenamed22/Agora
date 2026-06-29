@@ -49,28 +49,28 @@ enum TeachingArtifactType {
 }
 
 model User {
-  id            String       @id @default(cuid())
-  name          String?
-  email         String       @unique
-  emailVerified DateTime?
-  image         String?
-  role          Role         @default(MEMBER)
-  status        UserStatus   @default(PENDING)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  accounts      Account[]
-  sessions      Session[]
-  profile       Profile?
-  application   Application?
-  rsvps         EventRsvp[]
-  createdEvents Event[]      @relation("EventCreator")
-  createdProblems Problem[]   @relation("ProblemCreator")
-  submissions   Submission[]
-  teachingSessions TeachingSession[] @relation("TeachingCreator")
-  memberBadges  MemberBadge[] @relation("MemberBadgeUser")
-  awardedBadges MemberBadge[] @relation("MemberBadgeAwarder")
-
+  id                   String        @id @default(cuid())
+  name                 String?
+  email                String        @unique
+  emailVerified        DateTime?
+  image                String?
+  role                 Role          @default(MEMBER)
+  status               UserStatus    @default(PENDING)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  accounts             Account[]
+  sessions             Session[]
+  profile              Profile?
+  application          Application?
+  rsvps                EventRsvp[]
+  createdEvents        Event[]       @relation("EventCreator")
+  createdProblems      Problem[]     @relation("ProblemCreator")
+  submissions          Submission[]
+  teachingSessions     TeachingSession[] @relation("TeachingCreator")
+  memberBadges         MemberBadge[] @relation("MemberBadgeUser")
+  awardedBadges        MemberBadge[] @relation("MemberBadgeAwarder")
   reviewedApplications Application[] @relation("ApplicationReviewer")
+  recommendedResources Resource[]    @relation("ResourceRecommender")
 }
 
 model Account {
@@ -101,7 +101,7 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+updatedAt DateTime @updatedAt
 }
 
 model VerificationToken {
@@ -318,15 +318,18 @@ model Resource {
   buyLink              String?
   imageUrl             String?
 
-  categoryId String
+  categoryId      String
+  recommendedById String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category      Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  recommendedBy User?    @relation("ResourceRecommender", fields: [recommendedById], references: [id], onDelete: SetNull)
 
   @@unique([categoryId, title])
   @@index([categoryId])
+  @@index([recommendedById])
   @@index([categoryId, type])
 }
 
