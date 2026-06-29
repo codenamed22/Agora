@@ -33,7 +33,7 @@ class __SystemTimer {
     ~__SystemTimer() {
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        std::cout << "\n__EXECUTION_TIME_MS:" << (duration.count() / 1000.0) << "__\n";
+        std::cout << "\\n__EXECUTION_TIME_MS:" << (duration.count() / 1000.0) << "__\\n";
     }
 };
 
@@ -57,7 +57,7 @@ __sys_start_time = time.perf_counter()
 
 def __print_execution_time():
     __sys_end_time = time.perf_counter()
-    print(f"\n__EXECUTION_TIME_MS:{(__sys_end_time - __sys_start_time) * 1000:.4f}__")
+    print(f"\\n__EXECUTION_TIME_MS:{(__sys_end_time - __sys_start_time) * 1000:.4f}__")
 
 atexit.register(__print_execution_time)
 

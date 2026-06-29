@@ -57,4 +57,22 @@ describe("injectTimingLogic", () => {
     expect(out).toContain("__EXECUTION_TIME_MS");
     expect(out).toContain("int main(){return 0;}");
   });
+
+  // Regression: the newline in the marker must be a literal \n in the generated
+  // source, not an actual line break (which breaks the C++/Python string literal).
+  it("emits the marker on a single line with an escaped newline (cpp)", () => {
+    const out = injectTimingLogic("int main(){return 0;}", "cpp");
+    expect(out).toContain('"\\n__EXECUTION_TIME_MS:');
+    const markerLine = out.split("\n").find((l) => l.includes("__EXECUTION_TIME_MS"));
+    expect(markerLine).toContain('std::cout << "');
+    expect(markerLine).toContain('__\\n";');
+  });
+
+  it("emits the marker on a single line with an escaped newline (python)", () => {
+    const out = injectTimingLogic("print('hi')", "python");
+    expect(out).toContain('f"\\n__EXECUTION_TIME_MS:');
+    const markerLine = out.split("\n").find((l) => l.includes("__EXECUTION_TIME_MS"));
+    expect(markerLine).toContain('print(f"');
+    expect(markerLine).toContain('__")');
+  });
 });
