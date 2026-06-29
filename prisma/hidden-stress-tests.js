@@ -137,6 +137,44 @@ function buildStressTests() {
   const palindromeN = 5_000;
   const palindromeWords = values(palindromeN, (index) => `a${base26(index)}b`);
 
+  const meetingRoomsN = 50_000;
+  const meetingRoomIntervals = values(meetingRoomsN, (index) => `${index * 2} ${index * 2 + 1}`);
+
+  const employeeIntervalN = 20_000;
+  const employeeOneIntervals = values(
+    employeeIntervalN,
+    (index) => `${index * 4} ${index * 4 + 1}`,
+  ).join("\n");
+  const employeeTwoIntervals = values(
+    employeeIntervalN,
+    (index) => `${index * 4 + 1} ${index * 4 + 4}`,
+  ).join("\n");
+
+  const overlappingMeetingsN = 50_000;
+  const overlappingMeetings = repeated(overlappingMeetingsN, "0 100000").join("\n");
+
+  const closestN = 2_000;
+  const closestValues = range(closestN);
+
+  const nonOverlapN = 50_000;
+  const overlappingChain = values(nonOverlapN, (index) => `${index} ${index + 2}`).join("\n");
+
+  const palindromeStress = `${"a".repeat(50_000)}${"!".repeat(1_000)}${"A".repeat(50_000)}`;
+  const anagramLeft = `${"a".repeat(50_000)}${"b".repeat(50_000)}`;
+  const anagramRight = `${"b".repeat(50_000)}${"a".repeat(50_000)}`;
+  const distinctAlphabet = "abcdefghijklmnopqrstuvwxyz";
+  const noRepeatStress = distinctAlphabet.repeat(4_000);
+  const minimumWindowSource = `${"A".repeat(50_000)}BC${"A".repeat(50_000)}`;
+  const atoiStress = `${" ".repeat(10_000)}${"9".repeat(100_000)}`;
+  const palindromicSubstringStress = "a".repeat(50_000);
+  const anagramSearchSource = "a".repeat(100_000);
+  const anagramSearchPattern = "a".repeat(50_000);
+  const anagramSearchOutput = line(range(50_001, 0));
+  const codecStrings = values(10_000, (index) =>
+    index % 2 === 0 ? `value#${index}` : `value ${index}`,
+  );
+  const codecEncoded = codecStrings.map((value) => `${value.length}#${value}`).join("");
+
   return {
     "sum-two-numbers": [makeTest("1000000000 -1000000000\n", "0\n")],
     "two-sum": [
@@ -184,6 +222,32 @@ function buildStressTests() {
     "squares-of-a-sorted-array": [
       makeTest(`${squaresN}\n${line(squareInputs)}`, line(squareOutputs)),
     ],
+    "meeting-rooms": [makeTest(`${meetingRoomsN}\n${meetingRoomIntervals.join("\n")}\n`, "true\n")],
+    "employee-free-time": [
+      makeTest(
+        `2\n${employeeIntervalN}\n${employeeOneIntervals}\n${employeeIntervalN}\n${employeeTwoIntervals}\n`,
+        "EMPTY\n",
+      ),
+    ],
+    "meeting-rooms-ii": [
+      makeTest(`${overlappingMeetingsN}\n${overlappingMeetings}\n`, `${overlappingMeetingsN}\n`),
+    ],
+    "three-sum-closest": [makeTest(`${closestN} -10\n${line(closestValues)}`, "6\n")],
+    "non-overlapping-intervals": [
+      makeTest(`${nonOverlapN}\n${overlappingChain}\n`, `${nonOverlapN / 2}\n`),
+    ],
+    "valid-palindrome": [makeTest(`${palindromeStress}\n`, "true\n")],
+    "valid-anagram": [makeTest(`${anagramLeft}\n${anagramRight}\n`, "true\n")],
+    "longest-substring-without-repeating-characters": [makeTest(`${noRepeatStress}\n`, "26\n")],
+    "longest-palindrome": [makeTest(`${"ab".repeat(50_000)}\n`, "100000\n")],
+    "minimum-window-substring": [makeTest(`${minimumWindowSource}\nABC\n`, "ABC\n")],
+    "string-to-integer-atoi": [makeTest(`${atoiStress}\n`, "2147483647\n")],
+    "longest-palindromic-substring": [
+      makeTest(`${palindromicSubstringStress}\n`, `${palindromicSubstringStress}\n`),
+    ],
+    "find-all-anagrams-in-a-string": [
+      makeTest(`${anagramSearchSource}\n${anagramSearchPattern}\n`, anagramSearchOutput),
+    ],
     "group-anagrams": [
       makeTest(`${anagramN}\n${anagramWords.join("\n")}\n`, `${anagramWords.join(" ")}\n`),
     ],
@@ -195,6 +259,12 @@ function buildStressTests() {
       makeTest(
         `${largestN}\n${line(largestValues)}`,
         `${"9".repeat(largestN / 2)}${"91".repeat(largestN / 2)}\n`,
+      ),
+    ],
+    "encode-and-decode-strings": [
+      makeTest(
+        `${codecStrings.length}\n${codecStrings.join("\n")}\n`,
+        `${codecEncoded}\n${codecStrings.join("\n")}\n`,
       ),
     ],
     "palindrome-pairs": [makeTest(`${palindromeN}\n${palindromeWords.join("\n")}\n`, "EMPTY\n")],

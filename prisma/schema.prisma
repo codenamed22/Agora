@@ -222,6 +222,7 @@ model Problem {
   tags        String[]          @default([])
   difficulty  ProblemDifficulty @default(EASY)
   timeLimitMs Int               @default(2000)
+  practiceOrder Int             @default(100000)
   published   Boolean           @default(true)
   solutionCode     String?
   solutionLanguage String?
@@ -234,6 +235,7 @@ model Problem {
   submissions Submission[]
   referenceSolutions ProblemReferenceSolution[]
 
+  @@index([published, practiceOrder])
   @@index([published, difficulty])
   @@index([createdById])
 }
