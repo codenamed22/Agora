@@ -11,12 +11,21 @@ import { prisma } from "../../../lib/prisma";
 
 const DAILY_SUBMISSION_LIMIT = 50;
 const MAX_CODE_LENGTH = 20_000;
+const FAILURE_MESSAGE_LIMIT = 4_000;
 
 const submissionSchema = z.object({
   problemSlug: z.string().trim().min(1),
   language: z.string().trim().min(1),
   code: z.string().max(MAX_CODE_LENGTH),
 });
+
+function failureMessageFromError(error: unknown) {
+  const message =
+    error instanceof Error
+      ? error.message
+      : "Judge service failed before the submission could complete.";
+  return message.replace(/\s+/g, " ").trim().slice(0, FAILURE_MESSAGE_LIMIT);
+}
 
 export async function submitSolution(formData: FormData) {
   const user = await requireActiveUser();
@@ -42,7 +51,7 @@ export async function submitSolution(formData: FormData) {
       timeLimitMs: true,
       testCases: {
         orderBy: { order: "asc" },
-        select: { input: true, expectedOutput: true },
+        select: { input: true, expectedOutput: true, isSample: true },
       },
     },
   });
@@ -87,13 +96,14 @@ export async function submitSolution(formData: FormData) {
     if (result.verdict === SubmissionVerdict.ACCEPTED) {
       await syncTopPracticeBadge();
     }
-  } catch {
+  } catch (error) {
     await prisma.submission.update({
       where: { id: submission.id },
       data: {
         verdict: SubmissionVerdict.RUNTIME_ERROR,
         passedCount: 0,
         totalCount: problem.testCases.length,
+        failureMessage: failureMessageFromError(error),
       },
     });
   }

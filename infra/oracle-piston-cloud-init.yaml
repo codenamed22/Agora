@@ -20,16 +20,88 @@ write_files:
     content: |
       services:
         api:
-          image: ghcr.io/engineer-man/piston
+          build: .
+          image: shardup-piston:request-body-limit
           container_name: piston_api
           restart: always
           privileged: true
+          environment:
+            PISTON_REQUEST_BODY_LIMIT: 8mb
+            PISTON_OUTPUT_MAX_SIZE: "2000000"
+            PISTON_MAX_FILE_SIZE: "10000000"
+            PISTON_RUN_TIMEOUT: "10000"
+            PISTON_RUN_CPU_TIME: "10000"
           ports:
             - "127.0.0.1:2000:2000"
           volumes:
             - ./data/piston/packages:/piston/packages
           tmpfs:
             - /tmp:exec
+
+  - path: /opt/shardup-judge/Dockerfile
+    permissions: "0644"
+    content: |
+      FROM ghcr.io/engineer-man/piston
+      COPY patch-piston-request-body-limit.js /tmp/patch-piston-request-body-limit.js
+      RUN node /tmp/patch-piston-request-body-limit.js && rm /tmp/patch-piston-request-body-limit.js
+
+  - path: /opt/shardup-judge/patch-piston-request-body-limit.js
+    permissions: "0644"
+    content: |
+      const fs = require("fs");
+
+      function patchFile(file, replacements) {
+        let source = fs.readFileSync(file, "utf8");
+        for (const [before, after] of replacements) {
+          if (source.includes(after)) {
+            continue;
+          }
+          if (!source.includes(before)) {
+            throw new Error(`Could not find patch target in ${file}`);
+          }
+          source = source.replace(before, after);
+        }
+        fs.writeFileSync(file, source);
+      }
+
+      // Upstream Piston exposes file/output/time limits through environment
+      // variables, but its Express body parsers still use body-parser defaults.
+      // Patch the API parser limit so large judge stdin payloads reach Piston.
+      patchFile("/piston_api/src/index.js", [
+        [
+          "app.use(body_parser.urlencoded({ extended: true }));",
+          "app.use(body_parser.urlencoded({ extended: true, limit: process.env.PISTON_REQUEST_BODY_LIMIT || \"8mb\" }));",
+        ],
+        [
+          "app.use(body_parser.json());",
+          "app.use(body_parser.json({ limit: process.env.PISTON_REQUEST_BODY_LIMIT || \"8mb\" }));",
+        ],
+      ]);
+
+      // Piston writes stdin and then immediately destroys the stream, which can
+      // discard buffered data for large stress-test inputs. It also does not
+      // handle stdin write errors when a child exits before reading all input.
+      // Let Node flush and close stdin normally, and ignore expected EPIPEs.
+      patchFile("/piston_api/src/job.js", [
+        [
+          `            proc.stdin.write(this.stdin);
+            proc.stdin.end();
+            proc.stdin.destroy();`,
+          "            proc.stdin.end(this.stdin);",
+        ],
+        [
+          `        if (event_bus === null) {
+            proc.stdin.end(this.stdin);`,
+          `        proc.stdin.on('error', error => {
+            if (error.code !== 'EPIPE') {
+                this.logger.info(\`stdin write failed: \${error.message}\`);
+            }
+        });
+
+        if (event_bus === null) {
+            proc.stdin.end(this.stdin);`,
+        ],
+      ]);
 
   - path: /etc/caddy/Caddyfile
     permissions: "0644"
@@ -62,7 +134,7 @@ runcmd:
   - ufw allow 80/tcp
   - ufw allow 443/tcp
   - ufw --force enable
-  - cd /opt/shardup-judge && docker compose up -d
+  - cd /opt/shardup-judge && docker compose up -d --build
   - git clone https://github.com/engineer-man/piston.git /opt/piston-src
   - cd /opt/piston-src/cli && npm ci
   - until curl -fsS http://127.0.0.1:2000/api/v2/runtimes >/dev/null; do sleep 2; done

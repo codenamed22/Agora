@@ -7,20 +7,23 @@ type RunResult =
   | { ok: true; verdict: string; passedCount: number; totalCount: number; runtimeMs: number | null }
   | { ok: false; message: string };
 
-export default function RunSolution({ slug }: Readonly<{ slug: string }>) {
+export default function RunSolution({
+  language,
+  slug,
+}: Readonly<{ language: string; slug: string }>) {
   const [result, setResult] = useState<RunResult | null>(null);
   const [pending, startTransition] = useTransition();
 
   function handleRun() {
     startTransition(async () => {
-      setResult(await runReferenceSolution(slug));
+      setResult(await runReferenceSolution(slug, language));
     });
   }
 
   return (
     <div className="stacked-form">
       <button className="button" type="button" disabled={pending} onClick={handleRun}>
-        {pending ? "Running..." : "Run reference solution against all tests"}
+        {pending ? "Running..." : `Run ${language} reference against all tests`}
       </button>
       {result ? (
         result.ok ? (

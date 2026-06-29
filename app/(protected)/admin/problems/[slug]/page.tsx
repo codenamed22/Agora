@@ -11,12 +11,22 @@ export default async function AdminProblemDetailPage({
   await requireAdmin();
   const problem = await prisma.problem.findUnique({
     where: { slug: params.slug },
-    include: { testCases: { orderBy: { order: "asc" } } },
+    include: {
+      referenceSolutions: { orderBy: { language: "asc" } },
+      testCases: { orderBy: { order: "asc" } },
+    },
   });
 
   if (!problem) {
     notFound();
   }
+
+  const referenceSolutions =
+    problem.referenceSolutions.length > 0
+      ? problem.referenceSolutions
+      : problem.solutionCode
+        ? [{ language: problem.solutionLanguage ?? "python", code: problem.solutionCode }]
+        : [];
 
   return (
     <main className="app-shell wide-card workspace-shell">
@@ -32,14 +42,17 @@ export default async function AdminProblemDetailPage({
         ) : null}
 
         <div className="problem-section">
-          <h2>
-            Reference solution {problem.solutionLanguage ? `(${problem.solutionLanguage})` : ""}
-          </h2>
-          {problem.solutionCode ? (
-            <>
-              <pre className="reference-solution">{problem.solutionCode}</pre>
-              <RunSolution slug={problem.slug} />
-            </>
+          <h2>Reference solutions</h2>
+          {referenceSolutions.length > 0 ? (
+            <div className="sample-list">
+              {referenceSolutions.map((solution) => (
+                <article className="sample-card" key={solution.language}>
+                  <h3>{solution.language}</h3>
+                  <pre className="reference-solution">{solution.code}</pre>
+                  <RunSolution language={solution.language} slug={problem.slug} />
+                </article>
+              ))}
+            </div>
           ) : (
             <div className="form-message error">No reference solution stored.</div>
           )}

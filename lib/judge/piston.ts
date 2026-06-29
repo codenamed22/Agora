@@ -2,8 +2,8 @@ import { SUPPORTED_LANGUAGES } from "./languages";
 import type { CodeExecutor, ExecutionResult } from "./types";
 import { injectTimingLogic, cleanStdout } from "./timer";
 
-const OUTPUT_LIMIT = 20_000; // 20,000 character limit over stdout
-const COMPILE_TIMEOUT_MS = 10_000; // 100s for compilation
+const OUTPUT_LIMIT = 2_000_000;
+const COMPILE_TIMEOUT_MS = 10_000;
 
 type PistonProcess = {
   stdout?: string;
@@ -20,6 +20,10 @@ type PistonResponse = {
   compile?: PistonProcess;
 };
 
+function isPistonTimeout(process?: PistonProcess) {
+  return process?.status === "TO" || process?.message === "Time limit exceeded (wall clock)";
+}
+
 export const executeWithPiston: CodeExecutor = async ({ code, language, stdin, timeLimitMs }) => {
   const runtime = SUPPORTED_LANGUAGES[language];
   const baseUrl = process.env.JUDGE_BASE_URL?.trim();
@@ -28,8 +32,7 @@ export const executeWithPiston: CodeExecutor = async ({ code, language, stdin, t
     throw new Error("JUDGE_BASE_URL must point to a self-hosted Piston API.");
   }
 
-  // inject user code with execution timer for 
-  // milisecond accurate results
+  // Inject an in-program timer so we report real execution time, not wall clock.
   code = injectTimingLogic(code, language);
 
   const controller = new AbortController();
@@ -61,16 +64,18 @@ export const executeWithPiston: CodeExecutor = async ({ code, language, stdin, t
     });
 
     if (!response.ok) {
-      throw new Error(`Piston request failed: ${response.status}`);
+      const details = (await response.text()).replace(/\s+/g, " ").trim().slice(0, 200);
+      throw new Error(
+        `Judge service returned HTTP ${response.status}${details ? `: ${details}` : ""}`,
+      );
     }
 
     const data = (await response.json()) as PistonResponse;
-    const compile = data.compile; // recieved compile time data
-    const run = data.run; // recieved runtime data
+    const compile = data.compile;
+    const run = data.run;
     const compileOutput = `${compile?.stdout ?? ""}${compile?.stderr ?? ""}${compile?.output ?? ""}`;
 
-    const compileTimedOut =
-      compile?.status === "TO" || compile?.message === "Time limit exceeded (wall clock)";
+    const compileTimedOut = isPistonTimeout(compile);
 
     // Handle compilation fails NOT through time-outs
     if (compile && !compileTimedOut && compile.code !== 0) {
@@ -84,19 +89,29 @@ export const executeWithPiston: CodeExecutor = async ({ code, language, stdin, t
       } satisfies ExecutionResult;
     }
 
-    // get default runtime of the whole process
+    const runTimedOut = isPistonTimeout(run);
     const runtimeWithCompilation = Date.now() - pistonStartTime;
 
-    // get the final stdout and runtime
-    const receivedStdout = run?.stdout ?? "";
-    const { runtimeMs, finalStdout } = cleanStdout(receivedStdout, runtimeWithCompilation);
+    if (runTimedOut) {
+      return {
+        stdout: (run?.stdout ?? "").slice(0, OUTPUT_LIMIT),
+        stderr: "Time limit exceeded.",
+        exitCode: typeof run?.code === "number" ? run.code : null,
+        signal: run?.signal ?? null,
+        runtimeMs: timeLimitMs,
+        timedOut: true,
+      } satisfies ExecutionResult;
+    }
+
+    // Strip the injected timer marker and recover the real execution time.
+    const { runtimeMs, finalStdout } = cleanStdout(run?.stdout ?? "", runtimeWithCompilation);
 
     return {
       stdout: finalStdout.slice(0, OUTPUT_LIMIT),
       stderr: (run?.stderr ?? run?.output ?? "").slice(0, OUTPUT_LIMIT),
       exitCode: typeof run?.code === "number" ? run.code : null,
       signal: run?.signal ?? null,
-      runtimeMs: runtimeMs,
+      runtimeMs,
     } satisfies ExecutionResult;
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {

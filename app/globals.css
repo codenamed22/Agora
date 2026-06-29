@@ -1001,7 +1001,7 @@ img {
 }
 
 .sample-card,
-.submission-row {
+.submission-entry {
   padding: 16px;
   border: 1px solid var(--line);
   background: var(--surface);
@@ -1040,34 +1040,68 @@ img {
   color: var(--muted);
 }
 
+.submission-details {
+  display: grid;
+  gap: 12px;
+}
+
+.submission-details summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.submission-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.submission-details summary .verdict-label {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.submission-failure-message {
+  max-height: 220px;
+  overflow: auto;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid rgba(180, 35, 24, 0.28);
+  background: rgba(18, 11, 11, 0.65);
+  color: var(--ink);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
 .submission-row .verdict-label {
   color: var(--ink);
 }
 
-.submission-row.verdict-success {
+.submission-entry.verdict-success {
   border-color: rgba(23, 208, 89, 0.45);
   background: var(--surface-hover);
 }
 
-.submission-row.verdict-success .verdict-label {
+.submission-entry.verdict-success .verdict-label {
   color: var(--accent-strong);
 }
 
-.submission-row.verdict-warning {
+.submission-entry.verdict-warning {
   border-color: rgba(214, 153, 0, 0.45);
   background: var(--surface-warning);
 }
 
-.submission-row.verdict-warning .verdict-label {
+.submission-entry.verdict-warning .verdict-label {
   color: var(--warning-ink);
 }
 
-.submission-row.verdict-error {
+.submission-entry.verdict-error {
   border-color: rgba(180, 35, 24, 0.38);
   background: var(--surface-error);
 }
 
-.submission-row.verdict-error .verdict-label {
+.submission-entry.verdict-error .verdict-label {
   color: var(--error-ink);
 }
 
@@ -1364,6 +1398,10 @@ img {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.dashboard-admin-links {
+  margin-top: 28px;
 }
 
 .member-card-badges a,

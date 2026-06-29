@@ -58,4 +58,20 @@ test.describe("problems", () => {
       page.locator(".leaderboard-row", { hasText: "Local Admin" }).locator(".leaderboard-score"),
     ).toHaveText("1");
   });
+
+  test("shows expandable runtime error details", async ({ page }) => {
+    await devLogin(page, "admin");
+    await page.goto(`/problems/${TEST_PROBLEM_SLUG}`);
+
+    await page.getByLabel("Language").selectOption("python");
+    await page.locator(".cm-content").fill("RUNTIME_ERROR");
+    await page.getByRole("button", { name: "Submit solution" }).click();
+
+    const runtimeError = page.locator(".submission-details", { hasText: "Runtime error" }).first();
+    await expect(runtimeError).toBeVisible();
+    await runtimeError.locator("summary").click();
+    await expect(runtimeError.locator(".submission-failure-message")).toContainText(
+      "fake runtime error",
+    );
+  });
 });

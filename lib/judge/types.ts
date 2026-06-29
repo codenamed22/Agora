@@ -4,6 +4,7 @@ import type { SupportedLanguage } from "./languages";
 export type JudgeTestCase = {
   input: string;
   expectedOutput: string;
+  isSample?: boolean;
 };
 
 export type ExecutionResult = {
@@ -28,4 +29,5 @@ export type JudgeResult = {
   passedCount: number;
   totalCount: number;
   runtimeMs: number | null;
+  failureMessage?: string | null;
 };
