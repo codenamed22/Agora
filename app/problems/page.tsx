@@ -19,7 +19,7 @@ export default async function ProblemsPage() {
 
   const problems = await prisma.problem.findMany({
     where: { published: true },
-    orderBy: [{ difficulty: "asc" }, { title: "asc" }],
+    orderBy: [{ practiceOrder: "asc" }, { difficulty: "asc" }, { title: "asc" }],
     select: {
       id: true,
       slug: true,
