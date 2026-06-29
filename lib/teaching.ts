@@ -51,7 +51,13 @@ export function parseOptionalDate(value: string | undefined) {
 }
 
 export function sanitizeTeachingScene(scene: TeachingScene): TeachingScene {
-  const { collaborators: _collaborators, ...appState } = scene.appState;
+  const {
+    collaborators: _collaborators,
+    scrollX: _scrollX,
+    scrollY: _scrollY,
+    zoom: _zoom,
+    ...appState
+  } = scene.appState;
 
   return {
     elements: scene.elements,

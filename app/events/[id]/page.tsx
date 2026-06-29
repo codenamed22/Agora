@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 
+import { Role, UserStatus } from "@prisma/client";
 import { notFound } from "next/navigation";
 import { auth } from "../../../auth";
 import { formatEventDetailDate } from "../../../lib/events";
@@ -15,6 +16,7 @@ export default async function EventDetailPage({
 }>) {
   const session = await auth();
   const userId = session?.user?.id;
+  const isAdmin = session?.user?.role === Role.ADMIN && session.user.status === UserStatus.ACTIVE;
   const event = await prisma.event.findFirst({
     where: {
       id: params.id,
@@ -69,6 +71,11 @@ export default async function EventDetailPage({
           <a className="text-link" href="/events">
             Back to events
           </a>
+          {isAdmin ? (
+            <a className="text-link" href={`/admin/events/${event.id}`}>
+              Edit event
+            </a>
+          ) : null}
         </div>
       </section>
     </main>

@@ -10,7 +10,10 @@ import { prisma } from "../../../lib/prisma";
 
 const applicationSchema = z.object({
   displayName: z.string().trim().min(2).max(80),
-  batch: z.string().trim().min(2).max(40),
+  batch: z
+    .string()
+    .trim()
+    .regex(/^\d{4}$/, "Select a graduation year"),
   branch: z.string().trim().min(2).max(80),
   goals: z.string().trim().min(2).max(1000),
   experience: z.string().trim().max(1000).optional(),

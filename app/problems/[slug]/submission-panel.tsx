@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
-import CodeMirror from "@uiw/react-codemirror";
+import { FormEvent, useEffect, useState } from "react";
+import CodeMirror, { EditorView } from "@uiw/react-codemirror";
 import { cpp } from "@codemirror/lang-cpp";
 import { python } from "@codemirror/lang-python";
 import { oneDark } from "@codemirror/theme-one-dark";
@@ -20,6 +20,7 @@ type Submission = {
   passedCount: number;
   totalCount: number;
   runtimeMs: number | null;
+  failureMessage: string | null;
 };
 
 const verdictLabels: Record<string, string> = {
@@ -42,12 +43,45 @@ const verdictTone: Record<string, "success" | "warning" | "error"> = {
 
 const starterCode: Record<string, string> = {
   python: "# Write your solution here\n",
-  cpp: "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    // Write your solution here\n    return 0;\n}\n",
+  cpp: "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your solution here\n    return 0;\n}\n",
 };
+
+function SubmissionMeta({ submission }: Readonly<{ submission: Submission }>) {
+  return (
+    <>
+      <strong className="verdict-label">
+        {verdictLabels[submission.verdict] ?? submission.verdict}
+      </strong>
+      <span>{submission.language}</span>
+      <span>
+        {submission.passedCount}/{submission.totalCount} tests
+      </span>
+      <span>{submission.runtimeMs ?? 0}ms</span>
+    </>
+  );
+}
 
 function languageExtensions(language: string) {
   return language === "cpp" ? [cpp()] : [python()];
 }
+
+// Anti-cheat: block copy/cut/paste, drag-drop, and the right-click menu in the editor.
+// Client-side deterrent only — it stops casual copy-pasting, not determined bypassing.
+function blockEvent(event: Event) {
+  event.preventDefault();
+  return true;
+}
+
+const blockClipboard = EditorView.domEventHandlers({
+  paste: blockEvent,
+  copy: blockEvent,
+  cut: blockEvent,
+  drop: blockEvent,
+  dragstart: blockEvent,
+  contextmenu: blockEvent,
+});
+
+const draftKey = (slug: string, language: string) => `shardup:draft:${slug}:${language}`;
 
 export function SubmissionPanel({
   languageOptions,
@@ -65,12 +99,15 @@ export function SubmissionPanel({
   const [error, setError] = useState<string | null>(null);
   const [runningLanguage, setRunningLanguage] = useState("python");
 
-  function handleLanguageChange(nextLanguage: string) {
-    setLanguage(nextLanguage);
+  // Restore the saved draft for this problem + language (localStorage survives refresh).
+  useEffect(() => {
+    const saved = localStorage.getItem(draftKey(problemSlug, language));
+    setCode(saved ?? starterCode[language] ?? "");
+  }, [problemSlug, language]);
 
-    if (!code.trim() || code === starterCode[language]) {
-      setCode(starterCode[nextLanguage] ?? "");
-    }
+  function handleCodeChange(value: string) {
+    setCode(value);
+    localStorage.setItem(draftKey(problemSlug, language), value);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -108,7 +145,7 @@ export function SubmissionPanel({
             name="language"
             value={language}
             disabled={isRunning}
-            onChange={(event) => handleLanguageChange(event.target.value)}
+            onChange={(event) => setLanguage(event.target.value)}
           >
             {languageOptions.map((language) => (
               <option key={language.value} value={language.value}>
@@ -133,9 +170,9 @@ export function SubmissionPanel({
               lineNumbers: true,
             }}
             editable={!isRunning}
-            extensions={languageExtensions(language)}
+            extensions={[...languageExtensions(language), blockClipboard]}
             height="360px"
-            onChange={(value) => setCode(value)}
+            onChange={handleCodeChange}
             theme={oneDark}
             value={code}
           />
@@ -151,26 +188,32 @@ export function SubmissionPanel({
         {isRunning || submissions.length > 0 ? (
           <div className="submission-list" aria-live="polite">
             {isRunning ? (
-              <article className="submission-row running-submission verdict-warning">
-                <strong className="verdict-label">Pending</strong>
-                <span>{runningLanguage}</span>
-                <span>Running tests...</span>
-                <span className="submission-spinner" aria-hidden="true" />
+              <article className="submission-entry running-submission verdict-warning">
+                <div className="submission-row">
+                  <strong className="verdict-label">Pending</strong>
+                  <span>{runningLanguage}</span>
+                  <span>Running tests...</span>
+                  <span className="submission-spinner" aria-hidden="true" />
+                </div>
               </article>
             ) : null}
             {submissions.map((submission) => (
               <article
-                className={`submission-row verdict-${verdictTone[submission.verdict] ?? "error"}`}
+                className={`submission-entry verdict-${verdictTone[submission.verdict] ?? "error"}`}
                 key={submission.id}
               >
-                <strong className="verdict-label">
-                  {verdictLabels[submission.verdict] ?? submission.verdict}
-                </strong>
-                <span>{submission.language}</span>
-                <span>
-                  {submission.passedCount}/{submission.totalCount} tests
-                </span>
-                <span>{submission.runtimeMs ?? 0}ms</span>
+                {submission.failureMessage ? (
+                  <details className="submission-details">
+                    <summary className="submission-row">
+                      <SubmissionMeta submission={submission} />
+                    </summary>
+                    <pre className="submission-failure-message">{submission.failureMessage}</pre>
+                  </details>
+                ) : (
+                  <div className="submission-row">
+                    <SubmissionMeta submission={submission} />
+                  </div>
+                )}
               </article>
             ))}
           </div>

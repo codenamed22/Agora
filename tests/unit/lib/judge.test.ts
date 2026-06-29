@@ -86,7 +86,57 @@ describe("judgeSubmission", () => {
       timeLimitMs: 2000,
     });
 
-    expect(result).toMatchObject({ verdict: SubmissionVerdict.COMPILE_ERROR, passedCount: 0 });
+    expect(result).toMatchObject({
+      verdict: SubmissionVerdict.COMPILE_ERROR,
+      passedCount: 0,
+      failureMessage: "compile failed",
+    });
+  });
+
+  it("includes stderr for runtime errors on sample tests", async () => {
+    const executor: CodeExecutor = async () => ({
+      stdout: "",
+      stderr: "Traceback: missing colon",
+      exitCode: 1,
+      signal: null,
+      runtimeMs: 1,
+    });
+
+    const result = await judgeSubmission({
+      code: "",
+      executor,
+      language: "python",
+      testCases: [{ ...testCases[0], isSample: true }],
+      timeLimitMs: 2000,
+    });
+
+    expect(result).toMatchObject({
+      verdict: SubmissionVerdict.RUNTIME_ERROR,
+      failureMessage: "Traceback: missing colon",
+    });
+  });
+
+  it("hides stderr for runtime errors on hidden tests", async () => {
+    const executor: CodeExecutor = async () => ({
+      stdout: "",
+      stderr: "secret hidden input",
+      exitCode: 1,
+      signal: null,
+      runtimeMs: 1,
+    });
+
+    const result = await judgeSubmission({
+      code: "",
+      executor,
+      language: "python",
+      testCases: [{ ...testCases[0], isSample: false }],
+      timeLimitMs: 2000,
+    });
+
+    expect(result).toMatchObject({
+      verdict: SubmissionVerdict.RUNTIME_ERROR,
+      failureMessage: "Runtime error on a hidden test. Check edge cases and input handling.",
+    });
   });
 
   it("maps timeouts to TLE", async () => {
@@ -153,5 +203,70 @@ describe("executeWithPiston", () => {
 
     expect(result.compileError).toContain("cin");
     expect(result.signal).toBe("SIGKILL");
+  });
+
+  it("includes Piston HTTP failure details in thrown errors", async () => {
+    process.env.JUDGE_BASE_URL = "https://judge.example.test/api/v2";
+
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
+      return new Response("payload too large", { status: 413 });
+    });
+
+    await expect(
+      executeWithPiston({
+        code: "",
+        language: "python",
+        stdin: "",
+        timeLimitMs: 2000,
+      }),
+    ).rejects.toThrow("Judge service returned HTTP 413: payload too large");
+  });
+
+  it("marks Piston run timeouts as timed out results", async () => {
+    process.env.JUDGE_BASE_URL = "https://judge.example.test/api/v2";
+
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
+      return new Response(
+        JSON.stringify({
+          run: {
+            code: null,
+            status: "TO",
+            message: "Time limit exceeded (wall clock)",
+          },
+        }),
+        { status: 200 },
+      );
+    });
+
+    const result = await executeWithPiston({
+      code: "while True: pass",
+      language: "python",
+      stdin: "",
+      timeLimitMs: 2000,
+    });
+
+    expect(result).toMatchObject({
+      stderr: "Time limit exceeded.",
+      runtimeMs: 2000,
+      timedOut: true,
+    });
+  });
+
+  it("keeps large stress-test output for comparison", async () => {
+    process.env.JUDGE_BASE_URL = "https://judge.example.test/api/v2";
+    const stdout = `${"1 ".repeat(12_000)}\n`;
+
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
+      return new Response(JSON.stringify({ run: { stdout, code: 0 } }), { status: 200 });
+    });
+
+    const result = await executeWithPiston({
+      code: "",
+      language: "python",
+      stdin: "",
+      timeLimitMs: 2000,
+    });
+
+    expect(result.stdout).toBe(stdout);
   });
 });

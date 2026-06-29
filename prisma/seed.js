@@ -1,6 +1,25 @@
+const fs = require("node:fs");
+const path = require("node:path");
 const { PrismaClient } = require("@prisma/client");
+const { buildStressTests } = require("./hidden-stress-tests");
 
 const prisma = new PrismaClient();
+
+const SOLUTIONS_DIR = path.join(__dirname, "..", "scripts", "reference-solutions");
+const REFERENCE_SOLUTION_EXTENSIONS = {
+  python: "py",
+  cpp: "cpp",
+};
+
+function readReferenceSolutions(slug) {
+  return Object.entries(REFERENCE_SOLUTION_EXTENSIONS)
+    .map(([language, extension]) => {
+      const file = path.join(SOLUTIONS_DIR, `${slug}.${extension}`);
+      return fs.existsSync(file) ? { language, code: fs.readFileSync(file, "utf8") } : null;
+    })
+    .filter(Boolean);
+}
+const TOP_PRACTICE_BADGE_NAME = "Practice Champion";
 
 async function main() {
   const events = [
@@ -271,7 +290,7 @@ async function main() {
       testCases: [
         { input: "5\n1 2 3 4 5\n3 4 5 1 2\n", expectedOutput: "3\n", isSample: true, order: 1 },
         { input: "3\n2 3 4\n3 4 3\n", expectedOutput: "-1\n", isSample: true, order: 2 },
-        { input: "4\n5 1 2 3\n4 4 1 2\n", expectedOutput: "0\n", isSample: false, order: 3 },
+        { input: "4\n5 1 2 3\n4 4 1 2\n", expectedOutput: "2\n", isSample: false, order: 3 },
       ],
     },
     {
@@ -505,8 +524,36 @@ async function main() {
     },
   ];
 
+  // Hidden edge-case and stress tests, shared with scripts/sync-problem-tests.mjs.
+  const hiddenTests = require("./hidden-tests.json");
+  const stressTests = buildStressTests();
   for (const problem of problems) {
-    const { testCases, ...problemData } = problem;
+    const hidden = [...(hiddenTests[problem.slug] ?? []), ...(stressTests[problem.slug] ?? [])];
+    const startOrder = problem.testCases.length;
+    hidden.forEach((test, i) => {
+      problem.testCases.push({
+        input: test.input,
+        expectedOutput: test.expectedOutput,
+        isSample: false,
+        order: startOrder + i + 1,
+      });
+    });
+  }
+
+  // Attach the reference solutions (admins can view and run them).
+  for (const problem of problems) {
+    const referenceSolutions = readReferenceSolutions(problem.slug);
+    problem.referenceSolutions = referenceSolutions;
+
+    const primarySolution = referenceSolutions.find((solution) => solution.language === "python");
+    if (primarySolution) {
+      problem.solutionCode = primarySolution.code;
+      problem.solutionLanguage = primarySolution.language;
+    }
+  }
+
+  for (const problem of problems) {
+    const { testCases, referenceSolutions, ...problemData } = problem;
     const savedProblem = await prisma.problem.upsert({
       where: { slug: problem.slug },
       update: problemData,
@@ -517,6 +564,79 @@ async function main() {
     await prisma.testCase.deleteMany({ where: { problemId: savedProblem.id } });
     await prisma.testCase.createMany({
       data: testCases.map((testCase) => ({ ...testCase, problemId: savedProblem.id })),
+    });
+
+    await prisma.problemReferenceSolution.deleteMany({ where: { problemId: savedProblem.id } });
+    if (referenceSolutions.length > 0) {
+      await prisma.problemReferenceSolution.createMany({
+        data: referenceSolutions.map((solution) => ({
+          ...solution,
+          problemId: savedProblem.id,
+        })),
+      });
+    }
+  }
+
+  const practiceChampionBadge = await prisma.badge.upsert({
+    where: { name: TOP_PRACTICE_BADGE_NAME },
+    update: {
+      description: "Automatically held by the current #1 on the practice leaderboard.",
+      xp: 0,
+    },
+    create: {
+      name: TOP_PRACTICE_BADGE_NAME,
+      description: "Automatically held by the current #1 on the practice leaderboard.",
+      xp: 0,
+    },
+    select: { id: true },
+  });
+  const practiceDifficultyScores = { EASY: 1, MEDIUM: 3, HARD: 7 };
+  const publishedProblems = await prisma.problem.findMany({
+    where: { published: true },
+    select: { id: true, difficulty: true },
+  });
+  const difficultyByProblemId = new Map(
+    publishedProblems.map((problem) => [problem.id, problem.difficulty]),
+  );
+  const acceptedSubmissions = await prisma.submission.findMany({
+    where: {
+      verdict: "ACCEPTED",
+      problemId: { in: publishedProblems.map((problem) => problem.id) },
+    },
+    distinct: ["problemId", "userId"],
+    select: { problemId: true, userId: true },
+  });
+  const solvedStats = acceptedSubmissions.reduce((stats, submission) => {
+    const current = stats[submission.userId] || { solvedCount: 0, score: 0 };
+    const difficulty = difficultyByProblemId.get(submission.problemId);
+
+    current.solvedCount += 1;
+    current.score += practiceDifficultyScores[difficulty] || practiceDifficultyScores.EASY;
+    stats[submission.userId] = current;
+    return stats;
+  }, {});
+  const users = await prisma.user.findMany({
+    where: { id: { in: Object.keys(solvedStats) } },
+    select: { id: true, name: true, email: true, profile: { select: { displayName: true } } },
+  });
+  const userById = new Map(users.map((user) => [user.id, user]));
+  const practiceLeader = Object.entries(solvedStats)
+    .map(([userId, stats]) => {
+      const user = userById.get(userId);
+      return {
+        userId,
+        solvedCount: stats.solvedCount,
+        score: stats.score,
+        name: (user && (user.profile?.displayName || user.name)) || "ShardUp member",
+      };
+    })
+    .sort((left, right) => right.score - left.score || left.name.localeCompare(right.name))[0];
+
+  await prisma.memberBadge.deleteMany({ where: { badgeId: practiceChampionBadge.id } });
+
+  if (practiceLeader) {
+    await prisma.memberBadge.create({
+      data: { badgeId: practiceChampionBadge.id, userId: practiceLeader.userId },
     });
   }
 

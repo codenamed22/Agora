@@ -67,6 +67,8 @@ model User {
   createdProblems Problem[]   @relation("ProblemCreator")
   submissions   Submission[]
   teachingSessions TeachingSession[] @relation("TeachingCreator")
+  memberBadges  MemberBadge[] @relation("MemberBadgeUser")
+  awardedBadges MemberBadge[] @relation("MemberBadgeAwarder")
 
   reviewedApplications Application[] @relation("ApplicationReviewer")
 }
@@ -114,6 +116,7 @@ model Profile {
   id             String   @id @default(cuid())
   userId         String   @unique
   displayName    String?
+  college        String?
   batch          String?
   branch         String?
   bio            String?
@@ -121,10 +124,41 @@ model Profile {
   githubUrl      String?
   linkedinUrl    String?
   leetcodeHandle String?
+  resumeUrl      String?
+  photoUrl       String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  emoji       String?
+  imageUrl    String?
+  xp          Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members MemberBadge[]
+}
+
+model MemberBadge {
+  id          String   @id @default(cuid())
+  userId      String
+  badgeId     String
+  awardedById String?
+  awardedAt   DateTime @default(now())
+
+  user      User  @relation("MemberBadgeUser", fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  awardedBy User? @relation("MemberBadgeAwarder", fields: [awardedById], references: [id])
+
+  @@unique([userId, badgeId])
+  @@index([badgeId])
+  @@index([awardedById])
 }
 
 model Application {
@@ -189,6 +223,8 @@ model Problem {
   difficulty  ProblemDifficulty @default(EASY)
   timeLimitMs Int               @default(2000)
   published   Boolean           @default(true)
+  solutionCode     String?
+  solutionLanguage String?
   createdById String?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
@@ -196,9 +232,24 @@ model Problem {
   creator     User?        @relation("ProblemCreator", fields: [createdById], references: [id])
   testCases   TestCase[]
   submissions Submission[]
+  referenceSolutions ProblemReferenceSolution[]
 
   @@index([published, difficulty])
   @@index([createdById])
+}
+
+model ProblemReferenceSolution {
+  id        String   @id @default(cuid())
+  problemId String
+  language  String
+  code      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([problemId, language])
+  @@index([language])
 }
 
 model TestCase {
@@ -226,6 +277,7 @@ model Submission {
   runtimeMs   Int?
   passedCount Int               @default(0)
   totalCount  Int               @default(0)
+  failureMessage String?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 

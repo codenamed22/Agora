@@ -12,13 +12,19 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const feedbackEmail = process.env.FEEDBACK_EMAIL ?? "";
+  // Set the theme before first paint to avoid a flash of the wrong theme.
+  const themeScript = `(function(){try{var t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.dataset.theme=t;}catch(e){}})();`;
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fbfaf3" />
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#151a23" />
+      </head>
       <body>
         {children}
-        <FeedbackWidget email={feedbackEmail.trim()} />
+        <FeedbackWidget />
       </body>
     </html>
   );

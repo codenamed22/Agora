@@ -22,10 +22,22 @@ export default async function DashboardPage() {
           Your account is active. This dashboard is the starting point for member profiles,
           resources, achievements, and future leaderboards.
         </p>
-        {session.user.role === Role.ADMIN ? (
-          <a className="text-link" href="/admin/applications">
-            Review applications
+
+        <div className="auth-actions-list">
+          <a className="button" href={`/members/${session.user.id}/edit`}>
+            Edit profile
           </a>
+          <a className="secondary-button" href={`/members/${session.user.id}`}>
+            View profile
+          </a>
+        </div>
+
+        {session.user.role === Role.ADMIN ? (
+          <div className="member-link-list dashboard-admin-links">
+            <a href="/admin/applications">Review applications</a>
+            <a href="/admin/events">Manage events</a>
+            <a href="/admin/problems">Review problems</a>
+          </div>
         ) : null}
       </section>
     </main>

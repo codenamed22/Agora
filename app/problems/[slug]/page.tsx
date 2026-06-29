@@ -69,6 +69,7 @@ export default async function ProblemDetailPage({
               passedCount: true,
               totalCount: true,
               runtimeMs: true,
+              failureMessage: true,
             },
           }
         : false,
@@ -80,41 +81,49 @@ export default async function ProblemDetailPage({
   }
 
   const canSubmit = session?.user?.status === "ACTIVE";
+  const isAdmin = session?.user?.role === "ADMIN" && session.user.status === "ACTIVE";
 
   return (
-    <main className="app-shell wide-card">
-      <section className="app-card">
+    <main className="app-shell wide-card workspace-shell">
+      <section className="app-card workspace-card">
         <p className="section-label">Practice problem</p>
         <h1>{problem.title}</h1>
         <div className="problem-tag-list">
           <span>{difficultyLabels[problem.difficulty]}</span>
           {problem.tags.length > 0 ? problem.tags.map((tag) => <span key={tag}>{tag}</span>) : null}
         </div>
-
-        <div className="problem-statement">{problem.statement}</div>
-        {problem.constraints ? (
-          <div className="problem-section">
-            <h2>Constraints</h2>
-            <pre>{problem.constraints}</pre>
-          </div>
+        {isAdmin ? (
+          <a className="secondary-button" href={`/admin/problems/${problem.slug}`}>
+            View reference solution
+          </a>
         ) : null}
 
-        <div className="problem-section">
-          <h2>Sample tests</h2>
-          <div className="sample-list">
-            {problem.testCases.map((testCase, index) => (
-              <article className="sample-card" key={testCase.id}>
-                <h3>Sample {index + 1}</h3>
-                <label>
-                  Input
-                  <pre>{testCase.input}</pre>
-                </label>
-                <label>
-                  Output
-                  <pre>{testCase.expectedOutput}</pre>
-                </label>
-              </article>
-            ))}
+        <div className="problem-readonly">
+          <div className="problem-statement">{problem.statement}</div>
+          {problem.constraints ? (
+            <div className="problem-section">
+              <h2>Constraints</h2>
+              <pre>{problem.constraints}</pre>
+            </div>
+          ) : null}
+
+          <div className="problem-section">
+            <h2>Sample tests</h2>
+            <div className="sample-list">
+              {problem.testCases.map((testCase, index) => (
+                <article className="sample-card" key={testCase.id}>
+                  <h3>Sample {index + 1}</h3>
+                  <label>
+                    Input
+                    <pre>{testCase.input}</pre>
+                  </label>
+                  <label>
+                    Output
+                    <pre>{testCase.expectedOutput}</pre>
+                  </label>
+                </article>
+              ))}
+            </div>
           </div>
         </div>
 

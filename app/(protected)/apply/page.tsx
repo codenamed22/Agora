@@ -2,6 +2,7 @@ import { ApplicationStatus, UserStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { auth } from "../../../auth";
 import { ensureRegistrationRecords } from "../../../lib/access";
+import { batchYears } from "../../../lib/members";
 import { prisma } from "../../../lib/prisma";
 import { submitApplication } from "./actions";
 
@@ -102,7 +103,16 @@ export default async function ApplyPage({
             </label>
             <label>
               Batch
-              <input name="batch" required defaultValue={user.profile?.batch ?? ""} />
+              <select name="batch" required defaultValue={user.profile?.batch ?? ""}>
+                <option value="" disabled>
+                  Select graduation year
+                </option>
+                {batchYears().map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
             </label>
             <label>
               Branch
