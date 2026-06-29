@@ -18,7 +18,12 @@ export default async function AccountBar({
       <a href="/dashboard">Dashboard</a>
       <a href="/masterclass">Masterclass</a>
       <a href={`/members/${session.user.id}`}>Profile</a>
-      {session.user.role === "ADMIN" ? <a href="/admin/applications">Admin</a> : null}
+      {session.user.role === "ADMIN" ? (
+        <>
+          <a href="/admin/cohort">Cohort</a>
+          <a href="/admin/applications">Applications</a>
+        </>
+      ) : null}
       <form
         action={async () => {
           "use server";
