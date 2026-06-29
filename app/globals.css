@@ -2107,7 +2107,7 @@ img {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--line);
-  background: #fffef8;
+  background: var(--surface);
   padding: 0;
   overflow: hidden;
   height: 100%;
@@ -2118,14 +2118,14 @@ img {
 
 .resource-card:hover {
   transform: translate(-2px, -2px);
-  box-shadow: 4px 4px 0 var(--ink);
+  box-shadow: 4px 4px 0 var(--shadow);
 }
 
 .resource-image-link {
   display: block;
   width: 100%;
   border-bottom: 1px solid var(--line);
-  background: #fdfcf7;
+  background: var(--surface-muted);
   overflow: hidden;
 }
 
