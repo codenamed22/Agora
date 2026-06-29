@@ -2271,7 +2271,7 @@ img {
   margin: 0;
   padding: 12px;
   border: 1px solid var(--line);
-  background: #fffef8;
+  background: var(--surface);
 }
 
 .question-row.add-question {
@@ -2283,7 +2283,7 @@ img {
   min-width: 0;
   padding: 10px 12px;
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   font: inherit;
 }
@@ -2327,6 +2327,6 @@ img {
 }
 
 .icon-button.danger:hover:not(:disabled) {
-  background: #f6d9d4;
-  border-color: #d33f2f;
+  background: var(--surface-error);
+  border-color: var(--error-ink);
 }
