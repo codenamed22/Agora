@@ -73,6 +73,19 @@ model User {
   reviewedApplications Application[] @relation("ApplicationReviewer")
 }
 
+// The yearly application round. One cohort is active at a time; admins edit its
+// questions, which the apply form renders. `questions` is a JSON array of
+// { id, label, required } in display order.
+model Cohort {
+  id           String        @id @default(cuid())
+  year         Int           @unique
+  isActive     Boolean       @default(false)
+  questions    Json          @default("[]")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  applications Application[]
+}
+
 model Account {
   userId            String
   type              String
@@ -164,19 +177,25 @@ model MemberBadge {
 model Application {
   id         String            @id @default(cuid())
   userId     String            @unique
+  cohortId   String?
   status     ApplicationStatus @default(DRAFT)
-  whyJoin    String?
+  // Answers to the cohort's dynamic questions, keyed by question id: { [id]: value }.
+  answers    Json              @default("{}")
+  // Legacy free-text fields, kept read-only for pre-cohort applications.
   goals      String?
   experience String?
+  whyJoin    String?
   reviewedBy String?
   reviewedAt DateTime?
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
 
-  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reviewer User? @relation("ApplicationReviewer", fields: [reviewedBy], references: [id])
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cohort   Cohort? @relation(fields: [cohortId], references: [id], onDelete: SetNull)
+  reviewer User?   @relation("ApplicationReviewer", fields: [reviewedBy], references: [id])
 
   @@index([status])
+  @@index([cohortId])
 }
 
 model Event {
