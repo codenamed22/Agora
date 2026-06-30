@@ -956,6 +956,88 @@ img {
   font-weight: 800;
 }
 
+.problem-solving-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(420px, 1.05fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.problem-description-panel,
+.problem-workspace-panel {
+  min-width: 0;
+  padding: clamp(18px, 2vw, 24px);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.problem-description-panel .section-label,
+.problem-workspace-panel .problem-section,
+.problem-workspace-panel .stacked-form {
+  margin-top: 0;
+}
+
+.problem-description-panel .event-detail-actions {
+  margin-top: 28px;
+}
+
+.problem-description-panel .problem-statement {
+  max-width: none;
+}
+
+.problem-workspace-panel {
+  position: sticky;
+  top: 24px;
+}
+
+.problem-layout-selector {
+  display: inline-flex;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.problem-layout-selector button {
+  padding: 8px 12px;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  border-right: 1px solid var(--line);
+}
+
+.problem-layout-selector button:last-child {
+  border-right: 0;
+}
+
+.problem-layout-selector button:hover {
+  color: var(--ink);
+  background: var(--surface-hover);
+}
+
+.problem-layout-selector button.active {
+  color: var(--ink);
+  background: var(--accent);
+}
+
+[data-theme="dark"] .problem-layout-selector button.active {
+  color: #05070b;
+}
+
+@media (max-width: 900px) {
+  .problem-solving-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .problem-workspace-panel {
+    position: static;
+  }
+}
+
 .problem-statement,
 .problem-section {
   margin-top: 28px;
@@ -1908,6 +1990,7 @@ img {
   .badge-group-hero,
   .member-profile-shell,
   .member-badge-admin-row,
+  .problem-solving-layout,
   .problem-row,
   .teaching-session-row,
   .teaching-board-row,
@@ -1928,6 +2011,19 @@ img {
 
   .problem-row {
     gap: 8px;
+  }
+
+  .problem-workspace-panel {
+    position: static;
+  }
+
+  .problem-layout-selector,
+  .problem-layout-selector button {
+    width: 100%;
+  }
+
+  .problem-layout-selector button {
+    text-align: center;
   }
 
   .problem-row-meta {
