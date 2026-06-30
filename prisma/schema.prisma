@@ -70,6 +70,8 @@ model User {
   memberBadges  MemberBadge[] @relation("MemberBadgeUser")
   awardedBadges MemberBadge[] @relation("MemberBadgeAwarder")
 
+  boards Board[]
+
   reviewedApplications Application[] @relation("ApplicationReviewer")
 }
 
@@ -377,6 +379,21 @@ model TeachingBoard {
   session TeachingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId])
+}
+
+// Personal Excalidraw boards owned by members (Practice > Design). Shared by URL;
+// any active user can view, only the owner can edit. Capped per user in the create action.
+model Board {
+  id        String   @id @default(cuid())
+  ownerId   String
+  title     String
+  scene     Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
 }
 
 model TeachingArtifact {

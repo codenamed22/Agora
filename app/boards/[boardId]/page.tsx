@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import AccountBar from "../../account-bar";
 import ExcalidrawBoard from "../excalidraw-board";
+import { saveTeachingBoard } from "../../(protected)/admin/teaching/actions";
 import { requireActiveUser } from "../../../lib/guards";
 import { prisma } from "../../../lib/prisma";
 import {
@@ -37,6 +38,7 @@ export default async function TeachingBoardViewerPage({
             boardId={board.id}
             editable={false}
             initialScene={scene.success ? sanitizeTeachingScene(scene.data) : emptyTeachingScene}
+            saveAction={saveTeachingBoard}
           />
         </section>
       </main>
