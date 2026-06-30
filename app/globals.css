@@ -956,6 +956,65 @@ img {
   font-weight: 800;
 }
 
+.practice-detail-card {
+  width: 100%;
+}
+
+.practice-detail-header {
+  display: flex;
+  justify-content: space-between;
+  gap: clamp(18px, 3vw, 40px);
+  align-items: flex-start;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.practice-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.practice-workspace {
+  --problem-editor-height: clamp(420px, 54vh, 620px);
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(440px, 1.05fr);
+  gap: clamp(22px, 3vw, 40px);
+  align-items: start;
+}
+
+.practice-prompt-pane,
+.practice-submit-pane {
+  min-width: 0;
+  padding-top: 28px;
+}
+
+.practice-submit-pane {
+  position: sticky;
+  top: 24px;
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  padding-left: clamp(20px, 3vw, 36px);
+  border-left: 1px solid var(--line);
+}
+
+.practice-prompt-pane .problem-statement,
+.practice-submit-pane > .problem-section {
+  margin-top: 0;
+}
+
+.practice-prompt-pane .problem-statement {
+  max-width: none;
+}
+
+.practice-workspace .problem-section h2 {
+  font-size: clamp(1.2rem, 2vw, 1.7rem);
+  letter-spacing: -0.03em;
+}
+
 .problem-statement,
 .problem-section {
   margin-top: 28px;
@@ -1928,6 +1987,32 @@ img {
 
   .problem-row {
     gap: 8px;
+  }
+
+  .practice-detail-header,
+  .practice-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .practice-detail-header {
+    display: grid;
+  }
+
+  .practice-detail-actions {
+    justify-content: flex-start;
+  }
+
+  .practice-workspace {
+    --problem-editor-height: 420px;
+  }
+
+  .practice-submit-pane {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid var(--line);
   }
 
   .problem-row-meta {
