@@ -21,7 +21,8 @@ test.describe("homepage navigation", () => {
     const nav = page.getByRole("navigation");
     await expect(nav.getByRole("link", { name: "Dashboard" })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Masterclass" })).toBeVisible();
-    await expect(nav.getByRole("link", { name: "Admin" })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Cohort" })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Applications" })).toBeVisible();
     await expect(nav.getByRole("button", { name: "Sign out" })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Join" })).toHaveCount(0);
 

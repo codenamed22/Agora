@@ -61,9 +61,15 @@ export async function ensureRegistrationRecords(userId: string, email?: string |
     where: { userId },
   });
 
-  if (!application && access?.role !== Role.ADMIN) {
+  if (!application && access.role !== Role.ADMIN) {
+    // Link the new draft to the cohort that's currently recruiting (if any).
+    const activeCohort = await prisma.cohort.findFirst({
+      where: { isActive: true },
+      select: { id: true },
+    });
+
     await prisma.application.create({
-      data: { userId, status: ApplicationStatus.DRAFT },
+      data: { userId, status: ApplicationStatus.DRAFT, cohortId: activeCohort?.id ?? null },
     });
   }
 }

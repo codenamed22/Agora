@@ -25,7 +25,7 @@ describe("AccountBar", () => {
     expect(screen.queryByRole("link", { name: "Dashboard" })).not.toBeInTheDocument();
   });
 
-  it("shows member navigation without the Admin link", async () => {
+  it("shows member navigation without admin links", async () => {
     const ui = await AccountBar({ session: makeSession("MEMBER") });
     render(ui);
 
@@ -35,14 +35,16 @@ describe("AccountBar", () => {
       "/masterclass",
     );
     expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Admin" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Cohort" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Applications" })).not.toBeInTheDocument();
   });
 
   it("shows admin links for admins", async () => {
     const ui = await AccountBar({ session: makeSession("ADMIN") });
     render(ui);
 
-    expect(screen.getByRole("link", { name: "Admin" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Cohort" })).toHaveAttribute("href", "/admin/cohort");
+    expect(screen.getByRole("link", { name: "Applications" })).toHaveAttribute(
       "href",
       "/admin/applications",
     );
