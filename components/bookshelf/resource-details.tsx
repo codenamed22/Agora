@@ -2,11 +2,12 @@
 import Link from "next/link";
 import { ResourceWithRelations } from "../../lib/bookshelf/types";
 
-interface ResourceDetailsProps {
-  resource: ResourceWithRelations;
-}
+export default function ResourceDetails({ resource }: { resource: ResourceWithRelations }) {
+  /* prettier-ignore */
+  const metaStyle = { margin: 0, padding: "14px", border: "1px solid var(--line)", borderTop: "4px solid var(--accent)", background: "var(--surface)", color: "var(--ink)", fontWeight: 800, fontSize: "0.95rem" };
+  /* prettier-ignore */
+  const spanStyle = { display: "block", marginBottom: "6px", color: "var(--accent)", fontSize: "0.7rem", letterSpacing: "0.14em", textTransform: "uppercase" };
 
-export default function ResourceDetails({ resource }: ResourceDetailsProps) {
   return (
     <article className="resource-details">
       <p className="section-label">
@@ -18,81 +19,67 @@ export default function ResourceDetails({ resource }: ResourceDetailsProps) {
       </p>
       <h1 style={{ marginBottom: "28px" }}>{resource.title}</h1>
 
-      <div className="resource-detail-grid">
-        {resource.imageUrl ? (
-          <div className="resource-detail-image-container">
-            <img className="resource-detail-image" src={resource.imageUrl} alt={resource.title} />
-          </div>
-        ) : null}
+      <div style={{ display: "flex", gap: "36px", flexWrap: "wrap", marginTop: "24px" }}>
+        {resource.imageUrl &&
+          /* prettier-ignore */
+          <div style={{ width: "300px", border: "1px solid var(--line)", boxShadow: "6px 6px 0 var(--ink)", background: "var(--surface)", height: "fit-content" }}>
+            <img style={{ display: "block", width: "100%", height: "auto", objectFit: "contain" }} src={resource.imageUrl} alt={`${resource.title} cover`} />
+          </div>}
 
-        <div className="resource-detail-info">
-          <div className="resource-detail-meta-box">
-            <p>
-              <span>Type</span>
-              {resource.type.replace("_", " ")}
-            </p>
-            {resource.author ? (
-              <p>
-                <span>Author</span>
-                {resource.author}
-              </p>
-            ) : null}
-            <p>
-              <span>Category</span>
-              <Link className="text-link" href={`/bookshelf/${resource.category.slug}`}>
-                {resource.category.name}
-              </Link>
-            </p>
+        <div style={{ flex: "1 1 400px", display: "flex", flexDirection: "column", gap: "24px" }}>
+          {/* prettier-ignore */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "12px" }}>
+            {[
+              { label: "Type", val: resource.type.replace("_", " ") },
+              resource.author && { label: "Author", val: resource.author },
+              { label: "Category", val: <Link className="text-link" href={`/bookshelf/${resource.category.slug}`}>{resource.category.name}</Link> }
+            ].map((item, idx) => item && (
+              <div key={idx} style={metaStyle}>
+                <span style={spanStyle}>{item.label}</span>
+                {item.val}
+              </div>
+            ))}
           </div>
 
-          {resource.recommendedBy ? (
-            <div className="resource-recommender-detail">
-              <span className="recommender-detail-label">Recommended By</span>
-              <div className="recommender-profile-box">
+          {resource.recommendedBy && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <span
+                style={{
+                  fontSize: "0.78rem",
+                  fontWeight: 800,
+                  textTransform: "uppercase",
+                  color: "var(--muted)",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                Recommended By
+              </span>
+              {/* prettier-ignore */}
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", border: "1px solid var(--line)", background: "var(--surface)", width: "fit-content" }}>
                 {resource.recommendedBy.image ? (
-                  <img
-                    className="recommender-avatar-large"
-                    src={resource.recommendedBy.image}
-                    alt=""
-                  />
+                  <img style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", border: "1px solid var(--line)" }} src={resource.recommendedBy.image} alt={`${resource.recommendedBy.name}'s profile picture`} />
                 ) : (
-                  <div className="recommender-avatar-large-fallback" />
+                  <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "var(--line)" }} />
                 )}
-                <span className="recommender-name">{resource.recommendedBy.name}</span>
+                <span style={{ fontWeight: 800, fontSize: "1rem" }}>{resource.recommendedBy.name}</span>
               </div>
             </div>
-          ) : null}
+          )}
 
-          {resource.recommendationReason ? (
-            <div className="resource-recommendation-reason">
-              <h3>Why it&apos;s recommended:</h3>
-              <blockquote className="recommendation-quote">
+          {resource.recommendationReason && (
+            <div>
+              <h3 style={{ margin: "0 0 8px", fontSize: "1.1rem" }}>Why it&apos;s recommended:</h3>
+              {/* prettier-ignore */}
+              <blockquote style={{ margin: 0, padding: "16px", borderLeft: "4px solid var(--accent)", background: "var(--surface)", fontStyle: "italic", lineHeight: 1.6, color: "var(--ink)", fontSize: "1.05rem" }}>
                 &ldquo;{resource.recommendationReason}&rdquo;
               </blockquote>
             </div>
-          ) : null}
+          )}
 
-          <div className="resource-action-buttons">
-            {resource.resourceLink ? (
-              <a
-                className="button"
-                href={resource.resourceLink}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Access Resource
-              </a>
-            ) : null}
-            {resource.buyLink ? (
-              <a
-                className="secondary-button"
-                href={resource.buyLink}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Buy Link
-              </a>
-            ) : null}
+          {/* prettier-ignore */}
+          <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", marginTop: "12px" }}>
+            {resource.resourceLink && <a className="button" href={resource.resourceLink} target="_blank" rel="noopener noreferrer">Access Resource</a>}
+            {resource.buyLink && <a className="secondary-button" href={resource.buyLink} target="_blank" rel="noopener noreferrer">Buy Link</a>}
           </div>
         </div>
       </div>

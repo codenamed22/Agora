@@ -12,9 +12,16 @@ const nudgeIdSchema = z.object({
   nudgeId: z.string().trim().min(1),
 });
 
+function stripFragment(url: string) {
+  const hashIndex = url.indexOf("#");
+  return hashIndex === -1 ? url : url.slice(0, hashIndex);
+}
+
 function redirectWithError(returnTo: string, error: string): never {
-  const separator = returnTo.includes("?") ? "&" : "?";
-  redirect(`${returnTo}${separator}error=${error}`);
+  const base = stripFragment(returnTo);
+  const separator = base.includes("?") ? "&" : "?";
+  // Keep the modal open (via #send-nudge) so the error is visible inside it.
+  redirect(`${base}${separator}error=${error}#send-nudge`);
 }
 
 async function getActiveRecipient(recipientId: string) {
@@ -73,7 +80,8 @@ export async function sendNudge(formData: FormData) {
   });
 
   revalidateNudgeProfiles(user.id, recipient.id);
-  redirect(returnTo);
+  // Redirect to a different fragment so the #send-nudge modal closes on success.
+  redirect(`${stripFragment(returnTo)}#nudges`);
 }
 
 export async function acceptNudge(formData: FormData) {
@@ -129,13 +137,7 @@ export async function declineNudge(formData: FormData) {
     redirect(profileNudgesPath(user.id));
   }
 
-  await prisma.nudge.update({
-    where: { id: nudge.id },
-    data: {
-      status: NudgeStatus.DECLINED,
-      acceptedAt: new Date(),
-    },
-  });
+  await prisma.nudge.delete({ where: { id: nudge.id } });
 
   revalidateNudgeProfiles(nudge.senderId, nudge.recipientId);
 }
@@ -161,14 +163,7 @@ export async function completeNudge(formData: FormData) {
     redirect(profileNudgesPath(user.id));
   }
 
-  await prisma.nudge.update({
-    where: { id: nudge.id },
-    data: {
-      status: NudgeStatus.COMPLETED,
-      completedAt: new Date(),
-      completedById: user.id,
-    },
-  });
+  await prisma.nudge.delete({ where: { id: nudge.id } });
 
   revalidateNudgeProfiles(nudge.senderId, nudge.recipientId);
 }
@@ -194,10 +189,7 @@ export async function cancelNudge(formData: FormData) {
     redirect(profileNudgesPath(user.id));
   }
 
-  await prisma.nudge.update({
-    where: { id: nudge.id },
-    data: { status: NudgeStatus.CANCELLED },
-  });
+  await prisma.nudge.delete({ where: { id: nudge.id } });
 
   revalidateNudgeProfiles(nudge.senderId, nudge.recipientId);
 }

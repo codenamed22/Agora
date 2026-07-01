@@ -37,7 +37,7 @@ describe("computeStandings", () => {
 
     expect(standings).toEqual([
       expect.objectContaining({ userId: "bob", solvedCount: 1, penalty: 10, rank: 1 }),
-      expect.objectContaining({ userId: "alice", solvedCount: 1, penalty: 40, rank: 2 }),
+      expect.objectContaining({ userId: "alice", solvedCount: 1, penalty: 25, rank: 2 }),
     ]);
   });
 

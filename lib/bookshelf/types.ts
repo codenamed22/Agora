@@ -21,8 +21,6 @@ export type ResourceWithRelations = Prisma.ResourceGetPayload<{
     resourceLink: true;
     buyLink: true;
     imageUrl: true;
-    createdAt: true;
-    updatedAt: true;
     category: {
       select: {
         id: true;
