@@ -48,6 +48,14 @@ enum TeachingArtifactType {
   EXCALIDRAW
 }
 
+enum NudgeStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  COMPLETED
+  CANCELLED
+}
+
 model User {
   id            String       @id @default(cuid())
   name          String?
@@ -69,6 +77,9 @@ model User {
   teachingSessions TeachingSession[] @relation("TeachingCreator")
   memberBadges  MemberBadge[] @relation("MemberBadgeUser")
   awardedBadges MemberBadge[] @relation("MemberBadgeAwarder")
+  sentNudges      Nudge[] @relation("NudgeSender")
+  receivedNudges  Nudge[] @relation("NudgeRecipient")
+  completedNudges Nudge[] @relation("NudgeCompleter")
 
   boards Board[]
 
@@ -408,4 +419,26 @@ model TeachingArtifact {
   session TeachingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId])
+}
+
+model Nudge {
+  id            String      @id @default(cuid())
+  senderId      String
+  recipientId   String
+  title         String
+  message       String?
+  link          String?
+  status        NudgeStatus @default(PENDING)
+  acceptedAt    DateTime?
+  completedAt   DateTime?
+  completedById String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  sender      User  @relation("NudgeSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient   User  @relation("NudgeRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  completedBy User? @relation("NudgeCompleter", fields: [completedById], references: [id])
+
+  @@index([recipientId, status])
+  @@index([senderId, status])
 }
