@@ -137,13 +137,7 @@ export async function declineNudge(formData: FormData) {
     redirect(profileNudgesPath(user.id));
   }
 
-  await prisma.nudge.update({
-    where: { id: nudge.id },
-    data: {
-      status: NudgeStatus.DECLINED,
-      acceptedAt: new Date(),
-    },
-  });
+  await prisma.nudge.delete({ where: { id: nudge.id } });
 
   revalidateNudgeProfiles(nudge.senderId, nudge.recipientId);
 }
@@ -195,10 +189,7 @@ export async function cancelNudge(formData: FormData) {
     redirect(profileNudgesPath(user.id));
   }
 
-  await prisma.nudge.update({
-    where: { id: nudge.id },
-    data: { status: NudgeStatus.CANCELLED },
-  });
+  await prisma.nudge.delete({ where: { id: nudge.id } });
 
   revalidateNudgeProfiles(nudge.senderId, nudge.recipientId);
 }
