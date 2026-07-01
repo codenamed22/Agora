@@ -5,7 +5,8 @@ import { memberDisplayName } from "./members";
 import { prisma } from "./prisma";
 
 export const DEFAULT_CONTEST_RATING = 1500;
-export const CONTEST_WRONG_PENALTY_MINUTES = 20;
+// LeetCode-style: each wrong submission on a solved problem adds 5 minutes.
+export const CONTEST_WRONG_PENALTY_MINUTES = 5;
 
 export const RATING_TIER_BADGES = [
   { name: "Contest Newbie", minRating: 0, maxRating: 1199 },

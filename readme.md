@@ -185,7 +185,7 @@ Practice problems are also seed-managed for now. `npm run prisma:seed` publishes
 ShardUp runs community coding contests on a roughly biweekly cadence. Admins create contests at `/admin/contests`, attach unpublished problems, publish the contest, and finalize ratings after it ends. Contest submissions reuse the same self-hosted Piston judge as practice.
 
 - Members register on `/contests` and solve problems during the live window.
-- Standings use ICPC-style scoring (solved count, then time + wrong-submission penalty).
+- Standings use LeetCode-style scoring (solved count, then time taken plus a 5-minute penalty per wrong submission on solved problems).
 - Finalize recomputes Codeforces-style contest ratings (default 1500) and auto-assigns rating-tier badges on member profiles.
 
 After deploying contest schema changes, run `npm run prisma:migrate` against your database before publishing a contest.
