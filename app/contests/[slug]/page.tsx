@@ -128,7 +128,7 @@ export default async function ContestDetailPage({
         <section className="practice-leaderboard" aria-labelledby="contest-standings-title">
           <div className="practice-leaderboard-header">
             <h2 id="contest-standings-title">Standings</h2>
-            <span>Solved · Penalty</span>
+            <span>Solved · Time taken</span>
           </div>
           {standings.length > 0 ? (
             <div className="leaderboard-list">
@@ -137,7 +137,7 @@ export default async function ContestDetailPage({
                   <span className="leaderboard-rank">#{entry.rank}</span>
                   <span className="leaderboard-name">{entry.name}</span>
                   <span className="leaderboard-score">
-                    {entry.solvedCount} · {entry.penalty}
+                    {entry.solvedCount} · {entry.penalty} min
                   </span>
                 </div>
               ))}
