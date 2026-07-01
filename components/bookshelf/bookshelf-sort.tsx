@@ -20,7 +20,15 @@ export default function BookshelfSort() {
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "16px 0" }}>
-      <span style={{ fontSize: "0.9rem", fontWeight: "bold", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+      <span
+        style={{
+          fontSize: "0.9rem",
+          fontWeight: "bold",
+          color: "var(--muted)",
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+        }}
+      >
         Sort By:
       </span>
       <select

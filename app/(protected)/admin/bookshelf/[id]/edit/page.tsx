@@ -43,7 +43,8 @@ export default async function EditResourcePage({ params, searchParams }: EditRes
         {/* Error Notifications */}
         {searchParams?.error === "validation-failed" ? (
           <p className="form-message error">
-            Failed to update resource. Please check that all required fields are filled correctly and URLs are valid.
+            Failed to update resource. Please check that all required fields are filled correctly
+            and URLs are valid.
           </p>
         ) : null}
         {searchParams?.error === "duplicate-resource" ? (
@@ -55,21 +56,12 @@ export default async function EditResourcePage({ params, searchParams }: EditRes
         <form action={updateResourceWithId} className="stacked-form">
           <label>
             Title *
-            <input
-              name="title"
-              required
-              type="text"
-              defaultValue={resource.title}
-            />
+            <input name="title" required type="text" defaultValue={resource.title} />
           </label>
 
           <label>
             Author
-            <input
-              name="author"
-              type="text"
-              defaultValue={resource.author ?? ""}
-            />
+            <input name="author" type="text" defaultValue={resource.author ?? ""} />
           </label>
 
           <label>
@@ -86,7 +78,12 @@ export default async function EditResourcePage({ params, searchParams }: EditRes
               name="type"
               required
               defaultValue={resource.type}
-              style={{ width: "100%", padding: "13px 14px", border: "1px solid var(--line)", background: "var(--surface)" }}
+              style={{
+                width: "100%",
+                padding: "13px 14px",
+                border: "1px solid var(--line)",
+                background: "var(--surface)",
+              }}
             >
               {Object.keys(ResourceType).map((type) => (
                 <option key={type} value={type}>
@@ -102,7 +99,12 @@ export default async function EditResourcePage({ params, searchParams }: EditRes
               name="categoryId"
               required
               defaultValue={resource.categoryId}
-              style={{ width: "100%", padding: "13px 14px", border: "1px solid var(--line)", background: "var(--surface)" }}
+              style={{
+                width: "100%",
+                padding: "13px 14px",
+                border: "1px solid var(--line)",
+                background: "var(--surface)",
+              }}
             >
               {categories.map((cat: { id: string; name: string }) => (
                 <option key={cat.id} value={cat.id}>
@@ -122,37 +124,28 @@ export default async function EditResourcePage({ params, searchParams }: EditRes
 
           <label>
             Resource Link (URL)
-            <input
-              name="resourceLink"
-              type="url"
-              defaultValue={resource.resourceLink ?? ""}
-            />
+            <input name="resourceLink" type="url" defaultValue={resource.resourceLink ?? ""} />
           </label>
 
           <label>
             Buy Link (URL)
-            <input
-              name="buyLink"
-              type="url"
-              defaultValue={resource.buyLink ?? ""}
-            />
+            <input name="buyLink" type="url" defaultValue={resource.buyLink ?? ""} />
           </label>
 
           <label>
             Image Cover URL *
-            <input
-              name="imageUrl"
-              required
-              type="url"
-              defaultValue={resource.imageUrl ?? ""}
-            />
+            <input name="imageUrl" required type="url" defaultValue={resource.imageUrl ?? ""} />
           </label>
 
           <div style={{ display: "flex", gap: "14px", marginTop: "14px" }}>
             <button className="button" type="submit">
               Update Resource
             </button>
-            <a href="/admin/bookshelf" className="secondary-button" style={{ textDecoration: "none" }}>
+            <a
+              href="/admin/bookshelf"
+              className="secondary-button"
+              style={{ textDecoration: "none" }}
+            >
               Cancel
             </a>
           </div>

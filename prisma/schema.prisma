@@ -48,6 +48,20 @@ enum TeachingArtifactType {
   EXCALIDRAW
 }
 
+enum NudgeStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  COMPLETED
+  CANCELLED
+}
+
+enum ContestStatus {
+  DRAFT
+  PUBLISHED
+  FINALIZED
+}
+
 model User {
   id                   String        @id @default(cuid())
   name                 String?
@@ -69,8 +83,31 @@ model User {
   teachingSessions     TeachingSession[] @relation("TeachingCreator")
   memberBadges         MemberBadge[] @relation("MemberBadgeUser")
   awardedBadges        MemberBadge[] @relation("MemberBadgeAwarder")
+  sentNudges           Nudge[]       @relation("NudgeSender")
+  receivedNudges       Nudge[]       @relation("NudgeRecipient")
+  completedNudges      Nudge[]       @relation("NudgeCompleter")
+
+  boards                Board[]
+  createdContests       Contest[]             @relation("ContestCreator")
+  contestRegistrations  ContestRegistration[]
+  contestSubmissions    ContestSubmission[]
+  contestParticipations ContestParticipant[]
+
   reviewedApplications Application[] @relation("ApplicationReviewer")
   recommendedResources Resource[]    @relation("ResourceRecommender")
+}
+
+// The yearly application round. One cohort is active at a time; admins edit its
+// questions, which the apply form renders. `questions` is a JSON array of
+// { id, label, required } in display order.
+model Cohort {
+  id           String        @id @default(cuid())
+  year         Int           @unique
+  isActive     Boolean       @default(false)
+  questions    Json          @default("[]")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  applications Application[]
 }
 
 model Account {
@@ -126,6 +163,7 @@ model Profile {
   leetcodeHandle String?
   resumeUrl      String?
   photoUrl       String?
+  contestRating  Int      @default(1500)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -164,19 +202,25 @@ model MemberBadge {
 model Application {
   id         String            @id @default(cuid())
   userId     String            @unique
+  cohortId   String?
   status     ApplicationStatus @default(DRAFT)
-  whyJoin    String?
+  // Answers to the cohort's dynamic questions, keyed by question id: { [id]: value }.
+  answers    Json              @default("{}")
+  // Legacy free-text fields, kept read-only for pre-cohort applications.
   goals      String?
   experience String?
+  whyJoin    String?
   reviewedBy String?
   reviewedAt DateTime?
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
 
-  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reviewer User? @relation("ApplicationReviewer", fields: [reviewedBy], references: [id])
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cohort   Cohort? @relation(fields: [cohortId], references: [id], onDelete: SetNull)
+  reviewer User?   @relation("ApplicationReviewer", fields: [reviewedBy], references: [id])
 
   @@index([status])
+  @@index([cohortId])
 }
 
 model Event {
@@ -234,6 +278,7 @@ model Problem {
   testCases   TestCase[]
   submissions Submission[]
   referenceSolutions ProblemReferenceSolution[]
+  contestProblems ContestProblem[]
 
   @@index([published, practiceOrder])
   @@index([published, difficulty])
@@ -363,6 +408,21 @@ model TeachingBoard {
   @@index([sessionId])
 }
 
+// Personal Excalidraw boards owned by members (Practice > Design). Shared by URL;
+// any active user can view, only the owner can edit. Capped per user in the create action.
+model Board {
+  id        String   @id @default(cuid())
+  ownerId   String
+  title     String
+  scene     Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+}
+
 model TeachingArtifact {
   id        String               @id @default(cuid())
   sessionId String
@@ -375,4 +435,120 @@ model TeachingArtifact {
   session TeachingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId])
+}
+
+model Nudge {
+  id            String      @id @default(cuid())
+  senderId      String
+  recipientId   String
+  title         String
+  message       String?
+  link          String?
+  status        NudgeStatus @default(PENDING)
+  acceptedAt    DateTime?
+  completedAt   DateTime?
+  completedById String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  sender      User  @relation("NudgeSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient   User  @relation("NudgeRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  completedBy User? @relation("NudgeCompleter", fields: [completedById], references: [id])
+
+  @@index([recipientId, status])
+  @@index([senderId, status])
+}
+
+model Contest {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  title       String
+  description String
+  startsAt    DateTime
+  endsAt      DateTime
+  durationMinutes Int?
+  status      ContestStatus @default(DRAFT)
+  createdById String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  creator       User?                 @relation("ContestCreator", fields: [createdById], references: [id])
+  problems      ContestProblem[]
+  registrations ContestRegistration[]
+  submissions   ContestSubmission[]
+  participants  ContestParticipant[]
+
+  @@index([status, startsAt])
+  @@index([createdById])
+}
+
+model ContestProblem {
+  id        String @id @default(cuid())
+  contestId String
+  problemId String
+  label     String
+  order     Int    @default(0)
+
+  contest     Contest             @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  problem     Problem             @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  submissions ContestSubmission[]
+
+  @@unique([contestId, problemId])
+  @@unique([contestId, label])
+  @@index([contestId, order])
+}
+
+model ContestRegistration {
+  id        String   @id @default(cuid())
+  contestId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([contestId, userId])
+  @@index([userId])
+}
+
+model ContestSubmission {
+  id               String            @id @default(cuid())
+  contestId        String
+  contestProblemId String
+  userId           String
+  language         String
+  code             String
+  verdict          SubmissionVerdict @default(PENDING)
+  runtimeMs        Int?
+  passedCount      Int               @default(0)
+  totalCount       Int               @default(0)
+  failureMessage   String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  contest        Contest        @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  contestProblem ContestProblem @relation(fields: [contestProblemId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([contestId, userId])
+  @@index([contestId, contestProblemId, verdict])
+}
+
+model ContestParticipant {
+  id           String   @id @default(cuid())
+  contestId    String
+  userId       String
+  rank         Int
+  solvedCount  Int
+  penalty      Int
+  ratingBefore Int
+  ratingAfter  Int
+  ratingDelta  Int
+  createdAt    DateTime @default(now())
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([contestId, userId])
+  @@index([userId, createdAt])
 }

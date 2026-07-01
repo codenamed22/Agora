@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import ExcalidrawBoard from "../../../../boards/excalidraw-board";
+import { saveTeachingBoard } from "../../../../(protected)/admin/teaching/actions";
 import { requireAdmin } from "../../../../../lib/guards";
 import { prisma } from "../../../../../lib/prisma";
 import {
@@ -36,6 +37,7 @@ export default async function MasterclassBoardEditorPage({
           boardId={board.id}
           editable={true}
           initialScene={scene.success ? sanitizeTeachingScene(scene.data) : emptyTeachingScene}
+          saveAction={saveTeachingBoard}
         />
       </section>
     </main>

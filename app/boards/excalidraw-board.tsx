@@ -8,7 +8,6 @@ import type {
   BinaryFiles,
   ExcalidrawInitialDataState,
 } from "@excalidraw/excalidraw/types";
-import { saveTeachingBoard } from "../(protected)/admin/teaching/actions";
 import { emptyTeachingScene, sanitizeTeachingScene, type TeachingScene } from "../../lib/teaching";
 import { useTheme } from "../use-theme";
 
@@ -49,10 +48,12 @@ export default function ExcalidrawBoard({
   boardId,
   editable,
   initialScene,
+  saveAction,
 }: Readonly<{
   boardId: string;
   editable: boolean;
   initialScene: TeachingScene | null;
+  saveAction: (formData: FormData) => Promise<{ ok: boolean; error: string | null }>;
 }>) {
   const sanitizedInitialScene = useMemo(
     () => sanitizeTeachingScene(initialScene ?? emptyTeachingScene),
@@ -101,7 +102,7 @@ export default function ExcalidrawBoard({
     formData.set("boardId", boardId);
     formData.set("sceneJson", JSON.stringify(sceneRef.current));
 
-    const result = await saveTeachingBoard(formData);
+    const result = await saveAction(formData);
 
     if (!result.ok) {
       setSaveState("error");

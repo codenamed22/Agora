@@ -28,17 +28,30 @@ export default function BookshelfFilters() {
   };
 
   const hasActiveFilters =
-    searchParams.has("type") ||
-    searchParams.has("q") ||
-    searchParams.has("sort");
+    searchParams.has("type") || searchParams.has("q") || searchParams.has("sort");
 
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "16px", margin: "16px 0 24px" }}>
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: "16px",
+        margin: "16px 0 24px",
+      }}
+    >
       <div className="bookshelf-filters" style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
         <button
           onClick={() => handleTypeClick("")}
           className={activeType === "" ? "button" : "secondary-button"}
-          style={{ fontSize: "0.85rem", padding: "6px 12px", minHeight: "36px", cursor: "pointer", boxShadow: activeType === "" ? "3px 3px 0 var(--ink)" : "none" }}
+          style={{
+            fontSize: "0.85rem",
+            padding: "6px 12px",
+            minHeight: "36px",
+            cursor: "pointer",
+            boxShadow: activeType === "" ? "3px 3px 0 var(--ink)" : "none",
+          }}
         >
           All Types
         </button>
@@ -47,7 +60,13 @@ export default function BookshelfFilters() {
             key={type}
             onClick={() => handleTypeClick(type)}
             className={activeType === type ? "button" : "secondary-button"}
-            style={{ fontSize: "0.85rem", padding: "6px 12px", minHeight: "36px", cursor: "pointer", boxShadow: activeType === type ? "3px 3px 0 var(--ink)" : "none" }}
+            style={{
+              fontSize: "0.85rem",
+              padding: "6px 12px",
+              minHeight: "36px",
+              cursor: "pointer",
+              boxShadow: activeType === type ? "3px 3px 0 var(--ink)" : "none",
+            }}
           >
             {label}
           </button>
@@ -58,7 +77,14 @@ export default function BookshelfFilters() {
         <button
           onClick={() => router.push(pathname)}
           className="secondary-button"
-          style={{ fontSize: "0.85rem", padding: "6px 12px", minHeight: "36px", cursor: "pointer", color: "#d33f2f", borderColor: "#d33f2f" }}
+          style={{
+            fontSize: "0.85rem",
+            padding: "6px 12px",
+            minHeight: "36px",
+            cursor: "pointer",
+            color: "#d33f2f",
+            borderColor: "#d33f2f",
+          }}
         >
           Clear Filters &times;
         </button>

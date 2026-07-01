@@ -9,7 +9,8 @@ describe("SiteHeader", () => {
     expect(screen.getByRole("link", { name: "ShardUp home" })).toHaveAttribute("href", "/");
     expect(screen.getByRole("link", { name: "About" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Events" })).toHaveAttribute("href", "/events");
-    expect(screen.getByRole("link", { name: "Practice" })).toHaveAttribute("href", "/problems");
+    expect(screen.getByRole("link", { name: "Practice" })).toHaveAttribute("href", "/practice");
+    expect(screen.getByRole("link", { name: "Contests" })).toHaveAttribute("href", "/contests");
     expect(screen.getByRole("link", { name: "Bookshelf" })).toHaveAttribute("href", "/bookshelf");
   });
 

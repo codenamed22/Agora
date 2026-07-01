@@ -85,69 +85,78 @@ export default async function ProblemDetailPage({
 
   return (
     <main className="app-shell wide-card workspace-shell">
-      <section className="app-card workspace-card">
-        <p className="section-label">Practice problem</p>
-        <h1>{problem.title}</h1>
-        <div className="problem-tag-list">
-          <span>{difficultyLabels[problem.difficulty]}</span>
-          {problem.tags.length > 0 ? problem.tags.map((tag) => <span key={tag}>{tag}</span>) : null}
-        </div>
-        {isAdmin ? (
-          <a className="secondary-button" href={`/admin/problems/${problem.slug}`}>
-            View reference solution
-          </a>
-        ) : null}
-
-        <div className="problem-readonly">
-          <div className="problem-statement">{problem.statement}</div>
-          {problem.constraints ? (
-            <div className="problem-section">
-              <h2>Constraints</h2>
-              <pre>{problem.constraints}</pre>
+      <section className="app-card workspace-card practice-detail-card">
+        <div className="practice-detail-header">
+          <div>
+            <p className="section-label">Practice problem</p>
+            <h1>{problem.title}</h1>
+            <div className="problem-tag-list">
+              <span>{difficultyLabels[problem.difficulty]}</span>
+              {problem.tags.length > 0
+                ? problem.tags.map((tag) => <span key={tag}>{tag}</span>)
+                : null}
             </div>
-          ) : null}
-
-          <div className="problem-section">
-            <h2>Sample tests</h2>
-            <div className="sample-list">
-              {problem.testCases.map((testCase, index) => (
-                <article className="sample-card" key={testCase.id}>
-                  <h3>Sample {index + 1}</h3>
-                  <label>
-                    Input
-                    <pre>{testCase.input}</pre>
-                  </label>
-                  <label>
-                    Output
-                    <pre>{testCase.expectedOutput}</pre>
-                  </label>
-                </article>
-              ))}
-            </div>
+          </div>
+          <div className="practice-detail-actions">
+            {isAdmin ? (
+              <a className="secondary-button" href={`/admin/problems/${problem.slug}`}>
+                View reference solution
+              </a>
+            ) : null}
+            <a className="text-link" href="/problems">
+              Back to problems
+            </a>
           </div>
         </div>
 
-        <div className="problem-section">
-          <h2>Submit solution</h2>
-          {searchParams?.error === "rate-limit" ? (
-            <div className="form-message error">
-              Daily submission limit reached. Try again tomorrow.
-            </div>
-          ) : null}
-          <SubmissionGate userStatus={session?.user?.status} />
-          {canSubmit ? (
-            <SubmissionPanel
-              languageOptions={supportedLanguageOptions()}
-              problemSlug={problem.slug}
-              submissions={Array.isArray(problem.submissions) ? problem.submissions : []}
-            />
-          ) : null}
-        </div>
+        <div className="practice-workspace">
+          <section className="practice-prompt-pane problem-readonly" aria-label="Problem prompt">
+            <div className="problem-statement">{problem.statement}</div>
+            {problem.constraints ? (
+              <div className="problem-section">
+                <h2>Constraints</h2>
+                <pre>{problem.constraints}</pre>
+              </div>
+            ) : null}
 
-        <div className="event-detail-actions">
-          <a className="text-link" href="/problems">
-            Back to problems
-          </a>
+            <div className="problem-section">
+              <h2>Sample tests</h2>
+              <div className="sample-list">
+                {problem.testCases.map((testCase, index) => (
+                  <article className="sample-card" key={testCase.id}>
+                    <h3>Sample {index + 1}</h3>
+                    <label>
+                      Input
+                      <pre>{testCase.input}</pre>
+                    </label>
+                    <label>
+                      Output
+                      <pre>{testCase.expectedOutput}</pre>
+                    </label>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="practice-submit-pane" aria-labelledby="submit-solution-heading">
+            <div className="problem-section">
+              <h2 id="submit-solution-heading">Submit solution</h2>
+              {searchParams?.error === "rate-limit" ? (
+                <div className="form-message error">
+                  Daily submission limit reached. Try again tomorrow.
+                </div>
+              ) : null}
+              <SubmissionGate userStatus={session?.user?.status} />
+              {canSubmit ? (
+                <SubmissionPanel
+                  languageOptions={supportedLanguageOptions()}
+                  problemSlug={problem.slug}
+                  submissions={Array.isArray(problem.submissions) ? problem.submissions : []}
+                />
+              ) : null}
+            </div>
+          </section>
         </div>
       </section>
     </main>

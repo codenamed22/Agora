@@ -20,7 +20,9 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "prisma db seed",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "simulate:contest": "npx tsx scripts/simulate-contest-ratings.ts",
+    "simulate:contest:db": "npx tsx scripts/simulate-contest-ratings.ts --db"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

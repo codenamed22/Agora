@@ -178,6 +178,18 @@ Events are published manually for now. Seed sample events with `npm run prisma:s
 
 Practice problems are also seed-managed for now. `npm run prisma:seed` publishes the sample `Sum Two Numbers` problem with sample and hidden test cases. Anyone can view problems; only active members can submit solutions.
 
+Practice problems are also seed-managed for now. `npm run prisma:seed` publishes the sample `Sum Two Numbers` problem with sample and hidden test cases. Anyone can view problems; only active members can submit solutions.
+
+### Coding contests
+
+ShardUp runs community coding contests on a roughly biweekly cadence. Admins create contests at `/admin/contests`, attach unpublished problems, publish the contest, and finalize ratings after it ends. Contest submissions reuse the same self-hosted Piston judge as practice.
+
+- Members register on `/contests` and solve problems during the live window.
+- Standings use ICPC-style scoring (solved count, then time + wrong-submission penalty).
+- Finalize recomputes Codeforces-style contest ratings (default 1500) and auto-assigns rating-tier badges on member profiles.
+
+After deploying contest schema changes, run `npm run prisma:migrate` against your database before publishing a contest.
+
 ### Self-hosted Piston judge
 
 ShardUp does not use the public Piston API. Host your own Piston API and point the app at it with `JUDGE_BASE_URL`.

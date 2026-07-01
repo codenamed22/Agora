@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCategoryBySlug, getPaginatedCategoryResources } from "../../../lib/bookshelf/queries";
 import CategoryHeader from "../../../components/bookshelf/category-header";
@@ -53,7 +54,17 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         <BookshelfSearch />
 
         {/* Type Filters & Sorting Controls */}
-        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)", paddingBottom: "8px", marginBottom: "28px" }}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderBottom: "1px solid var(--line)",
+            paddingBottom: "8px",
+            marginBottom: "28px",
+          }}
+        >
           <BookshelfFilters />
           <BookshelfSort />
         </div>
@@ -94,23 +105,42 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
               No resources found in this category matching your filters.
             </h3>
             <p style={{ margin: "0 0 24px", color: "var(--muted)", fontSize: "1rem" }}>
-              Try adjusting your query, select type, or reset filters to see all category recommendations.
+              Try adjusting your query, select type, or reset filters to see all category
+              recommendations.
             </p>
             <div style={{ display: "flex", gap: "14px", justifyContent: "center" }}>
-              <a href={`/bookshelf/${slug}`} className="button" style={{ textDecoration: "none", fontSize: "0.9rem", minHeight: "38px", padding: "0 18px" }}>
+              <Link
+                href={`/bookshelf/${slug}`}
+                className="button"
+                style={{
+                  textDecoration: "none",
+                  fontSize: "0.9rem",
+                  minHeight: "38px",
+                  padding: "0 18px",
+                }}
+              >
                 Clear Filters
-              </a>
-              <a href="/bookshelf" className="secondary-button" style={{ textDecoration: "none", fontSize: "0.9rem", minHeight: "38px", padding: "0 18px" }}>
+              </Link>
+              <Link
+                href="/bookshelf"
+                className="secondary-button"
+                style={{
+                  textDecoration: "none",
+                  fontSize: "0.9rem",
+                  minHeight: "38px",
+                  padding: "0 18px",
+                }}
+              >
                 Back to Bookshelf Home
-              </a>
+              </Link>
             </div>
           </div>
         )}
 
         <div style={{ marginTop: "36px" }}>
-          <a className="text-link" href="/bookshelf">
+          <Link className="text-link" href="/bookshelf">
             &larr; Back to Bookshelf
-          </a>
+          </Link>
         </div>
       </section>
     </main>

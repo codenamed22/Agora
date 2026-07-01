@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getResourceById, getRelatedResources } from "../../../../lib/bookshelf/queries";
 import ResourceDetails from "../../../../components/bookshelf/resource-details";
@@ -29,7 +30,9 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
 
         {/* Related Resources Section */}
         {relatedResources.length > 0 ? (
-          <div style={{ marginTop: "48px", borderTop: "1px solid var(--line)", paddingTop: "32px" }}>
+          <div
+            style={{ marginTop: "48px", borderTop: "1px solid var(--line)", paddingTop: "32px" }}
+          >
             <h2 style={{ fontSize: "1.6rem", margin: "0 0 18px", letterSpacing: "-0.03em" }}>
               Related Resources
             </h2>
@@ -42,9 +45,9 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
         ) : null}
 
         <div style={{ marginTop: "36px", borderTop: "1px solid var(--line)", paddingTop: "20px" }}>
-          <a className="text-link" href={`/bookshelf/${resource.category.slug}`}>
+          <Link className="text-link" href={`/bookshelf/${resource.category.slug}`}>
             &larr; Back to {resource.category.name}
-          </a>
+          </Link>
         </div>
       </section>
     </main>

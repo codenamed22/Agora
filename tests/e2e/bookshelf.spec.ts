@@ -2,9 +2,34 @@ import { expect, test } from "@playwright/test";
 import { devLogin } from "./utils";
 
 test.describe("bookshelf", () => {
-  test("anonymous user can view the bookshelf", async ({ page }) => {
+  test("anonymous user can view the bookshelf landing page", async ({ page }) => {
     await page.goto("/bookshelf");
     await expect(page.locator("h1")).toContainText("Bookshelf");
+  });
+
+  test("user can navigate from landing page to a category browse page", async ({ page }) => {
+    await page.goto("/bookshelf");
+    await expect(page.locator("h1")).toContainText("Bookshelf");
+
+    // Locate the first category card link
+    const firstCategoryLink = page.locator(".category-card-link").first();
+    await expect(firstCategoryLink).toBeVisible();
+
+    // Get the name of the category from the card text to verify it matches the heading on page load
+    const cardText = await firstCategoryLink.innerText();
+    const expectedTitle = cardText.split("\n")[0].trim();
+
+    // Click it and verify navigation
+    await firstCategoryLink.click();
+    await expect(page).toHaveURL(/\/bookshelf\/[^/]+$/);
+
+    // Verify the category page heading contains the selected category name
+    await expect(page.locator("h1")).toContainText(expectedTitle);
+  });
+
+  test("returns 404 for an unknown category", async ({ page }) => {
+    const response = await page.goto("/bookshelf/this-category-does-not-exist");
+    expect(response?.status()).toBe(404);
   });
 
   test("admin can manage categories and resources", async ({ page }) => {
@@ -42,11 +67,15 @@ test.describe("bookshelf", () => {
     // 7. Verify resource created successfully
     await page.waitForURL("**/admin/bookshelf?success=resource-created");
     await expect(page.locator(".form-message")).toContainText("Resource successfully created!");
-    await expect(page.locator(".application-row", { hasText: "E2E Test Resource Book" })).toBeVisible();
+    await expect(
+      page.locator(".application-row", { hasText: "E2E Test Resource Book" }),
+    ).toBeVisible();
 
     // 8. Go to public bookshelf page and verify resource is listed
     await page.goto("/bookshelf");
-    await expect(page.locator(".resource-card", { hasText: "E2E Test Resource Book" })).toBeVisible();
+    await expect(
+      page.locator(".resource-card", { hasText: "E2E Test Resource Book" }),
+    ).toBeVisible();
 
     // 9. Go to resource detail page
     await page.click('a:has-text("E2E Test Resource Book")');
@@ -67,7 +96,9 @@ test.describe("bookshelf", () => {
     // 11. Delete the category (with confirm dialog confirmation)
     await page.goto("/admin/bookshelf/categories");
     page.once("dialog", async (dialog) => {
-      expect(dialog.message()).toContain('Are you sure you want to delete category "E2E Test Category"?');
+      expect(dialog.message()).toContain(
+        'Are you sure you want to delete category "E2E Test Category"?',
+      );
       await dialog.accept();
     });
     const categoryRow = page.locator(".application-row", { hasText: catName });

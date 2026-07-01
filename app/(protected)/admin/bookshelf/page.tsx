@@ -53,14 +53,25 @@ export default async function BookshelfAdminDashboard({ searchParams }: Dashboar
           <a href="/admin/bookshelf/new" className="button" style={{ textDecoration: "none" }}>
             Create Resource
           </a>
-          <a href="/admin/bookshelf/categories" className="secondary-button" style={{ textDecoration: "none" }}>
+          <a
+            href="/admin/bookshelf/categories"
+            className="secondary-button"
+            style={{ textDecoration: "none" }}
+          >
             Manage Categories
           </a>
         </div>
 
         {/* Resource List */}
         <div style={{ marginTop: "20px" }}>
-          <h2 style={{ fontSize: "1.5rem", marginBottom: "18px", borderBottom: "1px solid var(--line)", paddingBottom: "8px" }}>
+          <h2
+            style={{
+              fontSize: "1.5rem",
+              marginBottom: "18px",
+              borderBottom: "1px solid var(--line)",
+              paddingBottom: "8px",
+            }}
+          >
             Curated Resources
           </h2>
 
@@ -72,21 +83,47 @@ export default async function BookshelfAdminDashboard({ searchParams }: Dashboar
                 <article
                   className="application-row"
                   key={resource.id}
-                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", flexWrap: "wrap" }}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: "16px",
+                    flexWrap: "wrap",
+                  }}
                 >
                   <div style={{ flex: 1, minWidth: "250px" }}>
                     <h3 style={{ margin: "0 0 6px", fontSize: "1.25rem" }}>{resource.title}</h3>
-                    <p style={{ margin: "0", fontSize: "0.9rem", color: "var(--muted)", lineHeight: "1.4" }}>
-                      <strong>Category:</strong> {resource.category.name} &bull; <strong>Type:</strong> {resource.type.replace("_", " ")}
+                    <p
+                      style={{
+                        margin: "0",
+                        fontSize: "0.9rem",
+                        color: "var(--muted)",
+                        lineHeight: "1.4",
+                      }}
+                    >
+                      <strong>Category:</strong> {resource.category.name} &bull;{" "}
+                      <strong>Type:</strong> {resource.type.replace("_", " ")}
                       <br />
-                      <strong>Recommended By:</strong> {resource.recommendedBy?.name ?? "Unknown"} &bull; <strong>Added:</strong> {new Date(resource.createdAt).toLocaleDateString()}
+                      <strong>Recommended By:</strong> {resource.recommendedBy?.name ?? "Unknown"}{" "}
+                      &bull; <strong>Added:</strong>{" "}
+                      {new Date(resource.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                   <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                    <a href={`/bookshelf/resource/${resource.id}`} target="_blank" rel="noopener noreferrer" className="secondary-button" style={{ fontSize: "0.9rem", padding: "6px 12px" }}>
+                    <a
+                      href={`/bookshelf/resource/${resource.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="secondary-button"
+                      style={{ fontSize: "0.9rem", padding: "6px 12px" }}
+                    >
                       View
                     </a>
-                    <a href={`/admin/bookshelf/${resource.id}/edit`} className="secondary-button" style={{ fontSize: "0.9rem", padding: "6px 12px" }}>
+                    <a
+                      href={`/admin/bookshelf/${resource.id}/edit`}
+                      className="secondary-button"
+                      style={{ fontSize: "0.9rem", padding: "6px 12px" }}
+                    >
                       Edit
                     </a>
                     <DeleteForm
@@ -95,7 +132,12 @@ export default async function BookshelfAdminDashboard({ searchParams }: Dashboar
                       idName="resourceId"
                       idValue={resource.id}
                       buttonText="Delete"
-                      buttonStyle={{ fontSize: "0.9rem", color: "#d33f2f", cursor: "pointer", padding: "6px 12px" }}
+                      buttonStyle={{
+                        fontSize: "0.9rem",
+                        color: "#d33f2f",
+                        cursor: "pointer",
+                        padding: "6px 12px",
+                      }}
                     />
                   </div>
                 </article>

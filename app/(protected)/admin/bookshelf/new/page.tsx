@@ -28,7 +28,8 @@ export default async function NewResourcePage({ searchParams }: NewResourcePageP
         {/* Error Notifications */}
         {searchParams?.error === "validation-failed" ? (
           <p className="form-message error">
-            Failed to save resource. Please check that all required fields are filled correctly and URLs are valid.
+            Failed to save resource. Please check that all required fields are filled correctly and
+            URLs are valid.
           </p>
         ) : null}
         {searchParams?.error === "duplicate-resource" ? (
@@ -40,7 +41,12 @@ export default async function NewResourcePage({ searchParams }: NewResourcePageP
         <form action={createResource} className="stacked-form">
           <label>
             Title *
-            <input name="title" required type="text" placeholder="e.g. Designing Data-Intensive Applications" />
+            <input
+              name="title"
+              required
+              type="text"
+              placeholder="e.g. Designing Data-Intensive Applications"
+            />
           </label>
 
           <label>
@@ -58,7 +64,16 @@ export default async function NewResourcePage({ searchParams }: NewResourcePageP
 
           <label>
             Resource Type *
-            <select name="type" required style={{ width: "100%", padding: "13px 14px", border: "1px solid var(--line)", background: "var(--surface)" }}>
+            <select
+              name="type"
+              required
+              style={{
+                width: "100%",
+                padding: "13px 14px",
+                border: "1px solid var(--line)",
+                background: "var(--surface)",
+              }}
+            >
               <option value="">Select a type...</option>
               {Object.keys(ResourceType).map((type) => (
                 <option key={type} value={type}>
@@ -70,7 +85,16 @@ export default async function NewResourcePage({ searchParams }: NewResourcePageP
 
           <label>
             Category *
-            <select name="categoryId" required style={{ width: "100%", padding: "13px 14px", border: "1px solid var(--line)", background: "var(--surface)" }}>
+            <select
+              name="categoryId"
+              required
+              style={{
+                width: "100%",
+                padding: "13px 14px",
+                border: "1px solid var(--line)",
+                background: "var(--surface)",
+              }}
+            >
               <option value="">Select a category...</option>
               {categories.map((cat: { id: string; name: string }) => (
                 <option key={cat.id} value={cat.id}>
@@ -112,7 +136,11 @@ export default async function NewResourcePage({ searchParams }: NewResourcePageP
             <button className="button" type="submit">
               Save Resource
             </button>
-            <a href="/admin/bookshelf" className="secondary-button" style={{ textDecoration: "none" }}>
+            <a
+              href="/admin/bookshelf"
+              className="secondary-button"
+              style={{ textDecoration: "none" }}
+            >
               Cancel
             </a>
           </div>

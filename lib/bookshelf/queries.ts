@@ -52,9 +52,7 @@ export async function getRecentResources(
   });
 }
 
-export async function getCategoryBySlug(
-  slug: string,
-): Promise<CategoryWithCount | null> {
+export async function getCategoryBySlug(slug: string): Promise<CategoryWithCount | null> {
   return prisma.category.findUnique({
     where: { slug },
     select: {
@@ -68,9 +66,7 @@ export async function getCategoryBySlug(
   });
 }
 
-export async function getResourcesByCategory(
-  slug: string,
-): Promise<ResourceWithRelations[]> {
+export async function getResourcesByCategory(slug: string): Promise<ResourceWithRelations[]> {
   return prisma.resource.findMany({
     where: {
       category: { slug },
@@ -105,9 +101,7 @@ export async function getResourcesByCategory(
   });
 }
 
-export async function getResourceById(
-  id: string,
-): Promise<ResourceWithRelations | null> {
+export async function getResourceById(id: string): Promise<ResourceWithRelations | null> {
   return prisma.resource.findUnique({
     where: { id },
     select: {
@@ -172,7 +166,12 @@ export async function getPaginatedResources(params: {
   sort?: string;
   page?: string | number;
   limit?: number;
-}): Promise<{ resources: ResourceWithRelations[]; total: number; totalPages: number; currentPage: number }> {
+}): Promise<{
+  resources: ResourceWithRelations[];
+  total: number;
+  totalPages: number;
+  currentPage: number;
+}> {
   const { where, orderBy } = buildResourcesQuery(params);
 
   let currentPage = 1;
@@ -235,7 +234,12 @@ export async function getPaginatedResources(params: {
 export async function getPaginatedCategoryResources(
   categorySlug: string,
   params: { q?: string; type?: string; sort?: string; page?: string | number; limit?: number },
-): Promise<{ resources: ResourceWithRelations[]; total: number; totalPages: number; currentPage: number }> {
+): Promise<{
+  resources: ResourceWithRelations[];
+  total: number;
+  totalPages: number;
+  currentPage: number;
+}> {
   const { where, orderBy } = buildResourcesQuery(params);
 
   let currentPage = 1;
@@ -400,4 +404,3 @@ export async function searchResources(query: string): Promise<ResourceWithRelati
   const result = await getPaginatedResources({ q: query, limit: 100 });
   return result.resources;
 }
-

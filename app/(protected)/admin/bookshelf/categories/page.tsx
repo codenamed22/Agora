@@ -32,14 +32,10 @@ export default async function CategoriesPage({ searchParams }: CategoriesPagePro
 
   // Load edit category if editId is provided
   const editId = searchParams?.editId;
-  const editCategory = editId
-    ? await prisma.category.findUnique({ where: { id: editId } })
-    : null;
+  const editCategory = editId ? await prisma.category.findUnique({ where: { id: editId } }) : null;
 
   // Bind the edit category ID to update action if editing
-  const updateCategoryAction = editCategory
-    ? updateCategory.bind(null, editCategory.id)
-    : null;
+  const updateCategoryAction = editCategory ? updateCategory.bind(null, editCategory.id) : null;
 
   return (
     <main className="app-shell wide-card">
@@ -60,7 +56,8 @@ export default async function CategoriesPage({ searchParams }: CategoriesPagePro
         ) : null}
         {searchParams?.error === "validation-failed" ? (
           <p className="form-message error">
-            Failed to save category. Make sure the name is not empty and slug contains only lowercase letters, numbers, and dashes.
+            Failed to save category. Make sure the name is not empty and slug contains only
+            lowercase letters, numbers, and dashes.
           </p>
         ) : null}
         {searchParams?.error === "duplicate-name" ? (
@@ -71,12 +68,17 @@ export default async function CategoriesPage({ searchParams }: CategoriesPagePro
         ) : null}
         {searchParams?.error === "category-not-empty" ? (
           <p className="form-message error">
-            <strong>Cannot delete:</strong> This category contains active resources. You must delete or move all resources in this category before deleting it.
+            <strong>Cannot delete:</strong> This category contains active resources. You must delete
+            or move all resources in this category before deleting it.
           </p>
         ) : null}
 
         <div style={{ display: "flex", gap: "10px", margin: "20px 0" }}>
-          <a href="/admin/bookshelf" className="secondary-button" style={{ textDecoration: "none" }}>
+          <a
+            href="/admin/bookshelf"
+            className="secondary-button"
+            style={{ textDecoration: "none" }}
+          >
             &larr; Back to Bookshelf Admin
           </a>
         </div>
@@ -93,17 +95,20 @@ export default async function CategoriesPage({ searchParams }: CategoriesPagePro
           {/* Form Column */}
           <div>
             {editCategory && updateCategoryAction ? (
-              <div style={{ border: "1px solid var(--line)", padding: "20px", background: "var(--surface)" }}>
-                <h2 style={{ fontSize: "1.3rem", marginTop: "0", marginBottom: "14px" }}>Edit Category</h2>
+              <div
+                style={{
+                  border: "1px solid var(--line)",
+                  padding: "20px",
+                  background: "var(--surface)",
+                }}
+              >
+                <h2 style={{ fontSize: "1.3rem", marginTop: "0", marginBottom: "14px" }}>
+                  Edit Category
+                </h2>
                 <form action={updateCategoryAction} className="stacked-form">
                   <label>
                     Category Name *
-                    <input
-                      name="name"
-                      required
-                      type="text"
-                      defaultValue={editCategory.name}
-                    />
+                    <input name="name" required type="text" defaultValue={editCategory.name} />
                   </label>
                   <label>
                     Slug *
@@ -119,33 +124,35 @@ export default async function CategoriesPage({ searchParams }: CategoriesPagePro
                     <button className="button" type="submit">
                       Save Changes
                     </button>
-                    <a href="/admin/bookshelf/categories" className="secondary-button" style={{ textDecoration: "none" }}>
+                    <a
+                      href="/admin/bookshelf/categories"
+                      className="secondary-button"
+                      style={{ textDecoration: "none" }}
+                    >
                       Cancel
                     </a>
                   </div>
                 </form>
               </div>
             ) : (
-              <div style={{ border: "1px solid var(--line)", padding: "20px", background: "var(--surface)" }}>
-                <h2 style={{ fontSize: "1.3rem", marginTop: "0", marginBottom: "14px" }}>Create Category</h2>
+              <div
+                style={{
+                  border: "1px solid var(--line)",
+                  padding: "20px",
+                  background: "var(--surface)",
+                }}
+              >
+                <h2 style={{ fontSize: "1.3rem", marginTop: "0", marginBottom: "14px" }}>
+                  Create Category
+                </h2>
                 <form action={createCategory} className="stacked-form">
                   <label>
                     Category Name *
-                    <input
-                      name="name"
-                      required
-                      type="text"
-                      placeholder="e.g. System Design"
-                    />
+                    <input name="name" required type="text" placeholder="e.g. System Design" />
                   </label>
                   <label>
                     Slug *
-                    <input
-                      name="slug"
-                      required
-                      type="text"
-                      placeholder="e.g. system-design"
-                    />
+                    <input name="slug" required type="text" placeholder="e.g. system-design" />
                   </label>
                   <button className="button" type="submit" style={{ marginTop: "10px" }}>
                     Create Category
@@ -157,48 +164,69 @@ export default async function CategoriesPage({ searchParams }: CategoriesPagePro
 
           {/* List Column */}
           <div>
-            <h2 style={{ fontSize: "1.3rem", marginTop: "0", marginBottom: "18px", borderBottom: "1px solid var(--line)", paddingBottom: "8px" }}>
+            <h2
+              style={{
+                fontSize: "1.3rem",
+                marginTop: "0",
+                marginBottom: "18px",
+                borderBottom: "1px solid var(--line)",
+                paddingBottom: "8px",
+              }}
+            >
               Existing Categories
             </h2>
 
             <div className="application-list">
-              {categories.map((category: { id: string; name: string; slug: string; _count: { resources: number } }) => (
-                <article
-                  className="application-row"
-                  key={category.id}
-                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", padding: "14px 18px" }}
-                >
-                  <div>
-                    <h3 style={{ margin: "0 0 4px", fontSize: "1.15rem" }}>{category.name}</h3>
-                    <p style={{ margin: "0", fontSize: "0.85rem", color: "var(--muted)" }}>
-                      Slug: <code>{category.slug}</code> &bull; Resources:{" "}
-                      <strong>{category._count.resources}</strong>
-                    </p>
-                  </div>
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                    <a
-                      href={`/admin/bookshelf/categories?editId=${category.id}`}
-                      className="secondary-button"
-                      style={{ fontSize: "0.85rem", padding: "4px 10px" }}
-                    >
-                      Edit
-                    </a>
-                    <DeleteForm
-                      action={deleteCategory}
-                      confirmMessage={`Are you sure you want to delete category "${category.name}"? This operation cannot be undone.`}
-                      idName="categoryId"
-                      idValue={category.id}
-                      buttonText="Delete"
-                      buttonStyle={{
-                        fontSize: "0.85rem",
-                        color: "#d33f2f",
-                        cursor: "pointer",
-                        padding: "4px 10px",
-                      }}
-                    />
-                  </div>
-                </article>
-              ))}
+              {categories.map(
+                (category: {
+                  id: string;
+                  name: string;
+                  slug: string;
+                  _count: { resources: number };
+                }) => (
+                  <article
+                    className="application-row"
+                    key={category.id}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: "16px",
+                      padding: "14px 18px",
+                    }}
+                  >
+                    <div>
+                      <h3 style={{ margin: "0 0 4px", fontSize: "1.15rem" }}>{category.name}</h3>
+                      <p style={{ margin: "0", fontSize: "0.85rem", color: "var(--muted)" }}>
+                        Slug: <code>{category.slug}</code> &bull; Resources:{" "}
+                        <strong>{category._count.resources}</strong>
+                      </p>
+                    </div>
+                    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                      <a
+                        href={`/admin/bookshelf/categories?editId=${category.id}`}
+                        className="secondary-button"
+                        style={{ fontSize: "0.85rem", padding: "4px 10px" }}
+                      >
+                        Edit
+                      </a>
+                      <DeleteForm
+                        action={deleteCategory}
+                        confirmMessage={`Are you sure you want to delete category "${category.name}"? This operation cannot be undone.`}
+                        idName="categoryId"
+                        idValue={category.id}
+                        buttonText="Delete"
+                        buttonStyle={{
+                          fontSize: "0.85rem",
+                          color: "#d33f2f",
+                          cursor: "pointer",
+                          padding: "4px 10px",
+                        }}
+                      />
+                    </div>
+                  </article>
+                ),
+              )}
             </div>
           </div>
         </div>

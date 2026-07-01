@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
 import { ResourceWithRelations } from "../../lib/bookshelf/types";
 
 interface ResourceDetailsProps {
@@ -10,20 +11,20 @@ export default function ResourceDetails({ resource }: ResourceDetailsProps) {
     <article className="resource-details">
       <p className="section-label">
         Bookshelf &rsaquo;{" "}
-        <a href={`/bookshelf/${resource.category.slug}`} className="text-link">
+        <Link href={`/bookshelf/${resource.category.slug}`} className="text-link">
           {resource.category.name}
-        </a>{" "}
+        </Link>{" "}
         &rsaquo; Details
       </p>
       <h1 style={{ marginBottom: "28px" }}>{resource.title}</h1>
-      
+
       <div className="resource-detail-grid">
         {resource.imageUrl ? (
           <div className="resource-detail-image-container">
             <img className="resource-detail-image" src={resource.imageUrl} alt={resource.title} />
           </div>
         ) : null}
-        
+
         <div className="resource-detail-info">
           <div className="resource-detail-meta-box">
             <p>
@@ -38,9 +39,9 @@ export default function ResourceDetails({ resource }: ResourceDetailsProps) {
             ) : null}
             <p>
               <span>Category</span>
-              <a className="text-link" href={`/bookshelf/${resource.category.slug}`}>
+              <Link className="text-link" href={`/bookshelf/${resource.category.slug}`}>
                 {resource.category.name}
-              </a>
+              </Link>
             </p>
           </div>
 

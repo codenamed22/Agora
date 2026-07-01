@@ -35,7 +35,9 @@ export default async function DashboardPage() {
         {session.user.role === Role.ADMIN ? (
           <div className="member-link-list dashboard-admin-links">
             <a href="/admin/applications">Review applications</a>
+            <a href="/admin/cohort">Edit cohort questions</a>
             <a href="/admin/events">Manage events</a>
+            <a href="/admin/contests">Manage contests</a>
             <a href="/admin/problems">Review problems</a>
             <a href="/admin/bookshelf">Manage bookshelf</a>
           </div>

@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { UserStatus } from "@prisma/client";
+import { tierForRating } from "../../lib/contest";
 import {
   medalsForMembers,
   memberDisplayName,
@@ -84,6 +85,10 @@ export default async function MembersPage() {
                             {[member.profile?.batch, member.profile?.branch]
                               .filter(Boolean)
                               .join(" · ") || "Batch details pending"}
+                          </small>
+                          <small>
+                            Contest: {member.profile?.contestRating ?? 1500} (
+                            {tierForRating(member.profile?.contestRating ?? 1500).name})
                           </small>
                         </span>
                       </a>

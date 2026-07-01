@@ -14,7 +14,7 @@ test.describe("problems", () => {
     await expect(page).toHaveURL(`/problems/${TEST_PROBLEM_SLUG}`);
     await expect(page.getByRole("heading", { name: TEST_PROBLEM_TITLE })).toBeVisible();
     await expect(page.getByRole("link", { name: "Events" })).toHaveAttribute("href", "/events");
-    await expect(page.getByRole("link", { name: "Practice" })).toHaveAttribute("href", "/problems");
+    await expect(page.getByRole("link", { name: "Practice" })).toHaveAttribute("href", "/practice");
     await expect(page.locator(".problem-tag-list")).toContainText("Math");
     await expect(page.locator(".problem-tag-list")).toContainText("Warm-up");
     await expect(page.locator(".problem-tag-list")).not.toContainText("2000ms");
@@ -57,6 +57,49 @@ test.describe("problems", () => {
     await expect(
       page.locator(".leaderboard-row", { hasText: "Local Admin" }).locator(".leaderboard-score"),
     ).toHaveText("1");
+  });
+
+  test("shows the prompt and editor side by side on desktop", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await devLogin(page, "admin");
+    await page.goto(`/problems/${TEST_PROBLEM_SLUG}`);
+
+    const promptPane = page.locator(".practice-prompt-pane");
+    const submitPane = page.locator(".practice-submit-pane");
+    await expect(promptPane).toBeVisible();
+    await expect(submitPane).toBeVisible();
+    await expect(page.locator(".cm-editor")).toBeVisible();
+
+    const promptBox = await promptPane.boundingBox();
+    const submitBox = await submitPane.boundingBox();
+    expect(promptBox).not.toBeNull();
+    expect(submitBox).not.toBeNull();
+    expect(promptBox!.x + promptBox!.width).toBeLessThanOrEqual(submitBox!.x + 1);
+  });
+
+  test("stacks the practice workspace on mobile without horizontal overflow", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await devLogin(page, "admin");
+    await page.goto(`/problems/${TEST_PROBLEM_SLUG}`);
+
+    const promptPane = page.locator(".practice-prompt-pane");
+    const submitPane = page.locator(".practice-submit-pane");
+    await expect(promptPane).toBeVisible();
+    await expect(submitPane).toBeVisible();
+    await expect(page.getByLabel("Language")).toBeVisible();
+    await expect(page.locator(".cm-editor")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Submit solution" })).toBeVisible();
+
+    const promptBox = await promptPane.boundingBox();
+    const submitBox = await submitPane.boundingBox();
+    expect(promptBox).not.toBeNull();
+    expect(submitBox).not.toBeNull();
+    expect(submitBox!.y).toBeGreaterThan(promptBox!.y);
+
+    const hasHorizontalOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    );
+    expect(hasHorizontalOverflow).toBe(false);
   });
 
   test("shows expandable runtime error details", async ({ page }) => {

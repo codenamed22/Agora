@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "../../../../lib/guards";
 import { badgeSchema, validateProfilePhoto } from "../../../../lib/members";
 import { TOP_PRACTICE_BADGE_NAME } from "../../../../lib/practice";
+import { AUTO_ASSIGNED_BADGE_NAMES } from "../../../../lib/contest";
 import { prisma } from "../../../../lib/prisma";
 
 function safeFilename(name: string) {
@@ -40,10 +41,14 @@ function safeReturnPath(value: FormDataEntryValue | null) {
   return path.startsWith("/") && !path.startsWith("//") ? path : "/admin/badges";
 }
 
-async function isPracticeChampionBadge(badgeId: string) {
+async function isAutoAssignedBadge(badgeId: string) {
   const badge = await prisma.badge.findUnique({ where: { id: badgeId }, select: { name: true } });
 
-  return badge?.name === TOP_PRACTICE_BADGE_NAME;
+  return Boolean(badge?.name && AUTO_ASSIGNED_BADGE_NAMES.has(badge.name));
+}
+
+function isAutoAssignedBadgeName(name: string) {
+  return name === TOP_PRACTICE_BADGE_NAME || AUTO_ASSIGNED_BADGE_NAMES.has(name);
 }
 
 export async function createBadge(formData: FormData) {
@@ -79,12 +84,12 @@ export async function createBadge(formData: FormData) {
     where: { name: parsed.data.name },
     update: {
       description: parsed.data.description || null,
-      xp: parsed.data.name === TOP_PRACTICE_BADGE_NAME ? 0 : parsed.data.xp,
+      xp: isAutoAssignedBadgeName(parsed.data.name) ? 0 : parsed.data.xp,
     },
     create: {
       name: parsed.data.name,
       description: parsed.data.description || null,
-      xp: parsed.data.name === TOP_PRACTICE_BADGE_NAME ? 0 : parsed.data.xp,
+      xp: isAutoAssignedBadgeName(parsed.data.name) ? 0 : parsed.data.xp,
     },
   });
 
@@ -108,7 +113,7 @@ export async function deleteBadge(formData: FormData) {
   if (badgeId) {
     const badge = await prisma.badge.findUnique({ where: { id: badgeId } });
 
-    if (badge?.name === TOP_PRACTICE_BADGE_NAME) {
+    if (badge?.name && isAutoAssignedBadgeName(badge.name)) {
       return;
     }
 
@@ -132,7 +137,7 @@ export async function assignBadge(formData: FormData) {
     return;
   }
 
-  if (await isPracticeChampionBadge(badgeId)) {
+  if (await isAutoAssignedBadge(badgeId)) {
     return;
   }
 
@@ -185,9 +190,9 @@ export async function updateBadge(formData: FormData) {
   await prisma.badge.update({
     where: { id: badgeId },
     data: {
-      name: badge.name === TOP_PRACTICE_BADGE_NAME ? TOP_PRACTICE_BADGE_NAME : parsed.data.name,
+      name: isAutoAssignedBadgeName(badge.name) ? badge.name : parsed.data.name,
       description: parsed.data.description || null,
-      xp: badge.name === TOP_PRACTICE_BADGE_NAME ? 0 : parsed.data.xp,
+      xp: isAutoAssignedBadgeName(badge.name) ? 0 : parsed.data.xp,
       imageUrl,
     },
   });
@@ -208,7 +213,7 @@ export async function bulkAssignBadge(formData: FormData) {
     return;
   }
 
-  if (await isPracticeChampionBadge(badgeId)) {
+  if (await isAutoAssignedBadge(badgeId)) {
     return;
   }
 
@@ -234,7 +239,7 @@ export async function removeMemberBadge(formData: FormData) {
   const userId = String(formData.get("userId") ?? "");
   const badgeId = String(formData.get("badgeId") ?? "");
 
-  if (badgeId && (await isPracticeChampionBadge(badgeId))) {
+  if (badgeId && (await isAutoAssignedBadge(badgeId))) {
     return;
   }
 
@@ -244,7 +249,7 @@ export async function removeMemberBadge(formData: FormData) {
       select: { badge: { select: { name: true } } },
     });
 
-    if (memberBadge?.badge.name === TOP_PRACTICE_BADGE_NAME) {
+    if (memberBadge?.badge.name && isAutoAssignedBadgeName(memberBadge.badge.name)) {
       return;
     }
 

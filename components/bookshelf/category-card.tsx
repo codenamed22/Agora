@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CategoryWithCount } from "../../lib/bookshelf/types";
 
 interface CategoryCardProps {
@@ -7,7 +8,7 @@ interface CategoryCardProps {
 export default function CategoryCard({ category }: CategoryCardProps) {
   const count = category._count.resources;
   return (
-    <a href={`/bookshelf/${category.slug}`} className="category-card-link">
+    <Link href={`/bookshelf/${category.slug}`} className="category-card-link">
       <div className="pillar">
         <div style={{ width: "100%" }}>
           <div style={{ fontSize: "1.2rem", marginBottom: "4px" }}>{category.name}</div>
@@ -16,6 +17,6 @@ export default function CategoryCard({ category }: CategoryCardProps) {
           </div>
         </div>
       </div>
-    </a>
+    </Link>
   );
 }

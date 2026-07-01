@@ -4,9 +4,12 @@ import { Role, UserStatus } from "@prisma/client";
 import { notFound } from "next/navigation";
 import { auth } from "../../../auth";
 import CreateBadgeModal from "../../create-badge-modal";
+import SendNudgeModal from "../../send-nudge-modal";
+import { tierForRating } from "../../../lib/contest";
 import { memberDisplayName, memberInitials, medalsForMembers } from "../../../lib/members";
 import { prisma } from "../../../lib/prisma";
 import { assignBadge, removeMemberBadge } from "../../(protected)/admin/badges/actions";
+import NudgesInbox from "../../nudges/nudges-inbox";
 
 export const dynamic = "force-dynamic";
 
@@ -47,10 +50,20 @@ export default async function MemberProfilePage({
   const canEdit =
     session?.user?.id === member.id ||
     (session?.user?.role === Role.ADMIN && session.user.status === UserStatus.ACTIVE);
+  const canNudge = session?.user?.status === UserStatus.ACTIVE && session.user.id !== member.id;
+  const isOwnProfile = session?.user?.status === UserStatus.ACTIVE && session.user.id === member.id;
   const isAdmin = session?.user?.role === Role.ADMIN && session.user.status === UserStatus.ACTIVE;
   const badges = isAdmin ? await prisma.badge.findMany({ orderBy: { name: "asc" } }) : [];
   const assignedBadgeIds = new Set(member.memberBadges.map((memberBadge) => memberBadge.badgeId));
   const availableBadges = badges.filter((badge) => !assignedBadgeIds.has(badge.id));
+  const contestRating = member.profile?.contestRating ?? 1500;
+  const contestTier = tierForRating(contestRating);
+  const contestHistory = await prisma.contestParticipant.findMany({
+    where: { userId: member.id },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+    include: { contest: { select: { title: true, slug: true } } },
+  });
 
   return (
     <main className="app-shell member-profile-page workspace-shell">
@@ -81,6 +94,19 @@ export default async function MemberProfilePage({
             <a className="button" href={`/members/${member.id}/edit`}>
               Edit profile
             </a>
+          ) : null}
+          {canNudge ? (
+            <>
+              <a className="secondary-button" href="#send-nudge">
+                Send nudge
+              </a>
+              <SendNudgeModal
+                error={searchParams?.error}
+                recipientId={member.id}
+                recipientName={name}
+                returnTo={`/members/${member.id}`}
+              />
+            </>
           ) : null}
         </aside>
 
@@ -123,6 +149,27 @@ export default async function MemberProfilePage({
               </div>
             ) : (
               <p>No skills added yet.</p>
+            )}
+          </section>
+
+          <section className="member-panel">
+            <p className="section-label">Contests</p>
+            <h2>Contest rating</h2>
+            <p>
+              <strong>{contestRating}</strong> · {contestTier.name}
+            </p>
+            {contestHistory.length > 0 ? (
+              <div className="member-link-list">
+                {contestHistory.map((entry) => (
+                  <span key={entry.id}>
+                    <a href={`/contests/${entry.contest.slug}`}>{entry.contest.title}</a> · #
+                    {entry.rank} · {entry.ratingDelta >= 0 ? "+" : ""}
+                    {entry.ratingDelta}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p>No finalized contests yet.</p>
             )}
           </section>
         </div>
@@ -206,6 +253,8 @@ export default async function MemberProfilePage({
           </section>
         </aside>
       </section>
+
+      {isOwnProfile ? <NudgesInbox userId={member.id} /> : null}
     </main>
   );
 }

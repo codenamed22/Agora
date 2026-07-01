@@ -171,7 +171,7 @@ export function SubmissionPanel({
             }}
             editable={!isRunning}
             extensions={[...languageExtensions(language), blockClipboard]}
-            height="360px"
+            height="var(--problem-editor-height, 360px)"
             onChange={handleCodeChange}
             theme={oneDark}
             value={code}

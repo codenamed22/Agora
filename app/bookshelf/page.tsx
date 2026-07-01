@@ -40,14 +40,25 @@ export default async function BookshelfLandingPage({ searchParams }: LandingPage
         <p className="section-label">Bookshelf</p>
         <h1>The ShardUp Bookshelf.</h1>
         <p style={{ margin: "0 0 32px", fontSize: "1.1rem" }}>
-          Discover curated books, articles, courses, and learning resources recommended by the ShardUp community.
+          Discover curated books, articles, courses, and learning resources recommended by the
+          ShardUp community.
         </p>
 
         {/* Interactive Search Panel */}
         <BookshelfSearch />
-        
+
         {/* Type Filters & Sorting Controls */}
-        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)", paddingBottom: "8px", marginBottom: "28px" }}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderBottom: "1px solid var(--line)",
+            paddingBottom: "8px",
+            marginBottom: "28px",
+          }}
+        >
           <BookshelfFilters />
           <BookshelfSort />
         </div>
@@ -55,14 +66,19 @@ export default async function BookshelfLandingPage({ searchParams }: LandingPage
         {/* Popular Categories (Only show if not filtering search results) */}
         {!isFiltered ? (
           <div style={{ marginBottom: "48px" }}>
-            <h2 style={{ fontSize: "1.6rem", marginBottom: "18px", borderBottom: "1px solid var(--line)", paddingBottom: "8px" }}>
+            <h2
+              style={{
+                fontSize: "1.6rem",
+                marginBottom: "18px",
+                borderBottom: "1px solid var(--line)",
+                paddingBottom: "8px",
+              }}
+            >
               Browse by Category
             </h2>
             <div className="category-grid">
               {categories.length > 0 ? (
-                categories.map((category) => (
-                  <CategoryCard key={category.id} category={category} />
-                ))
+                categories.map((category) => <CategoryCard key={category.id} category={category} />)
               ) : (
                 <div className="form-message">No categories found.</div>
               )}
@@ -72,7 +88,16 @@ export default async function BookshelfLandingPage({ searchParams }: LandingPage
 
         {/* Curated Resources List */}
         <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: "1px solid var(--line)", paddingBottom: "8px", marginBottom: "18px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              borderBottom: "1px solid var(--line)",
+              paddingBottom: "8px",
+              marginBottom: "18px",
+            }}
+          >
             <h2 style={{ fontSize: "1.6rem", margin: 0 }}>
               {isFiltered ? "Search Results" : "Recently Added"}
             </h2>
@@ -109,13 +134,32 @@ export default async function BookshelfLandingPage({ searchParams }: LandingPage
                 No resources match your filters.
               </h3>
               <p style={{ margin: "0 0 24px", color: "var(--muted)", fontSize: "1rem" }}>
-                Try adjusting your search terms or type filters to find what you&apos;re looking for.
+                Try adjusting your search terms or type filters to find what you&apos;re looking
+                for.
               </p>
               <div style={{ display: "flex", gap: "14px", justifyContent: "center" }}>
-                <a href="/bookshelf" className="button" style={{ textDecoration: "none", fontSize: "0.9rem", minHeight: "38px", padding: "0 18px" }}>
+                <a
+                  href="/bookshelf"
+                  className="button"
+                  style={{
+                    textDecoration: "none",
+                    fontSize: "0.9rem",
+                    minHeight: "38px",
+                    padding: "0 18px",
+                  }}
+                >
                   Clear Filters
                 </a>
-                <a href="/bookshelf" className="secondary-button" style={{ textDecoration: "none", fontSize: "0.9rem", minHeight: "38px", padding: "0 18px" }}>
+                <a
+                  href="/bookshelf"
+                  className="secondary-button"
+                  style={{
+                    textDecoration: "none",
+                    fontSize: "0.9rem",
+                    minHeight: "38px",
+                    padding: "0 18px",
+                  }}
+                >
                   Back to Bookshelf Home
                 </a>
               </div>
