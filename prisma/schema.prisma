@@ -94,6 +94,7 @@ model User {
   contestParticipations ContestParticipant[]
 
   reviewedApplications Application[] @relation("ApplicationReviewer")
+  recommendedResources Resource[]    @relation("ResourceRecommender")
 }
 
 // The yearly application round. One cohort is active at a time; admins edit its
@@ -362,15 +363,18 @@ model Resource {
   buyLink              String?
   imageUrl             String?
 
-  categoryId String
+  categoryId      String
+  recommendedById String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category      Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  recommendedBy User?    @relation("ResourceRecommender", fields: [recommendedById], references: [id], onDelete: SetNull)
 
   @@unique([categoryId, title])
   @@index([categoryId])
+  @@index([recommendedById])
   @@index([categoryId, type])
 }
 

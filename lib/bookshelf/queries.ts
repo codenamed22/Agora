@@ -1,5 +1,5 @@
 import { prisma } from "../prisma";
-import { CategoryWithCount } from "./types";
+import { CategoryWithCount, ResourceWithRelations } from "./types";
 
 export async function getCategories(): Promise<CategoryWithCount[]> {
   return prisma.category.findMany({
@@ -62,6 +62,36 @@ export async function getResourcesByCategory(slug: string) {
       category: {
         select: {
           name: true,
+        },
+      },
+    },
+  });
+}
+
+export async function getResourceById(id: string): Promise<ResourceWithRelations | null> {
+  return prisma.resource.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      title: true,
+      author: true,
+      type: true,
+      recommendationReason: true,
+      resourceLink: true,
+      buyLink: true,
+      imageUrl: true,
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+      recommendedBy: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
         },
       },
     },
