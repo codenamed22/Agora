@@ -1912,7 +1912,9 @@ img {
   overflow: auto;
   padding: 24px;
   border-radius: 16px;
-  background: white;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
   box-shadow: 0 24px 80px rgb(0 0 0 / 28%);
 }
 
