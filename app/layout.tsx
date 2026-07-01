@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import FeedbackWidget from "./feedback-widget";
+import SmoothScroll from "./smooth-scroll";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ export default function RootLayout({
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#151a23" />
       </head>
       <body>
+        <SmoothScroll />
         {children}
         <FeedbackWidget />
       </body>
