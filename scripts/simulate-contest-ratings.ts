@@ -108,7 +108,7 @@ function simulatePure() {
         String(change.newRating - change.delta),
         change.delta >= 0 ? `+${change.delta}` : String(change.delta),
         String(change.newRating),
-        tierForRating(change.newRating).name,
+        tierForRating(change.newRating).label,
       ];
     }),
   );

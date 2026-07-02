@@ -95,11 +95,16 @@ describe("computeRatingChanges", () => {
 
 describe("tierForRating", () => {
   it("maps ratings to contest tiers", () => {
-    expect(tierForRating(1100).name).toBe("Contest Newbie");
-    expect(tierForRating(1250).name).toBe("Contest Pupil");
-    expect(tierForRating(1500).name).toBe("Contest Specialist");
-    expect(tierForRating(1700).name).toBe("Contest Expert");
-    expect(tierForRating(2000).name).toBe("Contest Candidate Master");
+    expect(tierForRating(1100).name).toBe("Rough Shard");
+    expect(tierForRating(1250).name).toBe("Cut Shard");
+    expect(tierForRating(1500).name).toBe("Polished Shard");
+    expect(tierForRating(1700).name).toBe("Radiant Shard");
+    expect(tierForRating(2000).name).toBe("Molten Shard");
+  });
+
+  it("exposes a short label and color for each tier", () => {
+    expect(tierForRating(1500).label).toBe("Polished");
+    expect(tierForRating(1500).color).toMatch(/^#[0-9a-f]{6}$/i);
   });
 });
 
