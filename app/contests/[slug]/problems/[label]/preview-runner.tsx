@@ -63,7 +63,7 @@ export default function ContestPreviewRunner({
   const activeLabel = languageOptions.find((option) => option.value === language)?.label;
 
   return (
-    <div className="stacked-form editor-form">
+    <div className="stacked-form">
       <label>
         Language
         <select

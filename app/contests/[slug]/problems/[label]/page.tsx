@@ -183,8 +183,25 @@ export default async function ContestProblemPage({
           <>
             <div className="form-message">
               Admin preview — this is the exact problem view participants see. Write or tweak code
-              and run it against every test case below to confirm the judge and problems work. Runs
-              here are ephemeral: no submission is stored and standings are unaffected.
+              in the editor below and run it against every test case to confirm the judge and
+              problems work. Runs here are ephemeral: no submission is stored and standings are
+              unaffected.
+            </div>
+
+            <div className="problem-section">
+              <h2>Run a solution</h2>
+              <p className="nudge-meta">
+                The editor is preloaded with the stored reference solution. Runs execute against all{" "}
+                {previewData?._count.testCases ?? 0} test cases (samples, hidden, and efficiency).
+              </p>
+              <ContestPreviewRunner
+                slug={contestProblem.problem.slug}
+                languageOptions={supportedLanguageOptions()}
+                initialCodeByLanguage={initialCodeByLanguage}
+              />
+              <a className="text-link" href={`/admin/problems/${contestProblem.problem.slug}`}>
+                View full reference solutions & test cases
+              </a>
             </div>
 
             <div className="problem-statement">{contestProblem.problem.statement}</div>
@@ -215,22 +232,6 @@ export default async function ContestProblemPage({
                 </div>
               </div>
             ) : null}
-
-            <div className="problem-section">
-              <h2>Run a solution</h2>
-              <p className="nudge-meta">
-                The editor is preloaded with the stored reference solution. Runs execute against all{" "}
-                {previewData?._count.testCases ?? 0} test cases (samples, hidden, and efficiency).
-              </p>
-              <ContestPreviewRunner
-                slug={contestProblem.problem.slug}
-                languageOptions={supportedLanguageOptions()}
-                initialCodeByLanguage={initialCodeByLanguage}
-              />
-              <a className="text-link" href={`/admin/problems/${contestProblem.problem.slug}`}>
-                View full reference solutions & test cases
-              </a>
-            </div>
           </>
         ) : (
           <ProblemWorkspace
