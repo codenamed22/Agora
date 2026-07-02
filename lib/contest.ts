@@ -9,8 +9,22 @@ export const DEFAULT_CONTEST_RATING = 1500;
 export const CONTEST_WRONG_PENALTY_MINUTES = 5;
 
 export const RATING_TIER_BADGES = [
-  { name: "Rough Shard", label: "Rough", slug: "rough", color: "#6b7280", minRating: 0, maxRating: 1199 },
-  { name: "Cut Shard", label: "Cut", slug: "cut", color: "#2f9e44", minRating: 1200, maxRating: 1399 },
+  {
+    name: "Rough Shard",
+    label: "Rough",
+    slug: "rough",
+    color: "#6b7280",
+    minRating: 0,
+    maxRating: 1199,
+  },
+  {
+    name: "Cut Shard",
+    label: "Cut",
+    slug: "cut",
+    color: "#2f9e44",
+    minRating: 1200,
+    maxRating: 1399,
+  },
   {
     name: "Polished Shard",
     label: "Polished",
