@@ -1,6 +1,7 @@
 import { UserStatus } from "@prisma/client";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "../../../../../auth";
+import { ProblemWorkspace } from "../../../../../components/practice/problem-workspace";
 import {
   contestPhase,
   contestWindowForUser,
@@ -9,10 +10,22 @@ import {
 } from "../../../../../lib/contest";
 import { supportedLanguageOptions } from "../../../../../lib/judge";
 import { prisma } from "../../../../../lib/prisma";
-import { ContestSubmissionPanel } from "./contest-submission-panel";
+import { submitContestSolution } from "../../actions";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
+
+const difficultyLabels = {
+  EASY: "Easy",
+  MEDIUM: "Medium",
+  HARD: "Hard",
+};
+
+const difficultyClasses = {
+  EASY: "easy",
+  MEDIUM: "medium",
+  HARD: "hard",
+};
 
 export default async function ContestProblemPage({
   params,
@@ -93,61 +106,54 @@ export default async function ContestProblemPage({
     },
   });
 
+  const window = contestWindowForUser(contest, registration.createdAt);
+
   return (
     <main className="app-shell wide-card workspace-shell">
-      <section className="app-card workspace-card">
-        <p className="section-label">Contest problem</p>
-        <h1>
-          {contestProblem.label}. {contestProblem.problem.title}
-        </h1>
-        <p className="nudge-meta">
-          <a href={`/contests/${contest.slug}`}>{contest.title}</a> ·{" "}
-          {contestPhase(contest, new Date(), registration.createdAt)}
-        </p>
-        <p className="nudge-meta">
-          Your window:{" "}
-          {(() => {
-            const window = contestWindowForUser(contest, registration.createdAt);
-            return formatContestWindow(window.startsAt, window.endsAt);
-          })()}
-        </p>
-
-        {searchParams?.error === "rate-limit" ? (
-          <div className="form-message error">You have reached the daily submission limit.</div>
-        ) : null}
-
-        <div className="problem-statement">{contestProblem.problem.statement}</div>
-
-        {contestProblem.problem.constraints ? (
-          <div className="problem-section">
-            <h2>Constraints</h2>
-            <p>{contestProblem.problem.constraints}</p>
-          </div>
-        ) : null}
-
-        {contestProblem.problem.testCases.length > 0 ? (
-          <div className="problem-section">
-            <h2>Sample tests</h2>
-            {contestProblem.problem.testCases.map((testCase) => (
-              <div className="sample-test" key={testCase.id}>
-                <p>
-                  <strong>Input</strong>
-                </p>
-                <pre>{testCase.input}</pre>
-                <p>
-                  <strong>Output</strong>
-                </p>
-                <pre>{testCase.expectedOutput}</pre>
+      <section className="app-card workspace-card practice-detail-card" data-lenis-prevent>
+        <div className="practice-detail-header">
+          <div className="practice-detail-heading">
+            <h1>
+              {contestProblem.label}. {contestProblem.problem.title}
+            </h1>
+            <span
+              className={`difficulty-badge ${difficultyClasses[contestProblem.problem.difficulty]}`}
+            >
+              {difficultyLabels[contestProblem.problem.difficulty]}
+            </span>
+            {contestProblem.problem.tags.length > 0 ? (
+              <div className="problem-tag-list">
+                {contestProblem.problem.tags.map((tag) => (
+                  <span key={tag}>{tag}</span>
+                ))}
               </div>
-            ))}
+            ) : null}
           </div>
-        ) : null}
+          <div className="practice-detail-actions">
+            <a className="text-link" href={`/contests/${contest.slug}`}>
+              Back to contest
+            </a>
+          </div>
+        </div>
 
-        <ContestSubmissionPanel
-          contestSlug={contest.slug}
+        <div className="practice-contest-meta">
+          <a href={`/contests/${contest.slug}`}>{contest.title}</a>
+          <span>{contestPhase(contest, new Date(), registration.createdAt)}</span>
+          <span>Your window: {formatContestWindow(window.startsAt, window.endsAt)}</span>
+        </div>
+
+        <ProblemWorkspace
+          statement={contestProblem.problem.statement}
+          constraints={contestProblem.problem.constraints}
+          samples={contestProblem.problem.testCases}
           languageOptions={supportedLanguageOptions()}
-          problemLabel={contestProblem.label}
           submissions={submissions}
+          submitAction={submitContestSolution}
+          hiddenFields={{ contestSlug: contest.slug, problemLabel: contestProblem.label }}
+          draftScope={`contest:${contest.slug}:${contestProblem.label}`}
+          canSubmit
+          rateLimited={searchParams?.error === "rate-limit"}
+          rateLimitMessage="You have reached the daily submission limit."
         />
       </section>
     </main>

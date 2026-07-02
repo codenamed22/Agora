@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import { auth } from "../../../auth";
+import { ProblemWorkspace } from "../../../components/practice/problem-workspace";
 import { supportedLanguageOptions } from "../../../lib/judge";
 import { prisma } from "../../../lib/prisma";
-import { SubmissionPanel } from "./submission-panel";
+import { submitSolution } from "./actions";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -13,25 +14,11 @@ const difficultyLabels = {
   HARD: "Hard",
 };
 
-function SubmissionGate({ userStatus }: Readonly<{ userStatus?: string }>) {
-  if (!userStatus) {
-    return (
-      <a className="button" href="/join">
-        Sign in to submit
-      </a>
-    );
-  }
-
-  if (userStatus !== "ACTIVE") {
-    return (
-      <a className="button" href="/apply">
-        Finish application to submit
-      </a>
-    );
-  }
-
-  return null;
-}
+const difficultyClasses = {
+  EASY: "easy",
+  MEDIUM: "medium",
+  HARD: "hard",
+};
 
 export default async function ProblemDetailPage({
   params,
@@ -87,15 +74,18 @@ export default async function ProblemDetailPage({
     <main className="app-shell wide-card workspace-shell">
       <section className="app-card workspace-card practice-detail-card" data-lenis-prevent>
         <div className="practice-detail-header">
-          <div>
-            <p className="section-label">Practice problem</p>
+          <div className="practice-detail-heading">
             <h1>{problem.title}</h1>
-            <div className="problem-tag-list">
-              <span>{difficultyLabels[problem.difficulty]}</span>
-              {problem.tags.length > 0
-                ? problem.tags.map((tag) => <span key={tag}>{tag}</span>)
-                : null}
-            </div>
+            <span className={`difficulty-badge ${difficultyClasses[problem.difficulty]}`}>
+              {difficultyLabels[problem.difficulty]}
+            </span>
+            {problem.tags.length > 0 ? (
+              <div className="problem-tag-list">
+                {problem.tags.map((tag) => (
+                  <span key={tag}>{tag}</span>
+                ))}
+              </div>
+            ) : null}
           </div>
           <div className="practice-detail-actions">
             {isAdmin ? (
@@ -109,55 +99,19 @@ export default async function ProblemDetailPage({
           </div>
         </div>
 
-        <div className="practice-workspace">
-          <section className="practice-prompt-pane problem-readonly" aria-label="Problem prompt">
-            <div className="problem-statement">{problem.statement}</div>
-            {problem.constraints ? (
-              <div className="problem-section">
-                <h2>Constraints</h2>
-                <pre>{problem.constraints}</pre>
-              </div>
-            ) : null}
-
-            <div className="problem-section">
-              <h2>Sample tests</h2>
-              <div className="sample-list">
-                {problem.testCases.map((testCase, index) => (
-                  <article className="sample-card" key={testCase.id}>
-                    <h3>Sample {index + 1}</h3>
-                    <label>
-                      Input
-                      <pre>{testCase.input}</pre>
-                    </label>
-                    <label>
-                      Output
-                      <pre>{testCase.expectedOutput}</pre>
-                    </label>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className="practice-submit-pane" aria-labelledby="submit-solution-heading">
-            <div className="problem-section">
-              <h2 id="submit-solution-heading">Submit solution</h2>
-              {searchParams?.error === "rate-limit" ? (
-                <div className="form-message error">
-                  Daily submission limit reached. Try again tomorrow.
-                </div>
-              ) : null}
-              <SubmissionGate userStatus={session?.user?.status} />
-              {canSubmit ? (
-                <SubmissionPanel
-                  languageOptions={supportedLanguageOptions()}
-                  problemSlug={problem.slug}
-                  submissions={Array.isArray(problem.submissions) ? problem.submissions : []}
-                />
-              ) : null}
-            </div>
-          </section>
-        </div>
+        <ProblemWorkspace
+          statement={problem.statement}
+          constraints={problem.constraints}
+          samples={problem.testCases}
+          languageOptions={supportedLanguageOptions()}
+          submissions={Array.isArray(problem.submissions) ? problem.submissions : []}
+          submitAction={submitSolution}
+          hiddenFields={{ problemSlug: problem.slug }}
+          draftScope={problem.slug}
+          canSubmit={canSubmit}
+          userStatus={session?.user?.status}
+          rateLimited={searchParams?.error === "rate-limit"}
+        />
       </section>
     </main>
   );
