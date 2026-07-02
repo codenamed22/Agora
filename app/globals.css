@@ -1170,6 +1170,37 @@ img {
   align-items: center;
 }
 
+.contest-problem-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.contest-problem-nav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.contest-problem-nav a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.contest-problem-nav a.is-active {
+  border-color: var(--accent);
+  border-left-width: 3px;
+  color: var(--accent-strong);
+  background: var(--surface-strong, var(--surface));
+}
+
 .practice-contest-meta {
   display: flex;
   flex-wrap: wrap;

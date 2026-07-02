@@ -94,6 +94,13 @@ export default async function ContestProblemPage({
     notFound();
   }
 
+  // Sibling problems power the A/B/C switcher in the header.
+  const contestProblems = await prisma.contestProblem.findMany({
+    where: { contestId: contest.id },
+    orderBy: { order: "asc" },
+    select: { label: true },
+  });
+
   const submissions = await prisma.contestSubmission.findMany({
     where: {
       contestId: contest.id,
@@ -161,6 +168,25 @@ export default async function ContestProblemPage({
             ) : null}
           </div>
           <div className="practice-detail-actions">
+            {contestProblems.length > 1 ? (
+              <nav className="contest-problem-nav" aria-label="Contest problems">
+                {contestProblems.map((sibling) => {
+                  const isCurrent = sibling.label === contestProblem.label;
+                  return (
+                    <a
+                      key={sibling.label}
+                      className={isCurrent ? "is-active" : undefined}
+                      aria-current={isCurrent ? "page" : undefined}
+                      href={`/contests/${contest.slug}/problems/${sibling.label}${
+                        previewMode ? "?preview=1" : ""
+                      }`}
+                    >
+                      {sibling.label}
+                    </a>
+                  );
+                })}
+              </nav>
+            ) : null}
             <a className="text-link" href={`/contests/${contest.slug}`}>
               Back to contest
             </a>
