@@ -182,8 +182,8 @@ export default async function ContestProblemPage({
           <div className="form-message">
             Admin preview — this is the exact workspace participants see, preloaded with the stored
             reference solution. Hitting run executes against all{" "}
-            {previewData?._count.testCases ?? 0} test cases (samples, hidden, and efficiency) via the
-            real judge. Runs here are ephemeral: nothing is stored and standings are unaffected.{" "}
+            {previewData?._count.testCases ?? 0} test cases (samples, hidden, and efficiency) via
+            the real judge. Runs here are ephemeral: nothing is stored and standings are unaffected.{" "}
             <a className="text-link" href={`/admin/problems/${contestProblem.problem.slug}`}>
               View full reference solutions & test cases
             </a>
