@@ -163,7 +163,15 @@ export async function completeNudge(formData: FormData) {
     redirect(profileNudgesPath(user.id));
   }
 
-  await prisma.nudge.delete({ where: { id: nudge.id } });
+  // Credit the recipient (the challenged solver) before removing the nudge.
+  await prisma.$transaction([
+    prisma.nudge.delete({ where: { id: nudge.id } }),
+    prisma.profile.upsert({
+      where: { userId: nudge.recipientId },
+      update: { nudgesCompleted: { increment: 1 } },
+      create: { userId: nudge.recipientId, nudgesCompleted: 1 },
+    }),
+  ]);
 
   revalidateNudgeProfiles(nudge.senderId, nudge.recipientId);
 }

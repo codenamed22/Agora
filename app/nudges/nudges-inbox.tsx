@@ -1,3 +1,4 @@
+import { memberDisplayName } from "../../lib/members";
 import { prisma } from "../../lib/prisma";
 import { NudgeCard } from "./nudge-card";
 
@@ -29,7 +30,7 @@ const nudgeInclude = {
 } as const;
 
 export default async function NudgesInbox({ userId }: Readonly<{ userId: string }>) {
-  const [received, sent] = await Promise.all([
+  const [received, sent, scoreboard] = await Promise.all([
     prisma.nudge.findMany({
       where: { recipientId: userId },
       orderBy: [{ status: "asc" }, { createdAt: "desc" }],
@@ -39,6 +40,17 @@ export default async function NudgesInbox({ userId }: Readonly<{ userId: string 
       where: { senderId: userId },
       orderBy: [{ status: "asc" }, { createdAt: "desc" }],
       include: nudgeInclude,
+    }),
+    prisma.user.findMany({
+      where: { profile: { nudgesCompleted: { gt: 0 } } },
+      orderBy: [{ profile: { nudgesCompleted: "desc" } }, { name: "asc" }],
+      take: 10,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        profile: { select: { displayName: true, nudgesCompleted: true } },
+      },
     }),
   ]);
 
@@ -50,6 +62,26 @@ export default async function NudgesInbox({ userId }: Readonly<{ userId: string 
         Challenges and accountability nudges between ShardUp members. Send nudges from another
         member&apos;s profile.
       </p>
+
+      <section className="practice-leaderboard" aria-labelledby="nudge-scoreboard-title">
+        <div className="practice-leaderboard-header">
+          <h3 id="nudge-scoreboard-title">Nudge scoreboard</h3>
+          <span>Solved</span>
+        </div>
+        {scoreboard.length > 0 ? (
+          <div className="leaderboard-list">
+            {scoreboard.map((entry, index) => (
+              <div className="leaderboard-row" key={entry.id}>
+                <span className="leaderboard-rank">#{index + 1}</span>
+                <span className="leaderboard-name">{memberDisplayName(entry)}</span>
+                <span className="leaderboard-score">{entry.profile?.nudgesCompleted ?? 0}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="form-message">No nudges solved yet.</div>
+        )}
+      </section>
 
       <section className="nudge-section">
         <h3>Received</h3>
