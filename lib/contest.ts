@@ -357,12 +357,42 @@ export function formatContestWindow(startsAt: Date, endsAt: Date) {
   return `${formatter.format(startsAt)} – ${formatter.format(endsAt)} IST`;
 }
 
+export function formatContestInstant(date: Date) {
+  const formatter = new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Kolkata",
+  });
+
+  return `${formatter.format(date)} IST`;
+}
+
+// A start-anytime contest exposes a window much larger than the personal timer
+// (e.g. the Demo Contest runs for years). A scheduled contest's window matches
+// its duration, so everyone effectively begins at startsAt.
+export function isStartAnytimeContest(contest: {
+  startsAt: Date;
+  endsAt: Date;
+  durationMinutes?: number | null;
+}) {
+  const windowMs = contest.endsAt.getTime() - contest.startsAt.getTime();
+  const durationMs = contestDurationMinutes(contest) * 60_000;
+
+  return windowMs > durationMs + 60_000;
+}
+
 export function formatContestTiming(contest: {
   startsAt: Date;
   endsAt: Date;
   durationMinutes?: number | null;
 }) {
-  return `${contestDurationMinutes(contest)}-minute contest · start anytime`;
+  const duration = contestDurationMinutes(contest);
+
+  if (isStartAnytimeContest(contest)) {
+    return `${duration}-minute contest · start anytime`;
+  }
+
+  return `${duration}-minute contest · starts ${formatContestInstant(contest.startsAt)}`;
 }
 
 export function toContestInputValue(date: Date) {

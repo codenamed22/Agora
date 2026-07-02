@@ -4,6 +4,11 @@ const { PrismaClient } = require("@prisma/client");
 const { buildStressTests } = require("./hidden-stress-tests");
 const { randomUUID } = require("node:crypto");
 const { additionalPracticeProblems, practiceOrderSlugs } = require("./practice-problem-batch");
+const {
+  CONTEST_TWO_SLUG,
+  contestTwoProblems,
+  buildContestTwoStressTests,
+} = require("./contest-problem-set");
 
 const prisma = new PrismaClient();
 
@@ -813,6 +818,103 @@ async function main() {
       })),
     });
   }
+
+  // ShardUp Contest #2: three custom, escalating problems. Seeded unpublished so
+  // they only appear inside the contest, with reference solutions for admins.
+  const contestTwoStress = buildContestTwoStressTests();
+  const contestTwoProblemIds = [];
+
+  for (const problem of contestTwoProblems) {
+    const testCases = [
+      ...problem.samples.map((testCase, index) => ({
+        input: testCase.input,
+        expectedOutput: testCase.expectedOutput,
+        isSample: true,
+        order: index,
+      })),
+      ...[...problem.hidden, ...(contestTwoStress[problem.slug] ?? [])].map((testCase, index) => ({
+        input: testCase.input,
+        expectedOutput: testCase.expectedOutput,
+        isSample: false,
+        order: problem.samples.length + index,
+      })),
+    ];
+
+    const referenceSolutions = readReferenceSolutions(problem.slug);
+    const primarySolution = referenceSolutions.find((solution) => solution.language === "python");
+    const problemData = {
+      slug: problem.slug,
+      title: problem.title,
+      statement: problem.statement,
+      constraints: problem.constraints,
+      tags: problem.tags,
+      difficulty: problem.difficulty,
+      timeLimitMs: problem.timeLimitMs,
+      published: false,
+      practiceOrder: 300000,
+      solutionCode: primarySolution?.code,
+      solutionLanguage: primarySolution?.language,
+    };
+
+    const savedProblem = await prisma.problem.upsert({
+      where: { slug: problem.slug },
+      update: problemData,
+      create: problemData,
+      select: { id: true },
+    });
+
+    await prisma.testCase.deleteMany({ where: { problemId: savedProblem.id } });
+    await prisma.testCase.createMany({
+      data: testCases.map((testCase) => ({ ...testCase, problemId: savedProblem.id })),
+    });
+
+    await prisma.problemReferenceSolution.deleteMany({ where: { problemId: savedProblem.id } });
+    if (referenceSolutions.length > 0) {
+      await prisma.problemReferenceSolution.createMany({
+        data: referenceSolutions.map((solution) => ({
+          ...solution,
+          problemId: savedProblem.id,
+        })),
+      });
+    }
+
+    contestTwoProblemIds.push(savedProblem.id);
+  }
+
+  // Sunday 8:00 PM IST (14:30 UTC), one-hour window, 60-minute personal timer.
+  const contestTwo = await prisma.contest.upsert({
+    where: { slug: CONTEST_TWO_SLUG },
+    update: {
+      title: "ShardUp Contest #2",
+      description:
+        "A one-hour, three-problem sprint that starts Sunday at 8:00 PM IST. The problems escalate in difficulty (A < B < C), each a custom, tougher twist on a classic interview question. Register, then race your personal 60-minute timer.",
+      startsAt: new Date("2026-07-05T14:30:00.000Z"),
+      endsAt: new Date("2026-07-05T15:30:00.000Z"),
+      durationMinutes: 60,
+      status: "PUBLISHED",
+    },
+    create: {
+      slug: CONTEST_TWO_SLUG,
+      title: "ShardUp Contest #2",
+      description:
+        "A one-hour, three-problem sprint that starts Sunday at 8:00 PM IST. The problems escalate in difficulty (A < B < C), each a custom, tougher twist on a classic interview question. Register, then race your personal 60-minute timer.",
+      startsAt: new Date("2026-07-05T14:30:00.000Z"),
+      endsAt: new Date("2026-07-05T15:30:00.000Z"),
+      durationMinutes: 60,
+      status: "PUBLISHED",
+    },
+    select: { id: true },
+  });
+
+  await prisma.contestProblem.deleteMany({ where: { contestId: contestTwo.id } });
+  await prisma.contestProblem.createMany({
+    data: contestTwoProblemIds.map((problemId, index) => ({
+      contestId: contestTwo.id,
+      problemId,
+      label: String.fromCharCode("A".charCodeAt(0) + index),
+      order: index,
+    })),
+  });
 
   // Seed a minimal Bookshelf smoke seed
   const category = await prisma.category.upsert({

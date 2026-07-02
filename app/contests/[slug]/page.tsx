@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 import { auth } from "../../../auth";
 import {
   computeStandings,
+  contestDurationMinutes,
   contestPhase,
   contestWindowForUser,
+  formatContestInstant,
   formatContestTiming,
   formatContestWindow,
   standingsWithNames,
@@ -25,7 +27,7 @@ export default async function ContestDetailPage({
     include: {
       problems: {
         orderBy: { order: "asc" },
-        include: { problem: { select: { title: true, difficulty: true } } },
+        include: { problem: { select: { title: true, difficulty: true, slug: true } } },
       },
       registrations: { select: { id: true, userId: true, createdAt: true } },
       submissions: {
@@ -72,10 +74,9 @@ export default async function ContestDetailPage({
   );
 
   const canStart =
-    session?.user?.status === UserStatus.ACTIVE &&
-    (phase === "upcoming" || phase === "running") &&
-    !isRegistered;
+    session?.user?.status === UserStatus.ACTIVE && phase === "running" && !isRegistered;
   const canViewProblems = isRegistered && phase === "running";
+  const isAdmin = session?.user?.role === "ADMIN" && session.user.status === UserStatus.ACTIVE;
 
   return (
     <main className="app-shell wide-card workspace-shell">
@@ -94,6 +95,13 @@ export default async function ContestDetailPage({
 
         {searchParams?.error === "register" ? (
           <div className="form-message error">Start this contest before solving problems.</div>
+        ) : null}
+
+        {phase === "upcoming" ? (
+          <div className="form-message">
+            This contest hasn&apos;t started yet. It opens {formatContestInstant(contest.startsAt)}{" "}
+            — come back then to start your {contestDurationMinutes(contest)}-minute timer.
+          </div>
         ) : null}
 
         {canStart ? (
@@ -118,6 +126,35 @@ export default async function ContestDetailPage({
                       </a>
                     </h3>
                     <p className="nudge-meta">{contestProblem.problem.difficulty}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {isAdmin ? (
+          <section className="nudge-section">
+            <h2>Reference solutions (admin)</h2>
+            <p className="nudge-meta">
+              Open a problem to view its reference solutions and run them against every test case.
+            </p>
+            <div className="event-list">
+              {contest.problems.map((contestProblem) => (
+                <article className="event-card" key={`admin-${contestProblem.id}`}>
+                  <div>
+                    <strong>
+                      {contestProblem.label}. {contestProblem.problem.title}
+                    </strong>
+                    <p className="nudge-meta">{contestProblem.problem.difficulty}</p>
+                  </div>
+                  <div className="event-actions">
+                    <a
+                      className="secondary-button"
+                      href={`/admin/problems/${contestProblem.problem.slug}`}
+                    >
+                      View reference solutions
+                    </a>
                   </div>
                 </article>
               ))}
