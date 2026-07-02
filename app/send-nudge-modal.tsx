@@ -1,4 +1,9 @@
-import { sendNudge } from "./nudges/actions";
+"use client";
+
+import { useEffect, useRef } from "react";
+import { useFormState, useFormStatus } from "react-dom";
+import { useRouter } from "next/navigation";
+import { sendNudge, type SendNudgeState } from "./nudges/actions";
 
 const errors: Record<string, string> = {
   invalid: "Check the nudge title and optional link.",
@@ -6,17 +11,41 @@ const errors: Record<string, string> = {
   recipient: "That member is not available for nudges.",
 };
 
+const initialState: SendNudgeState = { ok: false };
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button className="button" type="submit" disabled={pending}>
+      {pending ? "Sending..." : "Send nudge"}
+    </button>
+  );
+}
+
 export default function SendNudgeModal({
   recipientId,
   recipientName,
-  error,
   returnTo,
 }: Readonly<{
   recipientId: string;
   recipientName: string;
-  error?: string;
   returnTo: string;
 }>) {
+  const [state, formAction] = useFormState(sendNudge, initialState);
+  const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!state.ok) {
+      return;
+    }
+    // A server-action redirect can't update the URL hash, so close the :target
+    // modal on the client and refresh to show the newly sent nudge.
+    formRef.current?.reset();
+    window.location.hash = "nudges";
+    router.refresh();
+  }, [state, router]);
+
   return (
     <div className="modal-backdrop" id="send-nudge">
       <section className="badge-create-modal" aria-label={`Send a nudge to ${recipientName}`}>
@@ -25,9 +54,10 @@ export default function SendNudgeModal({
         </a>
         <h2>Send a nudge</h2>
         <p>Challenge {recipientName} to solve a problem, read an article, or complete a task.</p>
-        {error ? <div className="form-message error">{errors[error] ?? errors.invalid}</div> : null}
-        <form action={sendNudge} className="stacked-form">
-          <input type="hidden" name="returnTo" value={returnTo} />
+        {state.error ? (
+          <div className="form-message error">{errors[state.error] ?? errors.invalid}</div>
+        ) : null}
+        <form action={formAction} className="stacked-form" ref={formRef}>
           <input type="hidden" name="recipientId" value={recipientId} />
 
           <label htmlFor="nudge-title">Challenge*</label>
@@ -53,9 +83,7 @@ export default function SendNudgeModal({
             <a className="text-link" href={returnTo}>
               Cancel
             </a>
-            <button className="button" type="submit">
-              Send nudge
-            </button>
+            <SubmitButton />
           </div>
         </form>
       </section>

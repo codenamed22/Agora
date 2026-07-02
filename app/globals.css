@@ -29,6 +29,13 @@
   /* Tooltip stays an inverted dark chip in both themes */
   --tooltip-bg: #171a17;
 
+  /* Contest rating tier accents (light theme) */
+  --tier-rough: #6b7280;
+  --tier-cut: #2f9e44;
+  --tier-polished: #1971c2;
+  --tier-radiant: #7048e8;
+  --tier-molten: #e8590c;
+
   color-scheme: light;
 }
 
@@ -54,6 +61,13 @@
 
   --tooltip-bg: #30363d;
 
+  /* Contest rating tier accents (brightened for dark surfaces) */
+  --tier-rough: #9aa4b2;
+  --tier-cut: #51cf66;
+  --tier-polished: #4dabf7;
+  --tier-radiant: #b197fc;
+  --tier-molten: #ff922b;
+
   color-scheme: dark;
 }
 
@@ -74,6 +88,31 @@
 
 [data-theme="dark"] .member-card.medal-bronze {
   background: #2a1d12;
+}
+
+/* Contest rating tier accents */
+.contest-tier {
+  font-weight: 600;
+}
+
+.contest-tier--rough {
+  color: var(--tier-rough);
+}
+
+.contest-tier--cut {
+  color: var(--tier-cut);
+}
+
+.contest-tier--polished {
+  color: var(--tier-polished);
+}
+
+.contest-tier--radiant {
+  color: var(--tier-radiant);
+}
+
+.contest-tier--molten {
+  color: var(--tier-molten);
 }
 
 * {

@@ -12,17 +12,7 @@ const nudgeIdSchema = z.object({
   nudgeId: z.string().trim().min(1),
 });
 
-function stripFragment(url: string) {
-  const hashIndex = url.indexOf("#");
-  return hashIndex === -1 ? url : url.slice(0, hashIndex);
-}
-
-function redirectWithError(returnTo: string, error: string): never {
-  const base = stripFragment(returnTo);
-  const separator = base.includes("?") ? "&" : "?";
-  // Keep the modal open (via #send-nudge) so the error is visible inside it.
-  redirect(`${base}${separator}error=${error}#send-nudge`);
-}
+export type SendNudgeState = { ok: boolean; error?: string };
 
 async function getActiveRecipient(recipientId: string) {
   return prisma.user.findFirst({
@@ -41,9 +31,14 @@ function revalidateNudgeProfiles(senderId: string, recipientId: string) {
   revalidatePath("/nudges");
 }
 
-export async function sendNudge(formData: FormData) {
+// Returns a result state (instead of redirecting) so the client modal can close
+// itself on success — a server-action redirect can't update the URL hash that the
+// :target modal relies on, which left the dialog stuck open.
+export async function sendNudge(
+  _prevState: SendNudgeState,
+  formData: FormData,
+): Promise<SendNudgeState> {
   const user = await requireActiveUser();
-  const returnTo = String(formData.get("returnTo") ?? profileNudgesPath(user.id));
 
   const parsed = nudgeSchema.safeParse({
     recipientId: formData.get("recipientId"),
@@ -53,19 +48,19 @@ export async function sendNudge(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirectWithError(returnTo, "invalid");
+    return { ok: false, error: "invalid" };
   }
 
   const data = parsed.data;
 
   if (data.recipientId === user.id) {
-    redirectWithError(returnTo, "self");
+    return { ok: false, error: "self" };
   }
 
   const recipient = await getActiveRecipient(data.recipientId);
 
   if (!recipient) {
-    redirectWithError(returnTo, "recipient");
+    return { ok: false, error: "recipient" };
   }
 
   await prisma.nudge.create({
@@ -80,8 +75,7 @@ export async function sendNudge(formData: FormData) {
   });
 
   revalidateNudgeProfiles(user.id, recipient.id);
-  // Redirect to a different fragment so the #send-nudge modal closes on success.
-  redirect(`${stripFragment(returnTo)}#nudges`);
+  return { ok: true };
 }
 
 export async function acceptNudge(formData: FormData) {
