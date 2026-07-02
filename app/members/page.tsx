@@ -19,6 +19,7 @@ export default async function MembersPage() {
     include: {
       profile: true,
       memberBadges: { include: { badge: true }, orderBy: { awardedAt: "desc" } },
+      _count: { select: { contestParticipations: true } },
     },
   });
 
@@ -64,6 +65,9 @@ export default async function MembersPage() {
                   const name = memberDisplayName(member);
                   const medal = medals.get(member.id);
                   const avatarClass = medal ? `member-avatar medal-${medal}` : "member-avatar";
+                  const rating = member.profile?.contestRating ?? 1500;
+                  const tier = tierForRating(rating);
+                  const hasContestHistory = member._count.contestParticipations > 0;
 
                   return (
                     <article
@@ -86,10 +90,14 @@ export default async function MembersPage() {
                               .filter(Boolean)
                               .join(" · ") || "Batch details pending"}
                           </small>
-                          <small>
-                            Contest: {member.profile?.contestRating ?? 1500} (
-                            {tierForRating(member.profile?.contestRating ?? 1500).name})
-                          </small>
+                          {hasContestHistory ? (
+                            <small>
+                              {rating}{" "}
+                              <span className={`contest-tier contest-tier--${tier.slug}`}>
+                                ({tier.label})
+                              </span>
+                            </small>
+                          ) : null}
                         </span>
                       </a>
                       {member.memberBadges.length > 0 ? (

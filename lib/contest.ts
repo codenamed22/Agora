@@ -9,11 +9,46 @@ export const DEFAULT_CONTEST_RATING = 1500;
 export const CONTEST_WRONG_PENALTY_MINUTES = 5;
 
 export const RATING_TIER_BADGES = [
-  { name: "Contest Newbie", minRating: 0, maxRating: 1199 },
-  { name: "Contest Pupil", minRating: 1200, maxRating: 1399 },
-  { name: "Contest Specialist", minRating: 1400, maxRating: 1599 },
-  { name: "Contest Expert", minRating: 1600, maxRating: 1899 },
-  { name: "Contest Candidate Master", minRating: 1900, maxRating: Number.POSITIVE_INFINITY },
+  {
+    name: "Rough Shard",
+    label: "Rough",
+    slug: "rough",
+    color: "#6b7280",
+    minRating: 0,
+    maxRating: 1199,
+  },
+  {
+    name: "Cut Shard",
+    label: "Cut",
+    slug: "cut",
+    color: "#2f9e44",
+    minRating: 1200,
+    maxRating: 1399,
+  },
+  {
+    name: "Polished Shard",
+    label: "Polished",
+    slug: "polished",
+    color: "#1971c2",
+    minRating: 1400,
+    maxRating: 1599,
+  },
+  {
+    name: "Radiant Shard",
+    label: "Radiant",
+    slug: "radiant",
+    color: "#7048e8",
+    minRating: 1600,
+    maxRating: 1899,
+  },
+  {
+    name: "Molten Shard",
+    label: "Molten",
+    slug: "molten",
+    color: "#e8590c",
+    minRating: 1900,
+    maxRating: Number.POSITIVE_INFINITY,
+  },
 ] as const;
 
 export const AUTO_ASSIGNED_BADGE_NAMES = new Set<string>(

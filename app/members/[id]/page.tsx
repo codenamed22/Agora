@@ -154,19 +154,24 @@ export default async function MemberProfilePage({
           <section className="member-panel">
             <p className="section-label">Contests</p>
             <h2>Contest rating</h2>
-            <p>
-              <strong>{contestRating}</strong> · {contestTier.name}
-            </p>
             {contestHistory.length > 0 ? (
-              <div className="member-link-list">
-                {contestHistory.map((entry) => (
-                  <span key={entry.id}>
-                    <a href={`/contests/${entry.contest.slug}`}>{entry.contest.title}</a> · #
-                    {entry.rank} · {entry.ratingDelta >= 0 ? "+" : ""}
-                    {entry.ratingDelta}
+              <>
+                <p>
+                  <strong>{contestRating}</strong> ·{" "}
+                  <span className={`contest-tier contest-tier--${contestTier.slug}`}>
+                    {contestTier.label}
                   </span>
-                ))}
-              </div>
+                </p>
+                <div className="member-link-list">
+                  {contestHistory.map((entry) => (
+                    <span key={entry.id}>
+                      <a href={`/contests/${entry.contest.slug}`}>{entry.contest.title}</a> · #
+                      {entry.rank} · {entry.ratingDelta >= 0 ? "+" : ""}
+                      {entry.ratingDelta}
+                    </span>
+                  ))}
+                </div>
+              </>
             ) : (
               <p>No finalized contests yet.</p>
             )}
