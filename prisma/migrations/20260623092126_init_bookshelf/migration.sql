@@ -23,7 +23,6 @@ CREATE TABLE "Resource" (
     "buyLink" TEXT,
     "imageUrl" TEXT,
     "categoryId" TEXT NOT NULL,
-    "recommendedById" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -40,9 +39,6 @@ CREATE UNIQUE INDEX "Category_slug_key" ON "Category"("slug");
 CREATE INDEX "Resource_categoryId_idx" ON "Resource"("categoryId");
 
 -- CreateIndex
-CREATE INDEX "Resource_recommendedById_idx" ON "Resource"("recommendedById");
-
--- CreateIndex
 CREATE INDEX "Resource_categoryId_type_idx" ON "Resource"("categoryId", "type");
 
 -- CreateIndex
@@ -50,6 +46,3 @@ CREATE UNIQUE INDEX "Resource_categoryId_title_key" ON "Resource"("categoryId", 
 
 -- AddForeignKey
 ALTER TABLE "Resource" ADD CONSTRAINT "Resource_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Resource" ADD CONSTRAINT "Resource_recommendedById_fkey" FOREIGN KEY ("recommendedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
