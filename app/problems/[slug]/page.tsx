@@ -85,7 +85,7 @@ export default async function ProblemDetailPage({
 
   return (
     <main className="app-shell wide-card workspace-shell">
-      <section className="app-card workspace-card practice-detail-card">
+      <section className="app-card workspace-card practice-detail-card" data-lenis-prevent>
         <div className="practice-detail-header">
           <div>
             <p className="section-label">Practice problem</p>

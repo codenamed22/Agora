@@ -1093,6 +1093,11 @@ img {
 
 .practice-detail-card {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 132px);
+  min-height: 520px;
+  overflow: hidden;
 }
 
 .practice-detail-header {
@@ -1117,28 +1122,22 @@ img {
   --problem-editor-height: clamp(420px, 54vh, 620px);
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(440px, 1.05fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: clamp(22px, 3vw, 40px);
-  align-items: start;
+  flex: 1;
+  min-height: 0;
 }
 
 .practice-prompt-pane,
 .practice-submit-pane {
   min-width: 0;
+  min-height: 0;
   padding-top: 28px;
-}
-
-.practice-prompt-pane {
-  position: sticky;
-  top: 24px;
-  max-height: calc(100vh - 48px);
-  overflow: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .practice-submit-pane {
-  position: sticky;
-  top: 24px;
-  max-height: calc(100vh - 48px);
-  overflow: auto;
   padding-left: clamp(20px, 3vw, 36px);
   border-left: 1px solid var(--line);
 }
@@ -2146,20 +2145,25 @@ img {
     justify-content: flex-start;
   }
 
-  .practice-workspace {
-    --problem-editor-height: 420px;
+  .practice-detail-card {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
   }
 
-  .practice-prompt-pane {
-    position: static;
-    max-height: none;
+  .practice-workspace {
+    --problem-editor-height: 420px;
+    grid-template-rows: auto;
+    min-height: 0;
+  }
+
+  .practice-prompt-pane,
+  .practice-submit-pane {
+    min-height: 0;
     overflow: visible;
   }
 
   .practice-submit-pane {
-    position: static;
-    max-height: none;
-    overflow: visible;
     padding-left: 0;
     border-left: 0;
     border-top: 1px solid var(--line);
