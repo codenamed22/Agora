@@ -135,10 +135,22 @@ export default async function ContestDetailPage({
 
         {isAdmin ? (
           <section className="nudge-section">
-            <h2>Reference solutions (admin)</h2>
+            <h2>Test contest (admin)</h2>
             <p className="nudge-meta">
-              Open a problem to view its reference solutions and run them against every test case.
+              Enter the live problem view without registering, run the reference solutions against
+              every test case, and confirm everything works before the contest opens. Preview does
+              not create submissions or affect standings.
             </p>
+            {contest.problems.length > 0 ? (
+              <p>
+                <a
+                  className="button"
+                  href={`/contests/${contest.slug}/problems/${contest.problems[0].label}?preview=1`}
+                >
+                  Test contest
+                </a>
+              </p>
+            ) : null}
             <div className="event-list">
               {contest.problems.map((contestProblem) => (
                 <article className="event-card" key={`admin-${contestProblem.id}`}>
@@ -151,9 +163,15 @@ export default async function ContestDetailPage({
                   <div className="event-actions">
                     <a
                       className="secondary-button"
+                      href={`/contests/${contest.slug}/problems/${contestProblem.label}?preview=1`}
+                    >
+                      Open in preview
+                    </a>
+                    <a
+                      className="text-link"
                       href={`/admin/problems/${contestProblem.problem.slug}`}
                     >
-                      View reference solutions
+                      Reference solutions
                     </a>
                   </div>
                 </article>
