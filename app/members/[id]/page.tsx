@@ -101,7 +101,6 @@ export default async function MemberProfilePage({
                 Send nudge
               </a>
               <SendNudgeModal
-                error={searchParams?.error}
                 recipientId={member.id}
                 recipientName={name}
                 returnTo={`/members/${member.id}`}
