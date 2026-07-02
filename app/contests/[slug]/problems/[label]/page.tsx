@@ -10,8 +10,8 @@ import {
 } from "../../../../../lib/contest";
 import { supportedLanguageOptions } from "../../../../../lib/judge";
 import { prisma } from "../../../../../lib/prisma";
-import RunSolution from "../../../../(protected)/admin/problems/[slug]/run-solution";
 import { submitContestSolution } from "../../actions";
+import ContestPreviewRunner from "./preview-runner";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -120,18 +120,23 @@ export default async function ContestProblemPage({
         select: {
           solutionCode: true,
           solutionLanguage: true,
-          referenceSolutions: { orderBy: { language: "asc" }, select: { language: true } },
+          referenceSolutions: {
+            orderBy: { language: "asc" },
+            select: { language: true, code: true },
+          },
           _count: { select: { testCases: true } },
         },
       })
     : null;
-  const referenceLanguages = previewData
-    ? previewData.referenceSolutions.length > 0
-      ? previewData.referenceSolutions.map((solution) => solution.language)
-      : previewData.solutionCode
-        ? [previewData.solutionLanguage ?? "python"]
-        : []
-    : [];
+  const initialCodeByLanguage: Record<string, string> = {};
+  if (previewData) {
+    for (const reference of previewData.referenceSolutions) {
+      initialCodeByLanguage[reference.language] = reference.code;
+    }
+    if (previewData.referenceSolutions.length === 0 && previewData.solutionCode) {
+      initialCodeByLanguage[previewData.solutionLanguage ?? "python"] = previewData.solutionCode;
+    }
+  }
 
   const window = registration ? contestWindowForUser(contest, registration.createdAt) : null;
 
@@ -177,9 +182,9 @@ export default async function ContestProblemPage({
         {previewMode ? (
           <>
             <div className="form-message">
-              Admin preview — this is the exact problem view participants see. Contest submissions
-              are disabled here. Use the reference runners below to confirm the judge and every test
-              case pass before the contest goes live.
+              Admin preview — this is the exact problem view participants see. Write or tweak code
+              and run it against every test case below to confirm the judge and problems work. Runs
+              here are ephemeral: no submission is stored and standings are unaffected.
             </div>
 
             <div className="problem-statement">{contestProblem.problem.statement}</div>
@@ -212,23 +217,16 @@ export default async function ContestProblemPage({
             ) : null}
 
             <div className="problem-section">
-              <h2>Reference solutions</h2>
+              <h2>Run a solution</h2>
               <p className="nudge-meta">
-                Runs the stored reference against all {previewData?._count.testCases ?? 0} test
-                cases (samples, hidden, and efficiency).
+                The editor is preloaded with the stored reference solution. Runs execute against all{" "}
+                {previewData?._count.testCases ?? 0} test cases (samples, hidden, and efficiency).
               </p>
-              {referenceLanguages.length > 0 ? (
-                <div className="sample-list">
-                  {referenceLanguages.map((language) => (
-                    <article className="sample-card" key={language}>
-                      <h3>{language}</h3>
-                      <RunSolution language={language} slug={contestProblem.problem.slug} />
-                    </article>
-                  ))}
-                </div>
-              ) : (
-                <div className="form-message error">No reference solution stored.</div>
-              )}
+              <ContestPreviewRunner
+                slug={contestProblem.problem.slug}
+                languageOptions={supportedLanguageOptions()}
+                initialCodeByLanguage={initialCodeByLanguage}
+              />
               <a className="text-link" href={`/admin/problems/${contestProblem.problem.slug}`}>
                 View full reference solutions & test cases
               </a>
