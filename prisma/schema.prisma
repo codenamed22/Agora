@@ -163,6 +163,7 @@ model Profile {
   resumeUrl      String?
   photoUrl       String?
   contestRating  Int      @default(1500)
+  nudgesCompleted Int     @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

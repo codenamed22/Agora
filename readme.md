@@ -95,7 +95,9 @@ Examples:
 Flow:
 - User A sends a Nudge
 - User B accepts
-- Completion gets recorded
+- On completion the nudge is removed and User B's solved count increments
+
+Nudges are ephemeral: completing, declining, or cancelling a nudge deletes it. A global Nudge scoreboard in the nudges section ranks members by the number of nudges they have solved (completed as the recipient).
 
 Purpose:
 - Increase participation
