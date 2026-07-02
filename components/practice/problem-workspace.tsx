@@ -28,6 +28,14 @@ type SampleTest = {
   expectedOutput: string;
 };
 
+type EphemeralRunResult = {
+  verdict: string;
+  passedCount: number;
+  totalCount: number;
+  runtimeMs: number | null;
+  failureMessage?: string | null;
+};
+
 type WorkspaceTab = "description" | "submissions";
 
 const verdictLabels: Record<string, string> = {
@@ -126,6 +134,7 @@ export function ProblemWorkspace({
   draftScope,
   canSubmit,
   userStatus,
+  initialCodeByLanguage,
   rateLimited = false,
   rateLimitMessage = "Daily submission limit reached. Try again tomorrow.",
 }: Readonly<{
@@ -134,11 +143,14 @@ export function ProblemWorkspace({
   samples: SampleTest[];
   languageOptions: LanguageOption[];
   submissions: Submission[];
-  submitAction: (formData: FormData) => Promise<void>;
+  // Returning a run result (instead of void) marks an ephemeral run: it is shown
+  // in the submissions list but never persisted. Void triggers a server refresh.
+  submitAction: (formData: FormData) => Promise<void | EphemeralRunResult>;
   hiddenFields: Record<string, string>;
   draftScope: string;
   canSubmit: boolean;
   userStatus?: string;
+  initialCodeByLanguage?: Record<string, string>;
   rateLimited?: boolean;
   rateLimitMessage?: string;
 }>) {
@@ -149,15 +161,21 @@ export function ProblemWorkspace({
   const [code, setCode] = useState(starterCode.python);
   const [error, setError] = useState<string | null>(null);
   const [runningLanguage, setRunningLanguage] = useState("python");
+  const [ephemeralSubmissions, setEphemeralSubmissions] = useState<Submission[]>([]);
   const [split, setSplit] = useState(0.5);
 
   const workspaceRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
 
   // Restore the saved draft for this problem + language (localStorage survives refresh).
+  // With no saved draft, fall back to any provided starter (e.g. the reference
+  // solution in admin preview), then the generic language starter.
   useEffect(() => {
     const saved = localStorage.getItem(draftKey(draftScope, language));
-    setCode(saved ?? starterCode[language] ?? "");
+    const fallback = initialCodeByLanguage?.[language] ?? starterCode[language] ?? "";
+    setCode(saved ?? fallback);
+    // initialCodeByLanguage is a stable server prop; excluded to avoid clobbering edits.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draftScope, language]);
 
   // Restore the saved pane split (client-only to avoid a hydration mismatch).
@@ -231,8 +249,24 @@ export function ProblemWorkspace({
     setActiveTab("submissions");
 
     try {
-      await submitAction(formData);
-      router.refresh();
+      const result = await submitAction(formData);
+      if (result) {
+        // Ephemeral run (admin preview): show the verdict without persisting.
+        setEphemeralSubmissions((previous) => [
+          {
+            id: `preview-${Date.now()}`,
+            language,
+            verdict: result.verdict,
+            passedCount: result.passedCount,
+            totalCount: result.totalCount,
+            runtimeMs: result.runtimeMs,
+            failureMessage: result.failureMessage ?? null,
+          },
+          ...previous,
+        ]);
+      } else {
+        router.refresh();
+      }
     } finally {
       setIsRunning(false);
     }
@@ -312,7 +346,7 @@ export function ProblemWorkspace({
           aria-labelledby="tab-submissions"
           hidden={activeTab !== "submissions"}
         >
-          {isRunning || submissions.length > 0 ? (
+          {isRunning || ephemeralSubmissions.length > 0 || submissions.length > 0 ? (
             <div className="submission-list" aria-live="polite">
               {isRunning ? (
                 <article className="submission-entry running-submission verdict-warning">
@@ -324,7 +358,7 @@ export function ProblemWorkspace({
                   </div>
                 </article>
               ) : null}
-              {submissions.map((submission) => (
+              {[...ephemeralSubmissions, ...submissions].map((submission) => (
                 <article
                   className={`submission-entry verdict-${verdictTone[submission.verdict] ?? "error"}`}
                   key={submission.id}

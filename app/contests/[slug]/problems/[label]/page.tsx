@@ -10,8 +10,7 @@ import {
 } from "../../../../../lib/contest";
 import { supportedLanguageOptions } from "../../../../../lib/judge";
 import { prisma } from "../../../../../lib/prisma";
-import { submitContestSolution } from "../../actions";
-import ContestPreviewRunner from "./preview-runner";
+import { runContestPreview, submitContestSolution } from "../../actions";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -180,74 +179,39 @@ export default async function ContestProblemPage({
         </div>
 
         {previewMode ? (
-          <>
-            <div className="form-message">
-              Admin preview — this is the exact problem view participants see. Write or tweak code
-              in the editor below and run it against every test case to confirm the judge and
-              problems work. Runs here are ephemeral: no submission is stored and standings are
-              unaffected.
-            </div>
+          <div className="form-message">
+            Admin preview — this is the exact workspace participants see, preloaded with the stored
+            reference solution. Hitting run executes against all{" "}
+            {previewData?._count.testCases ?? 0} test cases (samples, hidden, and efficiency) via the
+            real judge. Runs here are ephemeral: nothing is stored and standings are unaffected.{" "}
+            <a className="text-link" href={`/admin/problems/${contestProblem.problem.slug}`}>
+              View full reference solutions & test cases
+            </a>
+          </div>
+        ) : null}
 
-            <div className="problem-section">
-              <h2>Run a solution</h2>
-              <p className="nudge-meta">
-                The editor is preloaded with the stored reference solution. Runs execute against all{" "}
-                {previewData?._count.testCases ?? 0} test cases (samples, hidden, and efficiency).
-              </p>
-              <ContestPreviewRunner
-                slug={contestProblem.problem.slug}
-                languageOptions={supportedLanguageOptions()}
-                initialCodeByLanguage={initialCodeByLanguage}
-              />
-              <a className="text-link" href={`/admin/problems/${contestProblem.problem.slug}`}>
-                View full reference solutions & test cases
-              </a>
-            </div>
-
-            <div className="problem-statement">{contestProblem.problem.statement}</div>
-
-            {contestProblem.problem.constraints ? (
-              <div className="problem-section">
-                <h2>Constraints</h2>
-                <pre>{contestProblem.problem.constraints}</pre>
-              </div>
-            ) : null}
-
-            {contestProblem.problem.testCases.length > 0 ? (
-              <div className="problem-section">
-                <h2>Samples</h2>
-                <div className="sample-list">
-                  {contestProblem.problem.testCases.map((testCase) => (
-                    <article className="sample-card" key={testCase.id}>
-                      <label>
-                        Input
-                        <pre>{testCase.input}</pre>
-                      </label>
-                      <label>
-                        Expected output
-                        <pre>{testCase.expectedOutput}</pre>
-                      </label>
-                    </article>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </>
-        ) : (
-          <ProblemWorkspace
-            statement={contestProblem.problem.statement}
-            constraints={contestProblem.problem.constraints}
-            samples={contestProblem.problem.testCases}
-            languageOptions={supportedLanguageOptions()}
-            submissions={submissions}
-            submitAction={submitContestSolution}
-            hiddenFields={{ contestSlug: contest.slug, problemLabel: contestProblem.label }}
-            draftScope={`contest:${contest.slug}:${contestProblem.label}`}
-            canSubmit
-            rateLimited={searchParams?.error === "rate-limit"}
-            rateLimitMessage="You have reached the daily submission limit."
-          />
-        )}
+        <ProblemWorkspace
+          statement={contestProblem.problem.statement}
+          constraints={contestProblem.problem.constraints}
+          samples={contestProblem.problem.testCases}
+          languageOptions={supportedLanguageOptions()}
+          submissions={previewMode ? [] : submissions}
+          submitAction={previewMode ? runContestPreview : submitContestSolution}
+          hiddenFields={
+            previewMode
+              ? { problemSlug: contestProblem.problem.slug }
+              : { contestSlug: contest.slug, problemLabel: contestProblem.label }
+          }
+          draftScope={
+            previewMode
+              ? `contest-preview:${contest.slug}:${contestProblem.label}`
+              : `contest:${contest.slug}:${contestProblem.label}`
+          }
+          canSubmit
+          initialCodeByLanguage={previewMode ? initialCodeByLanguage : undefined}
+          rateLimited={!previewMode && searchParams?.error === "rate-limit"}
+          rateLimitMessage="You have reached the daily submission limit."
+        />
       </section>
     </main>
   );

@@ -5,9 +5,17 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { isContestLive } from "../../../lib/contest";
-import { requireActiveUser } from "../../../lib/guards";
+import { requireActiveUser, requireAdmin } from "../../../lib/guards";
 import { isSupportedLanguage, runJudge } from "../../../lib/judge";
 import { prisma } from "../../../lib/prisma";
+
+type ContestPreviewResult = {
+  verdict: string;
+  passedCount: number;
+  totalCount: number;
+  runtimeMs: number | null;
+  failureMessage?: string | null;
+};
 
 const DAILY_SUBMISSION_LIMIT = 50;
 const MAX_CODE_LENGTH = 20_000;
@@ -178,4 +186,67 @@ export async function submitContestSolution(formData: FormData) {
   revalidatePath("/contests");
   revalidatePath(`/contests/${contest.slug}`);
   revalidatePath(`/contests/${contest.slug}/problems/${parsed.data.problemLabel}`);
+}
+
+function previewError(message: string): ContestPreviewResult {
+  return {
+    verdict: SubmissionVerdict.RUNTIME_ERROR,
+    passedCount: 0,
+    totalCount: 0,
+    runtimeMs: null,
+    failureMessage: message,
+  };
+}
+
+// Admin-only: run arbitrary code against a problem's tests without persisting
+// anything. Used by the contest problem page in preview mode so admins can dry-run
+// the reference (or any) solution against the real judge and test cases.
+export async function runContestPreview(formData: FormData): Promise<ContestPreviewResult> {
+  await requireAdmin();
+
+  const problemSlug = String(formData.get("problemSlug") ?? "");
+  const language = String(formData.get("language") ?? "");
+  const code = String(formData.get("code") ?? "");
+
+  if (!isSupportedLanguage(language)) {
+    return previewError(`Unsupported language: ${language || "none"}.`);
+  }
+  if (code.trim().length === 0) {
+    return previewError("Write some code before running.");
+  }
+  if (code.length > MAX_CODE_LENGTH) {
+    return previewError("Code exceeds the maximum length.");
+  }
+
+  const problem = await prisma.problem.findUnique({
+    where: { slug: problemSlug },
+    select: {
+      timeLimitMs: true,
+      testCases: {
+        orderBy: { order: "asc" },
+        select: { input: true, expectedOutput: true, isSample: true },
+      },
+    },
+  });
+
+  if (!problem || problem.testCases.length === 0) {
+    return previewError("This problem has no test cases to run against.");
+  }
+
+  try {
+    return await runJudge({
+      code,
+      language,
+      testCases: problem.testCases,
+      timeLimitMs: problem.timeLimitMs,
+    });
+  } catch (error) {
+    return {
+      verdict: SubmissionVerdict.RUNTIME_ERROR,
+      passedCount: 0,
+      totalCount: problem.testCases.length,
+      runtimeMs: null,
+      failureMessage: failureMessageFromError(error),
+    };
+  }
 }

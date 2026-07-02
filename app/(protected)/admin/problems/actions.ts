@@ -15,8 +15,6 @@ type RunResult =
     }
   | { ok: false; message: string };
 
-const MAX_PREVIEW_CODE_LENGTH = 20_000;
-
 function judgeFailureMessage(error: unknown) {
   if (!(error instanceof Error)) {
     return "Could not run the judge. Check the judge service logs.";
@@ -72,56 +70,6 @@ export async function runReferenceSolution(slug: string, language?: string): Pro
     const result = await runJudge({
       code: reference.code,
       language: reference.language,
-      testCases: problem.testCases,
-      timeLimitMs: problem.timeLimitMs,
-    });
-    return { ok: true, ...result };
-  } catch (error) {
-    return { ok: false, message: judgeFailureMessage(error) };
-  }
-}
-
-// Runs arbitrary admin-supplied code against every test case for the contest
-// "Test contest" preview. This never persists a submission, so it does not
-// affect contest standings or ratings.
-export async function runContestPreviewSolution(
-  slug: string,
-  language: string,
-  code: string,
-): Promise<RunResult> {
-  await requireAdmin();
-
-  if (!isSupportedLanguage(language)) {
-    return { ok: false, message: `Unsupported language: ${language}.` };
-  }
-
-  if (!code.trim()) {
-    return { ok: false, message: "Write some code before running." };
-  }
-
-  if (code.length > MAX_PREVIEW_CODE_LENGTH) {
-    return { ok: false, message: "Code exceeds the maximum length." };
-  }
-
-  const problem = await prisma.problem.findUnique({
-    where: { slug },
-    select: {
-      timeLimitMs: true,
-      testCases: {
-        orderBy: { order: "asc" },
-        select: { input: true, expectedOutput: true, isSample: true },
-      },
-    },
-  });
-
-  if (!problem || problem.testCases.length === 0) {
-    return { ok: false, message: "This problem has no test cases." };
-  }
-
-  try {
-    const result = await runJudge({
-      code,
-      language,
       testCases: problem.testCases,
       timeLimitMs: problem.timeLimitMs,
     });
