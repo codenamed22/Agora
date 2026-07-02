@@ -1127,6 +1127,13 @@ img {
   padding-top: 28px;
 }
 
+.practice-prompt-pane {
+  position: sticky;
+  top: 24px;
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+}
+
 .practice-submit-pane {
   position: sticky;
   top: 24px;
@@ -2141,6 +2148,12 @@ img {
 
   .practice-workspace {
     --problem-editor-height: 420px;
+  }
+
+  .practice-prompt-pane {
+    position: static;
+    max-height: none;
+    overflow: visible;
   }
 
   .practice-submit-pane {
