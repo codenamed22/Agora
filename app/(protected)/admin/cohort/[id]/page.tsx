@@ -3,35 +3,50 @@ import { redirect } from "next/navigation";
 import { parseAnswers, parseQuestions } from "../../../../../lib/cohorts";
 import { requireAdmin } from "../../../../../lib/guards";
 import { prisma } from "../../../../../lib/prisma";
-import { editQuestion, endCohort } from "../actions";
+import { editQuestion, endCohort, reviewApplication } from "../actions";
 
-const STATUS_LABELS: Record<ApplicationStatus, string> = {
-  DRAFT: "Draft",
-  SUBMITTED: "Pending",
-  APPROVED: "Approved",
-  REJECTED: "Not approved",
-};
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+});
 
-export default async function CohortDetailPage({ params }: Readonly<{ params: { id: string } }>) {
+const TABS = [
+  { key: "pending", label: "Pending", status: ApplicationStatus.SUBMITTED },
+  { key: "approved", label: "Approved", status: ApplicationStatus.APPROVED },
+  { key: "rejected", label: "Not approved", status: ApplicationStatus.REJECTED },
+] as const;
+
+export default async function CohortDetailPage({
+  params,
+  searchParams,
+}: Readonly<{ params: { id: string }; searchParams?: { status?: string } }>) {
   await requireAdmin();
 
-  const cohort = await prisma.cohort.findUnique({
-    where: { id: params.id },
-    include: {
-      applications: {
-        where: { status: { not: ApplicationStatus.DRAFT } },
-        orderBy: { updatedAt: "asc" },
-        include: { user: { include: { profile: true } } },
-      },
-    },
-  });
+  const cohort = await prisma.cohort.findUnique({ where: { id: params.id } });
 
   if (!cohort) {
     redirect("/admin/cohort");
   }
 
+  const activeTab = TABS.find((tab) => tab.key === searchParams?.status) ?? TABS[0];
+
+  // Applications live on the cohort screen, filtered by status for this cohort's year.
+  const [applications, counts] = await Promise.all([
+    prisma.application.findMany({
+      where: { cohortId: cohort.id, status: activeTab.status },
+      orderBy: { updatedAt: "asc" },
+      include: { user: { include: { profile: true } } },
+    }),
+    prisma.application.groupBy({
+      by: ["status"],
+      where: { cohortId: cohort.id },
+      _count: { _all: true },
+    }),
+  ]);
+
+  const countByStatus = new Map(counts.map((row) => [row.status, row._count._all]));
   const questions = parseQuestions(cohort.questions);
-  const responses = cohort.applications;
 
   return (
     <main className="app-shell wide-card workspace-shell">
@@ -144,21 +159,37 @@ export default async function CohortDetailPage({ params }: Readonly<{ params: { 
         </div>
 
         <div className="portal-section">
-          <h2>Responses ({responses.length})</h2>
-          {responses.length === 0 ? (
-            <p className="muted-line">No responses yet.</p>
+          <h2>Applications</h2>
+          <nav className="filter-tabs" aria-label="Filter applications by status">
+            {TABS.map((tab) => (
+              <a
+                key={tab.key}
+                href={`/admin/cohort/${cohort.id}?status=${tab.key}`}
+                className={`filter-tab${tab.key === activeTab.key ? " is-active" : ""}`}
+              >
+                {tab.label} ({countByStatus.get(tab.status) ?? 0})
+              </a>
+            ))}
+          </nav>
+
+          {applications.length === 0 ? (
+            <p className="muted-line">No applications in this view.</p>
           ) : (
             <div className="application-list">
-              {responses.map((application) => {
+              {applications.map((application) => {
                 const answers = parseAnswers(application.answers);
                 return (
                   <article className="application-row" key={application.id}>
                     <div>
                       <h2>{application.user.name ?? application.user.email}</h2>
                       <p className="muted-line">
-                        {application.user.email} · {STATUS_LABELS[application.status]} ·{" "}
-                        <strong>Batch:</strong> {application.user.profile?.batch ?? "—"} ·{" "}
-                        <strong>Branch:</strong> {application.user.profile?.branch ?? "—"}
+                        {application.user.email} · Submitted{" "}
+                        {dateFormatter.format(application.createdAt)}
+                      </p>
+                      <p>
+                        <strong>Batch:</strong> {application.user.profile?.batch ?? "Not provided"}{" "}
+                        · <strong>Branch:</strong>{" "}
+                        {application.user.profile?.branch ?? "Not provided"}
                       </p>
                       {questions.map((question) => (
                         <p key={question.id}>
@@ -166,7 +197,39 @@ export default async function CohortDetailPage({ params }: Readonly<{ params: { 
                           {answers[question.id] || "Not provided"}
                         </p>
                       ))}
+                      {/* Cohort has no questions — fall back to the legacy free-text fields. */}
+                      {questions.length === 0 ? (
+                        <>
+                          <p>
+                            <strong>Goals:</strong> {application.goals || "Not provided"}
+                          </p>
+                          <p>
+                            <strong>Experience:</strong> {application.experience || "Not provided"}
+                          </p>
+                          {application.whyJoin ? (
+                            <p>
+                              <strong>Why join:</strong> {application.whyJoin}
+                            </p>
+                          ) : null}
+                        </>
+                      ) : null}
                     </div>
+                    {application.status === ApplicationStatus.SUBMITTED ? (
+                      <form action={reviewApplication} className="review-actions">
+                        <input type="hidden" name="applicationId" value={application.id} />
+                        <button
+                          className="secondary-button"
+                          name="decision"
+                          value="reject"
+                          type="submit"
+                        >
+                          Reject
+                        </button>
+                        <button className="button" name="decision" value="approve" type="submit">
+                          Approve
+                        </button>
+                      </form>
+                    ) : null}
                   </article>
                 );
               })}

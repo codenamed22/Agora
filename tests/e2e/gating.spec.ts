@@ -8,8 +8,8 @@ test.describe("route gating", () => {
     await expect(page).toHaveURL(/\/join$/);
   });
 
-  test("redirects anonymous users from /admin/applications to /join", async ({ page }) => {
-    await page.goto("/admin/applications");
+  test("redirects anonymous users from /admin/cohort to /join", async ({ page }) => {
+    await page.goto("/admin/cohort");
     await page.waitForURL("**/join");
     await expect(page).toHaveURL(/\/join$/);
   });
@@ -26,7 +26,7 @@ test.describe("route gating", () => {
     await devLogin(page, "member");
 
     for (const path of [
-      "/admin/applications",
+      "/admin/cohort",
       "/admin/teaching",
       "/masterclass",
       "/boards/missing-board",
@@ -37,10 +37,10 @@ test.describe("route gating", () => {
     }
   });
 
-  test("lets an admin reach the application review page", async ({ page }) => {
+  test("lets an admin reach the cohort review page", async ({ page }) => {
     await devLogin(page, "admin");
-    await page.goto("/admin/applications");
-    await expect(page.getByRole("heading", { name: "Application review" })).toBeVisible();
+    await page.goto("/admin/cohort");
+    await expect(page.getByRole("heading", { name: "Cohorts", exact: true })).toBeVisible();
   });
 
   test("redirects old admin teaching page to masterclass for admins", async ({ page }) => {

@@ -40,6 +40,6 @@ export async function GET(request: Request) {
     new URL(request.url).searchParams.get("role") === "admin" ? "admin" : "member";
 
   await signIn(localDevProviderId(role), {
-    redirectTo: role === "admin" ? "/admin/applications" : "/apply",
+    redirectTo: role === "admin" ? "/admin/cohort" : "/apply",
   });
 }

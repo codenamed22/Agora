@@ -1,6 +1,6 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
+import { ApplicationStatus, Prisma, UserStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -118,4 +118,51 @@ export async function editQuestion(formData: FormData) {
 
   revalidatePath(`/admin/cohort/${cohort.id}`);
   revalidatePath("/apply");
+}
+
+// Approve or reject a submitted application from its cohort screen. Approving
+// grants member access; rejecting marks the user REJECTED.
+export async function reviewApplication(formData: FormData) {
+  const admin = await requireAdmin();
+
+  const applicationId = String(formData.get("applicationId") ?? "");
+  const decision = String(formData.get("decision") ?? "");
+
+  if (!applicationId || !["approve", "reject"].includes(decision)) {
+    return;
+  }
+
+  const nextApplicationStatus =
+    decision === "approve" ? ApplicationStatus.APPROVED : ApplicationStatus.REJECTED;
+  const nextUserStatus = decision === "approve" ? UserStatus.ACTIVE : UserStatus.REJECTED;
+
+  const application = await prisma.application.findUnique({
+    where: { id: applicationId },
+    select: { userId: true, status: true, cohortId: true },
+  });
+
+  // Only a still-pending (SUBMITTED) application can be decided.
+  if (!application || application.status !== ApplicationStatus.SUBMITTED) {
+    return;
+  }
+
+  await prisma.$transaction([
+    prisma.application.update({
+      where: { id: applicationId },
+      data: {
+        status: nextApplicationStatus,
+        reviewedBy: admin.id,
+        reviewedAt: new Date(),
+      },
+    }),
+    prisma.user.update({
+      where: { id: application.userId },
+      data: { status: nextUserStatus },
+    }),
+  ]);
+
+  if (application.cohortId) {
+    revalidatePath(`/admin/cohort/${application.cohortId}`);
+  }
+  revalidatePath("/admin/cohort");
 }

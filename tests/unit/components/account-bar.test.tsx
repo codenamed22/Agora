@@ -54,10 +54,6 @@ describe("AccountBar", () => {
     render(ui);
 
     expect(screen.getByRole("link", { name: "Cohort" })).toHaveAttribute("href", "/admin/cohort");
-    expect(screen.getByRole("link", { name: "Applications" })).toHaveAttribute(
-      "href",
-      "/admin/applications",
-    );
     expect(screen.getByRole("link", { name: "Masterclass" })).toHaveAttribute(
       "href",
       "/masterclass",
