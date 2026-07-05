@@ -1,15 +1,9 @@
 import { ApplicationStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
-import { parseAnswers, parseQuestions } from "../../../../../lib/cohorts";
+import { dateFormatter, parseAnswers, parseQuestions } from "../../../../../lib/cohorts";
 import { requireAdmin } from "../../../../../lib/guards";
 import { prisma } from "../../../../../lib/prisma";
 import { editQuestion, endCohort, reviewApplication } from "../actions";
-
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-});
 
 const TABS = [
   { key: "pending", label: "Pending", status: ApplicationStatus.SUBMITTED },

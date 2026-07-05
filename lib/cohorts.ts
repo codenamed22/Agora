@@ -1,5 +1,12 @@
 import { prisma } from "./prisma";
 
+// Shared date format for application/cohort admin screens.
+export const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+});
+
 // A single application question, stored in Cohort.questions (a JSON array, in
 // display order). Answers are keyed by question id.
 export type CohortQuestion = {

@@ -1,14 +1,8 @@
 import { ApplicationStatus } from "@prisma/client";
-import { parseAnswers } from "../../../../lib/cohorts";
+import { dateFormatter, parseAnswers } from "../../../../lib/cohorts";
 import { requireAdmin } from "../../../../lib/guards";
 import { prisma } from "../../../../lib/prisma";
 import { reviewApplication, setActiveCohort } from "./actions";
-
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-});
 
 export default async function CohortAdminPage({
   searchParams,
@@ -20,10 +14,11 @@ export default async function CohortAdminPage({
       orderBy: { year: "desc" },
       include: { _count: { select: { applications: true } } },
     }),
-    // Pre-cohort applications never got a cohort — surface them here so they
-    // aren't orphaned now that review lives on the cohort screens.
+    // Pre-cohort applications never got a cohort — surface the ones still
+    // awaiting a decision so they aren't orphaned. Pending-only: this is a
+    // review queue, not a history, so reviewed rows don't pad the count.
     prisma.application.findMany({
-      where: { cohortId: null, status: { not: ApplicationStatus.DRAFT } },
+      where: { cohortId: null, status: ApplicationStatus.SUBMITTED },
       orderBy: { updatedAt: "asc" },
       include: { user: { include: { profile: true } } },
     }),
