@@ -38,7 +38,7 @@ export type ResourceWithRelations = Prisma.ResourceGetPayload<{
   };
 }>;
 
-const resourceListSelectConfig = {
+export const resourceListSelect = {
   id: true,
   title: true,
   author: true,
@@ -53,5 +53,5 @@ const resourceListSelectConfig = {
 } satisfies Prisma.ResourceSelect;
 
 export type ResourceList = Prisma.ResourceGetPayload<{
-  select: typeof resourceListSelectConfig;
+  select: typeof resourceListSelect;
 }>;

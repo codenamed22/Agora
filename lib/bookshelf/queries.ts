@@ -1,22 +1,12 @@
 import { prisma } from "../prisma";
 import { DEFAULT_PAGE_SIZE } from "./constants";
-import { CategoryWithCount, ResourceWithRelations, ResourceList } from "./types";
+import {
+  CategoryWithCount,
+  ResourceWithRelations,
+  ResourceList,
+  resourceListSelect,
+} from "./types";
 import { Prisma, ResourceType } from "@prisma/client";
-
-// Lightweight selection for list views — only fields rendered by ResourceCard
-const resourceListSelect = {
-  id: true,
-  title: true,
-  author: true,
-  type: true,
-  resourceLink: true,
-  imageUrl: true,
-  category: {
-    select: {
-      name: true,
-    },
-  },
-} satisfies Prisma.ResourceSelect;
 
 // Full selection for detail views
 const resourceDetailSelect = {
@@ -85,16 +75,13 @@ export async function getRecentResources(limit: number = 6) {
   });
 }
 
-export async function getCategoryBySlug(slug: string): Promise<CategoryWithCount | null> {
+export async function getCategoryBySlug(slug: string) {
   return prisma.category.findUnique({
     where: { slug },
     select: {
       id: true,
       name: true,
       slug: true,
-      _count: {
-        select: { resources: true },
-      },
     },
   });
 }
