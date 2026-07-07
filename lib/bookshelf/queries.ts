@@ -59,19 +59,7 @@ export async function getRecentResources(limit: number = 6) {
   return prisma.resource.findMany({
     orderBy: { createdAt: "desc" },
     take: limit,
-    select: {
-      id: true,
-      title: true,
-      author: true,
-      type: true,
-      resourceLink: true,
-      imageUrl: true,
-      category: {
-        select: {
-          name: true,
-        },
-      },
-    },
+    select: resourceListSelect,
   });
 }
 
@@ -92,19 +80,7 @@ export async function getResourcesByCategory(slug: string) {
       category: { slug },
     },
     orderBy: { title: "asc" },
-    select: {
-      id: true,
-      title: true,
-      author: true,
-      type: true,
-      resourceLink: true,
-      imageUrl: true,
-      category: {
-        select: {
-          name: true,
-        },
-      },
-    },
+    select: resourceListSelect,
   });
 }
 
@@ -159,7 +135,7 @@ export async function getPaginatedResources(params: {
   const limit = params.limit ?? DEFAULT_PAGE_SIZE;
   const skip = (currentPage - 1) * limit;
 
-  const [resources, total] = await prisma.$transaction([
+  const [resources, total] = await Promise.all([
     prisma.resource.findMany({
       where,
       orderBy,
@@ -170,7 +146,7 @@ export async function getPaginatedResources(params: {
     prisma.resource.count({ where }),
   ]);
 
-  const totalPages = Math.ceil(total / limit);
+  const totalPages = Math.max(1, Math.ceil(total / limit));
 
   return {
     resources,
@@ -199,7 +175,7 @@ export async function getPaginatedCategoryResources(
     category: { slug: categorySlug },
   };
 
-  const [resources, total] = await prisma.$transaction([
+  const [resources, total] = await Promise.all([
     prisma.resource.findMany({
       where: finalWhere,
       orderBy,
@@ -210,7 +186,7 @@ export async function getPaginatedCategoryResources(
     prisma.resource.count({ where: finalWhere }),
   ]);
 
-  const totalPages = Math.ceil(total / limit);
+  const totalPages = Math.max(1, Math.ceil(total / limit));
 
   return {
     resources,
