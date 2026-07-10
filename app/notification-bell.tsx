@@ -109,7 +109,12 @@ export default function NotificationBell({
       </button>
 
       {open ? (
-        <div className="notification-dropdown" role="menu" aria-label="Notifications">
+        <div
+          className="notification-dropdown"
+          role="menu"
+          aria-label="Notifications"
+          data-lenis-prevent
+        >
           <div className="notification-dropdown-header">
             <span>Notifications</span>
           </div>
