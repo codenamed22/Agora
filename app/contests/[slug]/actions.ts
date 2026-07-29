@@ -40,6 +40,10 @@ function failureMessageFromError(error: unknown) {
   return message.replace(/\s+/g, " ").trim().slice(0, FAILURE_MESSAGE_LIMIT);
 }
 
+// Registering is the single commitment for a contest (LeetCode style). Members
+// may register before it opens or join while it is still live; every registrant
+// is part of the contest and gets rated at finalize time. The personal timer
+// only begins once the contest itself is live (see personalContestStart).
 export async function registerForContest(formData: FormData) {
   const user = await requireActiveUser();
   const parsed = contestSlugSchema.safeParse({ contestSlug: formData.get("contestSlug") });
@@ -51,14 +55,12 @@ export async function registerForContest(formData: FormData) {
   const contest = await prisma.contest.findFirst({
     where: {
       slug: parsed.data.contestSlug,
-      status: { in: [ContestStatus.PUBLISHED, ContestStatus.FINALIZED] },
+      status: ContestStatus.PUBLISHED,
     },
-    select: { id: true, slug: true, startsAt: true, endsAt: true },
+    select: { id: true, slug: true, endsAt: true },
   });
 
-  const now = new Date();
-
-  if (!contest || now < contest.startsAt || contest.endsAt < now) {
+  if (!contest || contest.endsAt < new Date()) {
     redirect("/contests");
   }
 
@@ -72,49 +74,9 @@ export async function registerForContest(formData: FormData) {
   revalidatePath(`/contests/${contest.slug}`);
 }
 
-// RSVP is a lightweight "I plan to attend" intent that only applies before a
-// contest starts. Once it is live, members register (start their timer) instead.
-async function getUpcomingContest(slug: string) {
-  const contest = await prisma.contest.findFirst({
-    where: {
-      slug,
-      status: { in: [ContestStatus.PUBLISHED, ContestStatus.FINALIZED] },
-    },
-    select: { id: true, slug: true, startsAt: true },
-  });
-
-  if (!contest || new Date() >= contest.startsAt) {
-    return null;
-  }
-
-  return contest;
-}
-
-export async function rsvpToContest(formData: FormData) {
-  const user = await requireActiveUser();
-  const parsed = contestSlugSchema.safeParse({ contestSlug: formData.get("contestSlug") });
-
-  if (!parsed.success) {
-    redirect("/contests");
-  }
-
-  const contest = await getUpcomingContest(parsed.data.contestSlug);
-
-  if (!contest) {
-    redirect("/contests");
-  }
-
-  await prisma.contestRsvp.upsert({
-    where: { contestId_userId: { contestId: contest.id, userId: user.id } },
-    update: {},
-    create: { contestId: contest.id, userId: user.id },
-  });
-
-  revalidatePath("/contests");
-  revalidatePath(`/contests/${contest.slug}`);
-}
-
-export async function cancelContestRsvp(formData: FormData) {
+// Members can back out only while the contest is still upcoming. Once it opens,
+// they are committed and will be scored (even a no-show counts as a participant).
+export async function unregisterFromContest(formData: FormData) {
   const user = await requireActiveUser();
   const parsed = contestSlugSchema.safeParse({ contestSlug: formData.get("contestSlug") });
 
@@ -124,14 +86,14 @@ export async function cancelContestRsvp(formData: FormData) {
 
   const contest = await prisma.contest.findFirst({
     where: { slug: parsed.data.contestSlug },
-    select: { id: true, slug: true },
+    select: { id: true, slug: true, startsAt: true },
   });
 
-  if (!contest) {
-    redirect("/contests");
+  if (!contest || new Date() >= contest.startsAt) {
+    redirect(`/contests/${parsed.data.contestSlug}`);
   }
 
-  await prisma.contestRsvp.deleteMany({
+  await prisma.contestRegistration.deleteMany({
     where: { contestId: contest.id, userId: user.id },
   });
 

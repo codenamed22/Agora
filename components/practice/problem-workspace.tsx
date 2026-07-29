@@ -102,6 +102,7 @@ const draftKey = (scope: string, language: string) => `shardup:draft:${scope}:${
 const splitKey = "shardup:practice-split";
 
 // Keep the resizable split within sane bounds so neither pane collapses.
+const DEFAULT_SPLIT = 0.45;
 const MIN_SPLIT = 0.25;
 const MAX_SPLIT = 0.75;
 
@@ -169,7 +170,7 @@ export function ProblemWorkspace({
   const [error, setError] = useState<string | null>(null);
   const [runningLanguage, setRunningLanguage] = useState("python");
   const [ephemeralSubmissions, setEphemeralSubmissions] = useState<Submission[]>([]);
-  const [split, setSplit] = useState(0.5);
+  const [split, setSplit] = useState(DEFAULT_SPLIT);
 
   const workspaceRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -235,6 +236,11 @@ export function ProblemWorkspace({
   function handleCodeChange(value: string) {
     setCode(value);
     localStorage.setItem(draftKey(draftScope, language), value);
+  }
+
+  function handleResetCode() {
+    setCode(initialCodeByLanguage?.[language] ?? starterCode[language] ?? "");
+    localStorage.removeItem(draftKey(draftScope, language));
   }
 
   function buildFormData() {
@@ -467,7 +473,12 @@ export function ProblemWorkspace({
             <div className="code-editor-shell">
               <div className="code-editor-toolbar">
                 <span>Code</span>
-                <span>{activeLanguageLabel}</span>
+                <span className="code-editor-toolbar-actions">
+                  <span>{activeLanguageLabel}</span>
+                  <button type="button" onClick={handleResetCode} disabled={isRunning}>
+                    Reset
+                  </button>
+                </span>
               </div>
               <div className="code-editor-body">
                 <CodeMirror
@@ -479,6 +490,7 @@ export function ProblemWorkspace({
                     highlightActiveLine: true,
                     highlightActiveLineGutter: true,
                     lineNumbers: true,
+                    tabSize: 4,
                   }}
                   editable={!isRunning}
                   extensions={[...languageExtensions(language), blockClipboard]}

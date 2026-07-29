@@ -11,7 +11,7 @@ export default function CreateContestModal({
 }: Readonly<{ error?: string; returnTo: string }>) {
   return (
     <div className="modal-backdrop" id="create-contest">
-      <section className="badge-create-modal" aria-label="Create a new contest">
+      <section className="badge-create-modal" aria-label="Create a new contest" data-lenis-prevent>
         <a className="modal-close" href={returnTo} aria-label="Close">
           x
         </a>

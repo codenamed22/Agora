@@ -9,11 +9,11 @@ import {
   formatContestInstant,
   formatContestTiming,
   formatContestWindow,
+  personalContestStart,
   standingsWithNames,
 } from "../../../lib/contest";
 import { prisma } from "../../../lib/prisma";
-import ContestRsvpControl from "../rsvp-control";
-import { registerForContest } from "./actions";
+import ContestRegistrationControl from "../registration-control";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -31,7 +31,6 @@ export default async function ContestDetailPage({
         include: { problem: { select: { title: true, difficulty: true, slug: true } } },
       },
       registrations: { select: { id: true, userId: true, createdAt: true } },
-      rsvps: { where: { userId: session?.user?.id ?? "" }, select: { id: true } },
       submissions: {
         select: {
           userId: true,
@@ -40,7 +39,7 @@ export default async function ContestDetailPage({
           createdAt: true,
         },
       },
-      _count: { select: { rsvps: true } },
+      _count: { select: { registrations: true } },
     },
   });
 
@@ -57,7 +56,10 @@ export default async function ContestDetailPage({
     ? contestWindowForUser(contest, currentRegistration.createdAt)
     : null;
   const startTimesByUser = new Map(
-    contest.registrations.map((registration) => [registration.userId, registration.createdAt]),
+    contest.registrations.map((registration) => [
+      registration.userId,
+      personalContestStart(contest, registration.createdAt),
+    ]),
   );
   const standings = standingsWithNames(
     computeStandings(contest.submissions, contest.startsAt, startTimesByUser),
@@ -76,11 +78,8 @@ export default async function ContestDetailPage({
     }),
   );
 
-  const canStart =
-    session?.user?.status === UserStatus.ACTIVE && phase === "running" && !isRegistered;
   const canViewProblems = isRegistered && phase === "running";
   const isAdmin = session?.user?.role === "ADMIN" && session.user.status === UserStatus.ACTIVE;
-  const isGoing = contest.rsvps.length > 0;
 
   return (
     <main className="app-shell wide-card workspace-shell">
@@ -98,32 +97,29 @@ export default async function ContestDetailPage({
         ) : null}
 
         {searchParams?.error === "register" ? (
-          <div className="form-message error">Start this contest before solving problems.</div>
+          <div className="form-message error">
+            Register for this contest before solving problems.
+          </div>
         ) : null}
 
         {phase === "upcoming" ? (
-          <>
-            <div className="form-message">
-              This contest hasn&apos;t started yet. It opens{" "}
-              {formatContestInstant(contest.startsAt)} — come back then to start your{" "}
-              {contestDurationMinutes(contest)}-minute timer.
-            </div>
-            <p className="nudge-meta">{contest._count.rsvps} going</p>
-            <ContestRsvpControl
-              contestSlug={contest.slug}
-              userStatus={session?.user?.status}
-              isGoing={isGoing}
-            />
-          </>
+          <div className="form-message">
+            This contest hasn&apos;t started yet. It opens {formatContestInstant(contest.startsAt)}.
+            Register now and your {contestDurationMinutes(contest)}-minute timer starts
+            automatically when it opens.
+          </div>
         ) : null}
 
-        {canStart ? (
-          <form action={registerForContest} className="inline-form">
-            <input type="hidden" name="contestSlug" value={contest.slug} />
-            <button className="button" type="submit">
-              Start contest
-            </button>
-          </form>
+        {phase === "upcoming" || phase === "running" ? (
+          <>
+            <p className="nudge-meta">{contest._count.registrations} registered</p>
+            <ContestRegistrationControl
+              contestSlug={contest.slug}
+              userStatus={session?.user?.status}
+              isRegistered={isRegistered}
+              phase={phase}
+            />
+          </>
         ) : null}
 
         {canViewProblems ? (

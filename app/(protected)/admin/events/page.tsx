@@ -28,7 +28,7 @@ export default async function AdminEventsPage({
         <a className="button" href="#create-event">
           Create event
         </a>
-        <CreateEventModal error={searchParams?.error} returnTo="/admin/events" />
+        <CreateEventModal returnTo="/admin/events" />
 
         <div className="member-badge-admin-list">
           {events.map((event) => (

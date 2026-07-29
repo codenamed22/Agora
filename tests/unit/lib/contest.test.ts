@@ -4,7 +4,9 @@ import {
   computeRatingChanges,
   computeStandings,
   contestPhase,
+  contestWindowForUser,
   DEFAULT_CONTEST_RATING,
+  personalContestStart,
   tierForRating,
 } from "../../../lib/contest";
 
@@ -136,5 +138,55 @@ describe("contestPhase", () => {
     expect(contestPhase(contest, new Date("2026-07-01T11:01:00.000Z"), registeredAt)).toBe(
       "finished",
     );
+  });
+
+  it("starts the timer at the contest open for members who register early", () => {
+    const contest = {
+      status: ContestStatus.PUBLISHED,
+      startsAt: new Date("2026-07-01T10:00:00.000Z"),
+      endsAt: new Date("2026-07-01T11:00:00.000Z"),
+      durationMinutes: 60,
+    };
+    // Registered a day early — the personal timer must not begin before startsAt.
+    const registeredAt = new Date("2026-06-30T09:00:00.000Z");
+
+    expect(contestPhase(contest, new Date("2026-07-01T09:59:00.000Z"), registeredAt)).toBe(
+      "upcoming",
+    );
+    expect(contestPhase(contest, new Date("2026-07-01T10:30:00.000Z"), registeredAt)).toBe(
+      "running",
+    );
+    expect(contestPhase(contest, new Date("2026-07-01T11:01:00.000Z"), registeredAt)).toBe(
+      "finished",
+    );
+  });
+});
+
+describe("personalContestStart", () => {
+  const contest = {
+    status: ContestStatus.PUBLISHED,
+    startsAt: new Date("2026-07-01T10:00:00.000Z"),
+    endsAt: new Date("2026-07-01T11:00:00.000Z"),
+    durationMinutes: 60,
+  };
+
+  it("clamps early registrations to the contest open time", () => {
+    const registeredAt = new Date("2026-06-30T09:00:00.000Z");
+
+    expect(personalContestStart(contest, registeredAt)).toEqual(contest.startsAt);
+    expect(contestWindowForUser(contest, registeredAt)).toEqual({
+      startsAt: contest.startsAt,
+      endsAt: contest.endsAt,
+    });
+  });
+
+  it("uses the join time for members who register mid-window", () => {
+    const registeredAt = new Date("2026-07-01T10:20:00.000Z");
+
+    expect(personalContestStart(contest, registeredAt)).toEqual(registeredAt);
+    expect(contestWindowForUser(contest, registeredAt)).toEqual({
+      startsAt: registeredAt,
+      endsAt: contest.endsAt,
+    });
   });
 });

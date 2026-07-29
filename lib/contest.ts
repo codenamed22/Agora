@@ -156,9 +156,21 @@ export function contestDurationMinutes(contest: {
   );
 }
 
+// The personal timer starts when the member registered, but never before the
+// contest itself opens. So a member who registers early (LeetCode style) starts
+// the moment the contest goes live, while someone who joins mid-window starts
+// from their join time. Either way the window is capped at the contest's endsAt.
+export function personalContestStart(contest: ContestTiming, registrationStartedAt?: Date | null) {
+  if (!registrationStartedAt) {
+    return contest.startsAt;
+  }
+
+  return registrationStartedAt > contest.startsAt ? registrationStartedAt : contest.startsAt;
+}
+
 export function contestWindowForUser(contest: ContestTiming, registrationStartedAt?: Date | null) {
   if (registrationStartedAt) {
-    const startsAt = registrationStartedAt;
+    const startsAt = personalContestStart(contest, registrationStartedAt);
     const personalEnd = new Date(startsAt.getTime() + contestDurationMinutes(contest) * 60_000);
     const endsAt = personalEnd < contest.endsAt ? personalEnd : contest.endsAt;
 

@@ -105,7 +105,6 @@ model User {
   boards Board[]
   createdContests Contest[] @relation("ContestCreator")
   contestRegistrations ContestRegistration[]
-  contestRsvps ContestRsvp[]
   contestSubmissions ContestSubmission[]
   contestParticipations ContestParticipant[]
 
@@ -252,10 +251,12 @@ model Event {
   endsAt      DateTime?
   published   Boolean  @default(true)
   createdById String?
+  contestId   String?  @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   creator User?       @relation("EventCreator", fields: [createdById], references: [id])
+  contest Contest?    @relation("ContestEvent", fields: [contestId], references: [id], onDelete: Cascade)
   rsvps   EventRsvp[]
 
   @@index([published, startsAt])
@@ -492,9 +493,9 @@ model Contest {
   updatedAt   DateTime      @updatedAt
 
   creator       User?                 @relation("ContestCreator", fields: [createdById], references: [id])
+  event         Event?                @relation("ContestEvent")
   problems      ContestProblem[]
   registrations ContestRegistration[]
-  rsvps         ContestRsvp[]
   submissions   ContestSubmission[]
   participants  ContestParticipant[]
 
@@ -518,27 +519,15 @@ model ContestProblem {
   @@index([contestId, order])
 }
 
+// A member's sign-up for a contest (LeetCode style: registering is the single
+// commitment). Members can register before the contest opens or join while it is
+// live; `createdAt` seeds the personal timer, which never begins before the
+// contest's own startsAt. Every registrant is scored and rated at finalize time.
 model ContestRegistration {
   id        String   @id @default(cuid())
   contestId String
   userId    String
   createdAt DateTime @default(now())
-
-  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([contestId, userId])
-  @@index([userId])
-}
-
-// Lightweight "I plan to attend" intent for an upcoming contest, separate from
-// ContestRegistration (which starts the personal timer once the contest is live).
-model ContestRsvp {
-  id        String   @id @default(cuid())
-  contestId String
-  userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
