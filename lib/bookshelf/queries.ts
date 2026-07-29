@@ -6,7 +6,7 @@ import {
   ResourceList,
   resourceListSelect,
 } from "./types";
-import { Prisma, ResourceType } from "@prisma/client";
+import { Prisma, ResourceType } from "@/prisma-client";
 
 // Full selection for detail views
 const resourceDetailSelect = {
