@@ -48,7 +48,11 @@ export default function SendNudgeModal({
 
   return (
     <div className="modal-backdrop" id="send-nudge">
-      <section className="badge-create-modal" aria-label={`Send a nudge to ${recipientName}`}>
+      <section
+        className="badge-create-modal"
+        aria-label={`Send a nudge to ${recipientName}`}
+        data-lenis-prevent
+      >
         <a className="modal-close" href={returnTo} aria-label="Close">
           x
         </a>

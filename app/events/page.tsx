@@ -51,7 +51,7 @@ export default async function EventsPage({
             <a className="button" href="#create-event">
               Add event
             </a>
-            <CreateEventModal error={searchParams?.error} returnTo="/events" />
+            <CreateEventModal returnTo="/events" />
           </>
         ) : null}
 

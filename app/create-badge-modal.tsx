@@ -13,7 +13,7 @@ export default function CreateBadgeModal({
 }: Readonly<{ error?: string; returnTo: string }>) {
   return (
     <div className="modal-backdrop" id="create-badge">
-      <section className="badge-create-modal" aria-label="Create a new badge">
+      <section className="badge-create-modal" aria-label="Create a new badge" data-lenis-prevent>
         <a className="modal-close" href={returnTo} aria-label="Close">
           x
         </a>

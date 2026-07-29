@@ -1399,6 +1399,7 @@ a.notification-row:hover {
   flex-direction: column;
   height: calc(100vh - 132px);
   min-height: 520px;
+  padding-inline: clamp(16px, 1.75vw, 24px);
   overflow: hidden;
 }
 
@@ -1541,13 +1542,13 @@ a.notification-row:hover {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding-left: clamp(20px, 3vw, 36px);
+  padding-left: clamp(12px, 1.5vw, 20px);
 }
 
 .practice-divider {
-  flex: 0 0 7px;
+  flex: 0 0 5px;
   align-self: stretch;
-  margin: 0 clamp(6px, 1vw, 14px);
+  margin: 0 clamp(4px, 0.5vw, 8px);
   border-left: 1px solid var(--line);
   border-right: 1px solid var(--line);
   background: transparent;
@@ -1828,6 +1829,32 @@ body.is-resizing-panes {
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.code-editor-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.code-editor-toolbar-actions button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.code-editor-toolbar-actions button:hover:not(:disabled) {
+  color: #fff;
+}
+
+.code-editor-toolbar-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .code-editor-shell .cm-editor {

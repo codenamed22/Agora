@@ -18,17 +18,7 @@ function safeFilename(name: string) {
   );
 }
 
-function safeReturnPath(value: FormDataEntryValue | null) {
-  const path = String(value ?? "/admin/events");
-  return path.startsWith("/") && !path.startsWith("//") ? path : "/admin/events";
-}
-
-function successPath(path: string) {
-  // The trailing fragment clears any lingering #create-event target so the
-  // CSS :target modal closes. Without an explicit fragment, browsers reuse the
-  // original request fragment on redirects and the modal would stay open.
-  return `${path}${path.includes("?") ? "&" : "?"}created=event#event-created`;
-}
+export type CreateEventState = { ok: boolean; error?: string };
 
 function validateEventImage(file: File, imageErrorPath: string, storageErrorPath: string) {
   const imageError = validateProfilePhoto(file);
@@ -78,23 +68,30 @@ function parseEventForm(formData: FormData) {
   };
 }
 
-export async function createEvent(formData: FormData) {
+// Returns a result state (instead of redirecting) so the client modal can close
+// itself on success — a server-action redirect can't update the URL hash that the
+// :target modal relies on, which left the dialog stuck open.
+export async function createEvent(
+  _prevState: CreateEventState,
+  formData: FormData,
+): Promise<CreateEventState> {
   const admin = await requireAdmin();
-  const returnTo = safeReturnPath(formData.get("returnTo"));
   const parsed = parseEventForm(formData);
 
   if (!parsed) {
-    redirect(`${returnTo}?error=invalid#create-event`);
+    return { ok: false, error: "invalid" };
   }
 
   const image = formData.get("image");
 
   if (image instanceof File && image.size > 0) {
-    validateEventImage(
-      image,
-      `${returnTo}?error=image#create-event`,
-      `${returnTo}?error=storage#create-event`,
-    );
+    if (validateProfilePhoto(image)) {
+      return { ok: false, error: "image" };
+    }
+
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      return { ok: false, error: "storage" };
+    }
   }
 
   const event = await prisma.event.create({
@@ -129,7 +126,7 @@ export async function createEvent(formData: FormData) {
 
   revalidatePath("/events");
   revalidatePath("/admin/events");
-  redirect(successPath(returnTo));
+  return { ok: true };
 }
 
 export async function updateEvent(formData: FormData) {
