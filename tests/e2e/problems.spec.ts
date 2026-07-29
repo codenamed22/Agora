@@ -75,6 +75,7 @@ test.describe("problems", () => {
     expect(promptBox).not.toBeNull();
     expect(submitBox).not.toBeNull();
     expect(promptBox!.x + promptBox!.width).toBeLessThanOrEqual(submitBox!.x + 1);
+    expect(submitBox!.width).toBeGreaterThan(promptBox!.width);
   });
 
   test("stacks the practice workspace on mobile without horizontal overflow", async ({ page }) => {

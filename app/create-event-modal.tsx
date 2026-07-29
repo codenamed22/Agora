@@ -1,4 +1,9 @@
-import { createEvent } from "./(protected)/admin/events/actions";
+"use client";
+
+import { useEffect, useRef } from "react";
+import { useFormState, useFormStatus } from "react-dom";
+import { useRouter } from "next/navigation";
+import { createEvent, type CreateEventState } from "./(protected)/admin/events/actions";
 import CompressingImageInput from "./compressing-image-input";
 
 const errors: Record<string, string> = {
@@ -7,10 +12,33 @@ const errors: Record<string, string> = {
   storage: "Event image storage is not configured yet. Add BLOB_READ_WRITE_TOKEN.",
 };
 
-export default function CreateEventModal({
-  error,
-  returnTo,
-}: Readonly<{ error?: string; returnTo: string }>) {
+const initialState: CreateEventState = { ok: false };
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button className="button" type="submit" disabled={pending}>
+      {pending ? "Creating..." : "Create Event"}
+    </button>
+  );
+}
+
+export default function CreateEventModal({ returnTo }: Readonly<{ returnTo: string }>) {
+  const [state, formAction] = useFormState(createEvent, initialState);
+  const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!state.ok) {
+      return;
+    }
+    // A server-action redirect can't update the URL hash, so close the :target
+    // modal on the client and refresh to show the newly created event.
+    formRef.current?.reset();
+    window.location.hash = "event-created";
+    router.refresh();
+  }, [state, router]);
+
   return (
     <div className="modal-backdrop" id="create-event">
       <section className="badge-create-modal" aria-label="Create a new event" data-lenis-prevent>
@@ -18,10 +46,10 @@ export default function CreateEventModal({
           x
         </a>
         <h2>Create a new event</h2>
-        {error ? <div className="form-message error">{errors[error] ?? errors.invalid}</div> : null}
-        <form action={createEvent} className="stacked-form">
-          <input type="hidden" name="returnTo" value={returnTo} />
-
+        {state.error ? (
+          <div className="form-message error">{errors[state.error] ?? errors.invalid}</div>
+        ) : null}
+        <form action={formAction} className="stacked-form" ref={formRef}>
           <label htmlFor="event-title">Title*</label>
           <input id="event-title" name="title" placeholder="Event title..." required />
 
@@ -62,9 +90,7 @@ export default function CreateEventModal({
             <a className="text-link" href={returnTo}>
               Cancel
             </a>
-            <button className="button" type="submit">
-              Create Event
-            </button>
+            <SubmitButton />
           </div>
         </form>
       </section>

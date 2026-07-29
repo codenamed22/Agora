@@ -23,6 +23,7 @@ const {
   contestThreeProblems,
   buildContestThreeStressTests,
 } = require("./contest-problem-set-3");
+const { HIREUP_OA_SLUG, hireupProblems, buildHireupStressTests } = require("./hireup-problem-set");
 
 const prisma = new PrismaClient({ adapter: createPrismaAdapter(process.env.DATABASE_URL) });
 
@@ -1036,6 +1037,132 @@ async function main() {
       order: index,
     })),
   });
+
+  // HireUp Online Assessment: the first round of the HireUp mock-hiring event.
+  // Two escalating problems (A < B) in the style of recent Uber/Amazon/Google
+  // OAs. Seeded unpublished so they only appear inside the OA contest, with
+  // reference solutions for admins.
+  const hireupStress = buildHireupStressTests();
+  const hireupProblemIds = [];
+
+  for (const problem of hireupProblems) {
+    const testCases = [
+      ...problem.samples.map((testCase, index) => ({
+        input: testCase.input,
+        expectedOutput: testCase.expectedOutput,
+        isSample: true,
+        order: index,
+      })),
+      ...[...problem.hidden, ...(hireupStress[problem.slug] ?? [])].map((testCase, index) => ({
+        input: testCase.input,
+        expectedOutput: testCase.expectedOutput,
+        isSample: false,
+        order: problem.samples.length + index,
+      })),
+    ];
+
+    const referenceSolutions = readReferenceSolutions(problem.slug);
+    const primarySolution = referenceSolutions.find((solution) => solution.language === "python");
+    const problemData = {
+      slug: problem.slug,
+      title: problem.title,
+      statement: problem.statement,
+      constraints: problem.constraints,
+      tags: problem.tags,
+      difficulty: problem.difficulty,
+      timeLimitMs: problem.timeLimitMs,
+      practiceOrder: 300000,
+      solutionCode: primarySolution?.code,
+      solutionLanguage: primarySolution?.language,
+    };
+
+    // `published` is owned by the app after seeding: finalizing a contest
+    // releases its problems to the Practice tab (published: true). Only set the
+    // contest-only default on create so reseeds never un-publish a finalized
+    // contest's problems.
+    const savedProblem = await prisma.problem.upsert({
+      where: { slug: problem.slug },
+      update: problemData,
+      create: { ...problemData, published: false },
+      select: { id: true },
+    });
+
+    await prisma.testCase.deleteMany({ where: { problemId: savedProblem.id } });
+    await prisma.testCase.createMany({
+      data: testCases.map((testCase) => ({ ...testCase, problemId: savedProblem.id })),
+    });
+
+    await prisma.problemReferenceSolution.deleteMany({ where: { problemId: savedProblem.id } });
+    if (referenceSolutions.length > 0) {
+      await prisma.problemReferenceSolution.createMany({
+        data: referenceSolutions.map((solution) => ({
+          ...solution,
+          problemId: savedProblem.id,
+        })),
+      });
+    }
+
+    hireupProblemIds.push(savedProblem.id);
+  }
+
+  // 1 August 8:00 PM IST (14:30 UTC), one-hour window, 60-minute personal timer.
+  // Seeded PUBLISHED directly (never through the admin publish action) so it is
+  // surfaced only inside the HireUp hub and is not mirrored onto the Events tab.
+  // `status` is owned by the app after seeding, so it is only set on create.
+  const hireupOa = await prisma.contest.upsert({
+    where: { slug: HIREUP_OA_SLUG },
+    update: {
+      title: "HireUp Online Assessment",
+      description:
+        "Online assessment for the HireUp mock hiring. Solve the problems within your 60-minute timer.",
+      startsAt: new Date("2026-08-01T14:30:00.000Z"),
+      endsAt: new Date("2026-08-01T15:30:00.000Z"),
+      durationMinutes: 60,
+    },
+    create: {
+      slug: HIREUP_OA_SLUG,
+      title: "HireUp Online Assessment",
+      description:
+        "Online assessment for the HireUp mock hiring. Solve the problems within your 60-minute timer.",
+      startsAt: new Date("2026-08-01T14:30:00.000Z"),
+      endsAt: new Date("2026-08-01T15:30:00.000Z"),
+      durationMinutes: 60,
+      status: "PUBLISHED",
+    },
+    select: { id: true },
+  });
+
+  await prisma.contestProblem.deleteMany({ where: { contestId: hireupOa.id } });
+  await prisma.contestProblem.createMany({
+    data: hireupProblemIds.map((problemId, index) => ({
+      contestId: hireupOa.id,
+      problemId,
+      label: String.fromCharCode("A".charCodeAt(0) + index),
+      order: index,
+    })),
+  });
+
+  // HireUp mock-hiring umbrella event: spans the whole hiring window (1 August
+  // 8:00 PM IST through 31 August). Shown on both the Events tab and the HireUp
+  // hub. Matched by title so reseeds update the single event in place.
+  const hireupEventData = {
+    title: "HireUp",
+    description:
+      "HireUp is ShardUp's mock-hiring drive. It runs across August as a series of rounds, starting with an online assessment on 1 August at 8:00 PM IST and expanding into further rounds as the drive progresses. Follow the HireUp tab to take part.",
+    location: "Online",
+    startsAt: new Date("2026-08-01T14:30:00.000Z"),
+    endsAt: new Date("2026-08-31T18:30:00.000Z"),
+    published: true,
+  };
+  const existingHireupEvent = await prisma.event.findFirst({
+    where: { title: hireupEventData.title },
+    select: { id: true },
+  });
+  if (existingHireupEvent) {
+    await prisma.event.update({ where: { id: existingHireupEvent.id }, data: hireupEventData });
+  } else {
+    await prisma.event.create({ data: hireupEventData });
+  }
 
   // Seed a minimal Bookshelf smoke seed
   const category = await prisma.category.upsert({
