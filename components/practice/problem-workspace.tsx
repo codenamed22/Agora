@@ -479,7 +479,6 @@ export function ProblemWorkspace({
                     highlightActiveLine: true,
                     highlightActiveLineGutter: true,
                     lineNumbers: true,
-                    tabSize: 4,
                   }}
                   editable={!isRunning}
                   extensions={[...languageExtensions(language), blockClipboard]}
