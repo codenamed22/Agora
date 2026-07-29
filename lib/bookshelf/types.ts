@@ -37,3 +37,21 @@ export type ResourceWithRelations = Prisma.ResourceGetPayload<{
     };
   };
 }>;
+
+export const resourceListSelect = {
+  id: true,
+  title: true,
+  author: true,
+  type: true,
+  resourceLink: true,
+  imageUrl: true,
+  category: {
+    select: {
+      name: true,
+    },
+  },
+} satisfies Prisma.ResourceSelect;
+
+export type ResourceList = Prisma.ResourceGetPayload<{
+  select: typeof resourceListSelect;
+}>;
