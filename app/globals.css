@@ -282,6 +282,7 @@ img {
 .site-header {
   display: flex;
   align-items: center;
+  position: relative;
   justify-content: space-between;
   gap: 24px;
   padding: 28px 0;
@@ -313,7 +314,7 @@ img {
 }
 
 .notification-bell-wrap {
-  position: relative;
+  position: static;
   display: inline-flex;
   margin-left: 8px;
 }
@@ -359,6 +360,7 @@ img {
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
+  left: auto;
   z-index: 60;
   width: min(340px, calc(100vw - 32px));
   max-height: 420px;
