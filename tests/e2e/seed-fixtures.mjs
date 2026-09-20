@@ -5,7 +5,14 @@
 // generated Prisma Client loads correctly instead of Playwright's CJS loader.
 import { PrismaClient } from "../../lib/generated/prisma/client.ts";
 import { createPrismaAdapter } from "../../lib/prisma-adapter.ts";
-import { DATABASE_URL, TEST_EVENT_TITLE, TEST_PROBLEM_SLUG, TEST_PROBLEM_TITLE } from "./env.ts";
+import {
+  DATABASE_URL,
+  TEST_BOOK_SUBMISSION_TITLE,
+  TEST_EVENT_TITLE,
+  TEST_PROBLEM_SLUG,
+  TEST_PROBLEM_TITLE,
+  TEST_REJECTED_SUBMISSION_TITLE,
+} from "./env.ts";
 
 const PYTHON_SUM_REFERENCE = `import sys
 
@@ -65,6 +72,21 @@ try {
           { input: "-4 10\n", expectedOutput: "6\n", isSample: false, order: 2 },
         ],
       },
+    },
+  });
+
+  const bookshelfCategory = await prisma.category.upsert({
+    where: { slug: "system-design" },
+    update: { name: "System Design" },
+    create: { name: "System Design", slug: "system-design" },
+  });
+  await prisma.resourceSubmission.deleteMany({
+    where: { title: { in: [TEST_BOOK_SUBMISSION_TITLE, TEST_REJECTED_SUBMISSION_TITLE] } },
+  });
+  await prisma.resource.deleteMany({
+    where: {
+      categoryId: bookshelfCategory.id,
+      title: { in: [TEST_BOOK_SUBMISSION_TITLE, TEST_REJECTED_SUBMISSION_TITLE] },
     },
   });
 } finally {

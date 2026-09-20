@@ -38,6 +38,7 @@ export default async function DashboardPage() {
             <a href="/admin/events">Manage events</a>
             <a href="/admin/contests">Manage contests</a>
             <a href="/admin/problems">Review problems</a>
+            <a href="/admin/bookshelf">Review bookshelf submissions</a>
           </div>
         ) : null}
       </section>
