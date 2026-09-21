@@ -203,6 +203,14 @@ ShardUp runs community coding contests on a roughly biweekly cadence. Admins cre
 
 After deploying contest schema changes, run `npm run prisma:migrate` against your database before publishing a contest.
 
+### Bookshelf PDFs
+
+Admins manage bookshelf resources at `/admin/bookshelf`. Each resource is a full PDF (up to 50MB):
+
+- Uploads go to [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) storage (`bookshelf/…` prefix, public access) and require `BLOB_READ_WRITE_TOKEN` (create a Storage bucket in the Vercel dashboard and copy its read/write token).
+- When a PDF is selected, the first page is rendered to a JPEG in the browser and stored as the resource's cover image, so cards show a real preview instead of just the title.
+- Resources show a **PDF** badge on the bookshelf and open in the built-in reader on their detail page: page navigation, page jump, zoom and fit-height, full-PDF text search with match navigation, keyboard shortcuts (arrows, Home/End, `+`/`-`, `/` to search), a reading progress bar, fullscreen mode, and a download link.
+
 ### Self-hosted Piston judge
 
 ShardUp does not use the public Piston API. Host your own Piston API and point the app at it with `JUDGE_BASE_URL`.
@@ -298,8 +306,9 @@ This is a Next.js app that deploys directly to Vercel.
    - `AUTH_GOOGLE_SECRET` — Google OAuth client secret
    - `AUTH_URL` — `https://YOUR_DOMAIN` (no trailing slash)
    - `ADMIN_EMAILS` — comma-separated admin emails
-   - `JUDGE_BASE_URL` — self-hosted Piston base URL, e.g. `https://judge.YOUR_DOMAIN/api/v2`
-   - `JUDGE_API_KEY` — bearer token your judge reverse proxy requires
+    - `JUDGE_BASE_URL` — self-hosted Piston base URL, e.g. `https://judge.YOUR_DOMAIN/api/v2`
+    - `JUDGE_API_KEY` — bearer token your judge reverse proxy requires
+    - `BLOB_READ_WRITE_TOKEN` — Vercel Blob read/write token for badge/event images and bookshelf PDFs
    - `AUTH_DEBUG` — optional temporary value `true` for Auth.js debugging in Vercel logs
    - `NEXT_PUBLIC_` prefix is not needed for any current variable
 

@@ -18,9 +18,9 @@ export type ResourceWithRelations = Prisma.ResourceGetPayload<{
     author: true;
     type: true;
     recommendationReason: true;
-    resourceLink: true;
-    buyLink: true;
     imageUrl: true;
+    pdfUrl: true;
+    pdfSizeBytes: true;
     category: {
       select: {
         id: true;
@@ -43,8 +43,8 @@ export const resourceListSelect = {
   title: true,
   author: true,
   type: true,
-  resourceLink: true,
   imageUrl: true,
+  pdfUrl: true,
   category: {
     select: {
       name: true,

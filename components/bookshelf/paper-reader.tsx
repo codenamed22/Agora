@@ -8,7 +8,24 @@ const PdfDocument = dynamic(() => import("./pdf-document"), {
   loading: () => <p className="paper-reader-message">Loading reader…</p>,
 });
 
-export default function PaperReader({ title, url }: { title: string; url: string }) {
+function downloadName(title: string) {
+  const slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 80);
+  return `${slug || "document"}.pdf`;
+}
+
+export default function PaperReader({
+  title,
+  url,
+  label = "Read online",
+}: {
+  title: string;
+  url: string;
+  label?: string;
+}) {
   const readerRef = useRef<HTMLElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -31,12 +48,18 @@ export default function PaperReader({ title, url }: { title: string; url: string
     <section ref={readerRef} className="paper-reader" aria-labelledby="paper-reader-heading">
       <div className="paper-reader-heading">
         <div>
-          <p className="section-label">Research paper</p>
-          <h2 id="paper-reader-heading">Read online</h2>
+          <p className="section-label">PDF reader</p>
+          <h2 id="paper-reader-heading">{label}</h2>
         </div>
         <div className="paper-reader-heading-actions">
-          <a href={url} target="_blank" rel="noopener noreferrer" className="text-link">
-            Open original
+          <a
+            href={url}
+            download={downloadName(title)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-link"
+          >
+            Download PDF
           </a>
           <button
             type="button"

@@ -15,9 +15,9 @@ const resourceDetailSelect = {
   author: true,
   type: true,
   recommendationReason: true,
-  resourceLink: true,
-  buyLink: true,
   imageUrl: true,
+  pdfUrl: true,
+  pdfSizeBytes: true,
   category: {
     select: {
       id: true,
