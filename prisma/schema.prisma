@@ -409,9 +409,9 @@ model Resource {
   author               String?
   type                 ResourceType
   recommendationReason String?
-  resourceLink         String
-  buyLink              String?
   imageUrl             String?
+  pdfUrl               String?
+  pdfSizeBytes         Int?
 
   categoryId      String
   recommendedById String?

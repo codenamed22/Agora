@@ -1186,9 +1186,6 @@ async function main() {
       type: "BOOK",
       recommendationReason:
         "The bible of system design. It teaches you the fundamental principles behind distributed systems, data storage, and processing.",
-      resourceLink: "https://dataintensive.net/",
-      buyLink:
-        "https://www.amazon.com/Designing-Data-Intensive-Applications-Reliable-Maintainable/dp/1449373321",
       imageUrl: "https://images-na.ssl-images-amazon.com/images/I/91tA4t2yA9L.jpg",
     },
     create: {
@@ -1197,9 +1194,6 @@ async function main() {
       type: "BOOK",
       recommendationReason:
         "The bible of system design. It teaches you the fundamental principles behind distributed systems, data storage, and processing.",
-      resourceLink: "https://dataintensive.net/",
-      buyLink:
-        "https://www.amazon.com/Designing-Data-Intensive-Applications-Reliable-Maintainable/dp/1449373321",
       imageUrl: "https://images-na.ssl-images-amazon.com/images/I/91tA4t2yA9L.jpg",
       categoryId: category.id,
     },

@@ -76,18 +76,16 @@ export default function ResourceDetails({ resource }: { resource: ResourceWithRe
               </blockquote>
             </div>
           )}
-
-          {/* prettier-ignore */}
-          <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", marginTop: "12px" }}>
-            {resource.resourceLink && <a className="button" href={resource.resourceLink} target="_blank" rel="noopener noreferrer">Access Resource</a>}
-            {resource.buyLink && <a className="secondary-button" href={resource.buyLink} target="_blank" rel="noopener noreferrer">Buy Link</a>}
-          </div>
         </div>
       </div>
 
-      {resource.type === "RESEARCH_PAPER" && (
-        <PaperReader title={resource.title} url={resource.resourceLink} />
-      )}
+      {resource.pdfUrl ? (
+        <PaperReader
+          title={resource.title}
+          url={resource.pdfUrl}
+          label={resource.type === "RESEARCH_PAPER" ? "Read the paper" : "Read the PDF"}
+        />
+      ) : null}
     </article>
   );
 }

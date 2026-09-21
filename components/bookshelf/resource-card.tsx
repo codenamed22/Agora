@@ -7,8 +7,8 @@ export interface ResourceCardProps {
     title: string;
     author: string | null;
     type: string;
-    resourceLink: string;
     imageUrl: string | null;
+    pdfUrl: string | null;
     category: {
       name: string;
     };
@@ -27,6 +27,9 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
         <div className="resource-meta-tags">
           <span className="resource-category-tag">{resource.category.name}</span>
           <span className="resource-type-badge">{resource.type.replace("_", " ")}</span>
+          {resource.pdfUrl ? (
+            <span className="resource-type-badge resource-pdf-badge">PDF</span>
+          ) : null}
         </div>
         <h2>
           <Link href={`/bookshelf/resource/${resource.id}`}>{resource.title}</Link>

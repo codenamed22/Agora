@@ -3207,6 +3207,7 @@ body.is-resizing-panes {
 }
 
 .paper-reader-document {
+  position: relative;
   min-height: 360px;
   padding: 16px;
   overflow: auto;
@@ -3322,6 +3323,68 @@ body.is-resizing-panes {
 
   .paper-reader:fullscreen .paper-reader-control-divider {
     display: block;
+  }
+}
+
+.paper-reader-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--line);
+  z-index: 2;
+}
+
+.paper-reader-progress-bar {
+  height: 100%;
+  background: var(--accent);
+  transition: width 120ms linear;
+}
+
+.paper-reader-page-input,
+.paper-reader-search-input {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.paper-reader-page-input {
+  width: 64px;
+}
+
+.paper-reader-search-input {
+  width: 180px;
+}
+
+.paper-reader-page-input:focus,
+.paper-reader-search-input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.paper-reader-search-status {
+  min-width: 64px;
+}
+
+.resource-pdf-badge {
+  border-color: var(--accent-strong);
+  color: var(--accent-strong);
+}
+
+.pdf-cover-status {
+  display: block;
+  color: var(--muted);
+}
+
+@media (max-width: 560px) {
+  .paper-reader-search-group {
+    flex-wrap: wrap;
   }
 }
 
