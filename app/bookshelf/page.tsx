@@ -17,6 +17,11 @@ export default async function BookshelfLandingPage() {
           Discover curated books, articles, courses, and learning resources recommended by the
           ShardUp community.
         </p>
+        <div className="auth-actions-list" style={{ marginTop: 0, marginBottom: "32px" }}>
+          <a className="button" href="/bookshelf/submit">
+            Recommend a resource
+          </a>
+        </div>
 
         {/* Browse by Category */}
         <div style={{ marginBottom: "48px" }}>

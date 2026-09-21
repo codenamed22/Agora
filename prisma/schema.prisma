@@ -131,6 +131,8 @@ model User {
 
   reviewedApplications Application[] @relation("ApplicationReviewer")
   recommendedResources Resource[]    @relation("ResourceRecommender")
+  submittedResourceSubmissions ResourceSubmission[] @relation("ResourceSubmissionSubmitter")
+  reviewedResourceSubmissions  ResourceSubmission[] @relation("ResourceSubmissionReviewer")
   notifications Notification[] @relation("NotificationActor")
   receivedNotifications Notification[] @relation("NotificationRecipient")
   createdChatConversations ChatConversation[] @relation("ChatConversationCreator")
@@ -393,6 +395,12 @@ enum ResourceType {
   RESEARCH_PAPER
 }
 
+enum ResourceSubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Category {
   id        String   @id @default(cuid())
   name      String   @unique
@@ -400,7 +408,8 @@ model Category {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  resources Resource[]
+  resources   Resource[]
+  submissions ResourceSubmission[]
 }
 
 model Resource {
@@ -426,6 +435,35 @@ model Resource {
   @@index([categoryId])
   @@index([recommendedById])
   @@index([categoryId, type])
+}
+
+model ResourceSubmission {
+  id                   String                   @id @default(cuid())
+  title                String
+  author               String
+  type                 ResourceType
+  recommendationReason String
+  resourceLink         String
+  buyLink              String?
+  imageUrl             String?
+  status               ResourceSubmissionStatus @default(PENDING)
+
+  categoryId    String
+  submittedById String
+  reviewedById  String?
+  reviewedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  submittedBy User     @relation("ResourceSubmissionSubmitter", fields: [submittedById], references: [id], onDelete: Cascade)
+  reviewedBy  User?    @relation("ResourceSubmissionReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([submittedById, createdAt])
+  @@index([categoryId])
+  @@index([reviewedById])
 }
 
 model TeachingSession {
